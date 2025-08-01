@@ -1,0 +1,94 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+import { defineConfig } from 'vite';
+
+const config: CapacitorConfig = {
+  appId: 'com.tekiplanet.org',
+  appName: 'TekiPlanet',
+  webDir: 'dist',
+  bundledWebRuntime: false,
+  server: {
+    androidScheme: 'http',
+    cleartext: true,
+    url: 'http://192.168.112.55:8080/api',
+    hostname: 'localhost'
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: "#ffffffff",
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: true,
+      androidSpinnerStyle: "large",
+      iosSpinnerStyle: "small",
+      spinnerColor: "#999999",
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+    Keyboard: {
+      resize: "body",
+      style: "dark",
+      resizeOnFullScreen: true,
+    },
+    App: {
+      url: 'http://192.168.112.55:8080/api',
+      launchUrl: '/',
+      webDir: 'dist'
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
+      importance: "high",
+      sound: true,
+      vibrate: true,
+      smallIcon: "ic_notification",
+      iconColor: "#488AFF",
+      forceShow: true
+    },
+    LocalNotifications: {
+      smallIcon: "ic_notification",
+      iconColor: "#488AFF",
+      sound: "notification.wav"
+    },
+    Filesystem: {
+      directory: 'Download'
+    }
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true,
+    backgroundColor: "#ffffff",
+    includePlugins: [
+      "@capacitor/push-notifications",
+      "@capacitor/filesystem",
+      "@capacitor/local-notifications"
+    ],
+    notificationSettings: {
+      importance: "high",
+      sound: "notification",
+      vibrate: true
+    }
+  },
+  ios: {
+    contentInset: "always",
+    allowsLinkPreview: true,
+    scrollEnabled: true,
+    usesFontScaling: true,
+    includePlugins: ["@capacitor/push-notifications"],
+    backgroundColor: "#ffffff"
+  },
+  deepLinks: {
+    routes: [
+      {
+        name: 'Payment Callback',
+        path: '/paystack-callback',
+      },
+      {
+        name: 'Dashboard',
+        path: '/dashboard',
+      }
+    ]
+  }
+};
+
+export default config;
