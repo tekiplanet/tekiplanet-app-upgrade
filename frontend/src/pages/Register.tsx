@@ -34,9 +34,6 @@ const Register: React.FC = () => {
         email: data.email,
         password: data.password,
         password_confirmation: data.password_confirmation,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        type: data.type || 'student' // Default to student if not specified
       };
 
       const response = await authService.register(registrationData);

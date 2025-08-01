@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     ],
     proxy: {
       '/api': {
-        target: 'http://192.168.112.55:8000',
+        target: 'https://api.tekiplanet.org',
         changeOrigin: true,
         secure: false
       }

@@ -28,9 +28,10 @@ return [
         'http://127.0.0.1:3000',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:8080',
-        'http://192.168.112.55:8080',
         'http://app.teki-planet.org',
         'https://app.teki-planet.org',
+        'http://app.tekiplanet.org',
+        'https://app.tekiplanet.org',        
 
         // Add your production domain(s) here as needed
     ],

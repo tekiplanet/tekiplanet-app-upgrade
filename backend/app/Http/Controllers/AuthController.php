@@ -23,23 +23,14 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
-            // Validate account type
-            'type' => [
-                'required', 
-                Rule::in(User::$accountTypeOptions)
-            ],
-            'first_name' => 'nullable|string|max:255',
-            'last_name' => 'nullable|string|max:255',
         ]);
 
         $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            // Save account type
-            'account_type' => $request->type,
-            'first_name' => $request->first_name ?? null,
-            'last_name' => $request->last_name ?? null,
+            // Set default account type as student, can be changed later
+            'account_type' => 'student',
         ]);
 
         // Create and send verification code

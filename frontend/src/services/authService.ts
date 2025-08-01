@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/api-client';
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -12,9 +13,6 @@ interface RegisterData {
   email: string;
   password: string;
   password_confirmation: string;
-  first_name?: string;
-  last_name?: string;
-  type: 'student' | 'business' | 'professional';
 }
 
 interface BusinessProfile {
@@ -67,8 +65,14 @@ interface LoginResponse {
 export const authService = {
   async login(login: string, password: string, code?: string): Promise<LoginResponse> {
     try {
+      // Create a temporary axios instance for CSRF request
+      const csrfClient = axios.create({
+        baseURL: 'https://api.tekiplanet.org',
+        withCredentials: true
+      });
+
       // Always get a fresh CSRF cookie before login to avoid CSRF token mismatch
-      await apiClient.get('/sanctum/csrf-cookie', { baseURL: 'http://192.168.112.55:8000', withCredentials: true });
+      await csrfClient.get('/sanctum/csrf-cookie');
 
       // Now login
       const response = await apiClient.post('/login', {
@@ -92,31 +96,22 @@ export const authService = {
   },
 
   async register(data: RegisterData) {
-    const response = await fetch(`${API_URL}/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
+    try {
+      // Register directly without CSRF token since it's a public API endpoint
+      const response = await apiClient.post('/register', {
         username: data.username,
         email: data.email,
         password: data.password,
         password_confirmation: data.password_confirmation,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        type: data.type
-      })
-    });
+      }, { withCredentials: true });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Registration failed');
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
     }
-
-    const responseData = await response.json();
-    return responseData.user; // Return the user data directly
   },
 
   async logout() {

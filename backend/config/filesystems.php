@@ -39,7 +39,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL', 'http://192.168.112.55:8000').'/storage',
+            'url' => env('APP_URL', 'http://api.tekiplanet.org').'/storage',
             'visibility' => 'public',
             'throw' => false,
         ],

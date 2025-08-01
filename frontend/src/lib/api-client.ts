@@ -3,8 +3,10 @@ import useAuthStore from '@/store/useAuthStore';
 
 axios.defaults.withCredentials = true;
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 const apiClient = axios.create({
-  baseURL: 'http://192.168.112.55:8000/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

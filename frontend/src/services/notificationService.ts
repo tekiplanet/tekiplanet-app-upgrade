@@ -13,10 +13,12 @@ class NotificationService {
         const token = localStorage.getItem('token');
         // console.log('Token for Pusher auth:', token); // Debug log
 
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+        
         this.pusher = new Pusher('2f14ebc513254579c12a', {
             cluster: 'eu',
             forceTLS: true,
-            authEndpoint: 'http://192.168.112.55:8000/api/broadcasting/auth'
+            authEndpoint: `${API_URL}/broadcasting/auth`
             // No custom auth or headers; Sanctum will use cookies
         });
 

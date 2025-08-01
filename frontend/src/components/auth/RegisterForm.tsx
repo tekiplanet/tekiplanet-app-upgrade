@@ -6,31 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+
 import { PasswordInput } from './PasswordInput';
 import { motion } from 'framer-motion';
 
-// Define account type options
-const ACCOUNT_TYPES = [
-  { value: 'student', label: 'Student' },
-  { value: 'business', label: 'Business' },
-  { value: 'professional', label: 'Professional' }
-];
+
 
 export interface RegisterFormData {
   username: string;
   email: string;
   password: string;
   password_confirmation: string;
-  first_name?: string;
-  last_name?: string;
-  type: 'student' | 'business' | 'professional';
 }
 
 interface RegisterFormProps {
@@ -49,9 +35,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     formState: { errors } 
   } = useForm<RegisterFormData>({
     defaultValues: {
-      type: 'student', 
-      first_name: '',
-      last_name: ''
+      username: '',
+      email: '',
+      password: '',
+      password_confirmation: ''
     }
   });
 
@@ -98,27 +85,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
             className="space-y-6"
             noValidate
           >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  type="text"
-                  {...register('first_name')}
-                  placeholder="John"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  type="text"
-                  {...register('last_name')}
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -155,29 +121,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email.message}</p>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Account Type</Label>
-              <Select
-                value={watch('type') || 'student'}
-                onValueChange={(value) => {
-                  setValue('type', value as RegisterFormData['type'], { 
-                    shouldValidate: true 
-                  });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACCOUNT_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="space-y-2">

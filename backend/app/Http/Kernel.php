@@ -40,8 +40,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            // Temporarily remove throttle middleware during development
+            // Removed EnsureFrontendRequestsAreStateful for separate domain setup
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
