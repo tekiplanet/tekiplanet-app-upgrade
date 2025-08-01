@@ -1,0 +1,9 @@
+tunnel: ae719bfa-3b3c-44e9-9c3f-c18518d7c3db
+credentials-file: C:\Users\user\.cloudflared\ae719bfa-3b3c-44e9-9c3f-c18518d7c3db.json
+
+ingress:
+  - hostname: api.tekiplanet.org
+    service: http://localhost:8000
+  - service: http_status:404
+
+  

@@ -1,0 +1,7 @@
+tunnel: 93ca1962-662c-49ea-a37b-f710ce3418e8
+credentials-file: C:\Users\user\.cloudflared\93ca1962-662c-49ea-a37b-f710ce3418e8.json
+
+ingress:
+  - hostname: app.tekiplanet.org
+    service: http://localhost:5173
+  - service: http_status:404

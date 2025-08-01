@@ -7,7 +7,12 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 5173, // Changed from 8080 to match our setup
+    allowedHosts: [
+      'localhost',
+      'app.tekiplanet.org',
+      'api-tekiplanet.org'
+    ],
     proxy: {
       '/api': {
         target: 'http://192.168.112.55:8000',
