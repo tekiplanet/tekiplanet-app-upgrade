@@ -43,6 +43,7 @@ type AuthState = {
   requires_2fa?: boolean;
   setTheme: (theme: 'light' | 'dark') => Promise<void>;
   login: (login: string, password: string, code?: string) => Promise<any>;
+  register: (data: any) => Promise<any>;
   logout: () => void;
   updateUser: (userData: Partial<UserData>) => Promise<boolean>;
   updateUserPreferences: (preferences: UserPreferences) => Promise<UserData>;
@@ -193,6 +194,38 @@ const useAuthStore = create(
           return response;
         } catch (error) {
           console.error('Login error:', error);
+          localStorage.removeItem('token');
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            requiresVerification: false
+          });
+          throw error;
+        }
+      },
+
+      register: async (data: any) => {
+        try {
+          console.log('🔐 Auth store: Starting registration...');
+          const response = await authService.register(data);
+          console.log('🔐 Auth store: Registration response:', response);
+          
+          if (response.access_token) {
+            console.log('🔐 Auth store: Setting authentication state...');
+            localStorage.setItem('token', response.access_token);
+            set({
+              user: response.user,
+              token: response.access_token,
+              isAuthenticated: true,
+              requiresVerification: response.requires_verification || false
+            });
+            console.log('🔐 Auth store: Authentication state updated');
+          }
+          
+          return response;
+        } catch (error) {
+          console.error('🔐 Auth store: Registration error:', error);
           localStorage.removeItem('token');
           set({
             user: null,

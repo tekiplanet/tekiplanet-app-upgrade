@@ -76,6 +76,12 @@ const EmailVerification = () => {
     }
   };
 
+  const handleUseAnotherAccount = () => {
+    authStore.logout();
+    toast.success('Logged out successfully');
+    navigate('/login');
+  };
+
   // Only show if authenticated (even without full user data)
   if (!isAuthenticated) {
     return null;
@@ -113,25 +119,39 @@ const EmailVerification = () => {
               {loading ? 'Verifying...' : 'Verify Email'}
             </Button>
 
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                Didn't receive the code?
-              </p>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleResend}
-                disabled={resendLoading || countdown > 0}
-                className="text-primary hover:text-primary/90"
-              >
-                {resendLoading ? (
-                  'Sending...'
-                ) : countdown > 0 ? (
-                  `Resend Code (${countdown}s)`
-                ) : (
-                  'Resend Code'
-                )}
-              </Button>
+            <div className="text-center space-y-3">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Didn't receive the code?
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleResend}
+                  disabled={resendLoading || countdown > 0}
+                  className="text-primary hover:text-primary/90"
+                >
+                  {resendLoading ? (
+                    'Sending...'
+                  ) : countdown > 0 ? (
+                    `Resend Code (${countdown}s)`
+                  ) : (
+                    'Resend Code'
+                  )}
+                </Button>
+              </div>
+              
+              <div className="pt-2 border-t border-border">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleUseAnotherAccount}
+                  disabled={loading}
+                  className="text-muted-foreground hover:text-foreground text-sm"
+                >
+                  Use Another Account
+                </Button>
+              </div>
             </div>
           </form>
         </div>

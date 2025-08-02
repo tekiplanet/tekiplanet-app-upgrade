@@ -2,22 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RegisterForm, RegisterFormData } from "@/components/auth/RegisterForm";
-import { authService } from "@/services/authService";
 import { useAuthStore } from "@/store/useAuthStore";
-
-interface RegisterFormData {
-  username: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-  type: 'student' | 'business' | 'professional';
-  first_name: string;
-  last_name: string;
-}
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const register = useAuthStore((state) => state.register);
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -28,24 +18,26 @@ const Register: React.FC = () => {
 
   const handleRegister = async (data: RegisterFormData) => {
     try {
-      // Prepare the data for backend registration
-      const registrationData: RegisterFormData = {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        password_confirmation: data.password_confirmation,
-      };
-
-      const response = await authService.register(registrationData);
+      console.log('🚀 Starting registration...');
+      const response = await register(data);
+      console.log('✅ Registration response:', response);
 
       if (response.requires_verification) {
+        console.log('📧 User requires verification, navigating to verify-email');
+        toast.success('Registration successful! Please check your email for verification.');
+        
+        // Add a small delay to ensure auth state is updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         navigate('/verify-email');
         return;
       }
 
+      console.log('✅ Registration successful, navigating to login');
       toast.success('Registration successful! Please login.');
       navigate('/login');
     } catch (error: any) {
+      console.error('❌ Registration error:', error);
       // Handle registration errors
       const errorMessage = error.message || 'Registration failed';
       toast.error(errorMessage);

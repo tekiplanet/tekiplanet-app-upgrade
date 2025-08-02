@@ -98,18 +98,29 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const requiresVerification = useAuthStore((state) => state.requiresVerification);
   const location = useLocation();
   
+  console.log('🛡️ ProtectedRoute:', {
+    isAuthenticated,
+    requiresVerification,
+    pathname: location.pathname,
+    token: localStorage.getItem('token')
+  });
+  
   if (!isAuthenticated) {
+    console.log('🛡️ ProtectedRoute: Not authenticated, redirecting to login');
     return <Navigate to="/login" />;
   }
 
   if (requiresVerification && location.pathname !== '/verify-email') {
+    console.log('🛡️ ProtectedRoute: Requires verification, redirecting to verify-email');
     return <Navigate to="/verify-email" state={{ from: location }} />;
   }
 
   if (!requiresVerification && location.pathname === '/verify-email') {
+    console.log('🛡️ ProtectedRoute: No verification required, redirecting to dashboard');
     return <Navigate to="/dashboard" />;
   }
 
+  console.log('🛡️ ProtectedRoute: Allowing access to', location.pathname);
   return children;
 };
 

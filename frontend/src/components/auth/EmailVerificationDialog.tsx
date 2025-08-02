@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useNavigate } from 'react-router-dom';
 
 interface EmailVerificationDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ export const EmailVerificationDialog: React.FC<EmailVerificationDialogProps> = (
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const authStore = useAuthStore();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +42,13 @@ export const EmailVerificationDialog: React.FC<EmailVerificationDialogProps> = (
     } catch (error: any) {
       toast.error(error.message || 'Failed to resend verification email');
     }
+  };
+
+  const handleUseAnotherAccount = () => {
+    authStore.logout();
+    toast.success('Logged out successfully');
+    navigate('/login');
+    onClose?.();
   };
 
   return (
@@ -71,6 +80,15 @@ export const EmailVerificationDialog: React.FC<EmailVerificationDialogProps> = (
               disabled={loading}
             >
               Resend Code
+            </Button>
+            <Button 
+              type="button" 
+              variant="ghost"
+              onClick={handleUseAnotherAccount}
+              disabled={loading}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Use Another Account
             </Button>
           </div>
         </form>

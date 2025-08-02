@@ -61,7 +61,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-background" />
 
-      <Card className="w-full max-w-md relative my-8">
+      <Card className="w-full max-w-lg relative my-8">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2">
           <div className="w-24 h-24 rounded-full bg-card shadow-2xl ring-4 ring-background flex items-center justify-center">
             <motion.div
