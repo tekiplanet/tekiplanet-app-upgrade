@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmail;
+use App\Jobs\SendVerificationEmail;
+use App\Jobs\SendResendVerificationEmail;
 
 class EmailVerificationService
 {
@@ -33,7 +35,8 @@ class EmailVerificationService
 
     public function sendVerificationEmail(User $user, EmailVerification $verification)
     {
-        Mail::to($user->email)->send(new VerifyEmail($user, $verification));
+        // Dispatch the job to send email in background
+        SendVerificationEmail::dispatch($user, $verification);
     }
 
     public function verify(User $user, string $code): bool
@@ -61,7 +64,8 @@ class EmailVerificationService
     public function resend(User $user): EmailVerification
     {
         $verification = $this->createVerification($user);
-        $this->sendVerificationEmail($user, $verification);
+        // Dispatch the resend job to send email in background
+        SendResendVerificationEmail::dispatch($user, $verification);
         return $verification;
     }
 } 
