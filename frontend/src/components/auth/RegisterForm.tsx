@@ -46,8 +46,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     setLoading(true);
     try {
       await onSubmit(data);
-      // toast.success('Registration successful!');
-      navigate('/login');
+      // Navigation is handled by the parent component
     } catch (error: any) {
       const errorMessage = error.message || 'Registration failed';
       toast.error(errorMessage);

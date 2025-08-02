@@ -219,3 +219,7 @@
 [2025-08-02 13:31:56] production.INFO: Sending verification email {"user_id":"ebc633d2-a7c7-40ee-adb2-f5fe8948439c","email":"jamiejack@gmail.com","verification_id":"9f89ca0f-ade9-4b7b-b73a-e98d2c53f4d5"} 
 [2025-08-02 13:32:59] production.INFO: Sending verification email {"user_id":"3748bb8e-b57b-42a0-89f3-6c520bcc3b58","email":"jamiejack@gmail.com","verification_id":"9f89ca8f-6f1d-4e6c-a495-c550281f8feb"} 
 [2025-08-02 13:33:01] production.INFO: Verification email sent successfully {"user_id":"3748bb8e-b57b-42a0-89f3-6c520bcc3b58","email":"jamiejack@gmail.com"} 
+[2025-08-02 13:42:01] production.INFO: Sending verification email {"user_id":"a9c904fb-5810-4b81-b6dc-f636b95d9545","email":"jamiejack@gmail.com","verification_id":"9f89cdcd-3153-4045-84d2-d627e53a0935"} 
+[2025-08-02 13:42:04] production.INFO: Verification email sent successfully {"user_id":"a9c904fb-5810-4b81-b6dc-f636b95d9545","email":"jamiejack@gmail.com"} 
+[2025-08-02 13:45:15] production.INFO: Sending verification email {"user_id":"08031d18-21a9-41e4-928a-500f1ad67dda","email":"jamiejack@gmail.com","verification_id":"9f89cef3-6e77-4788-a816-fd25ce32575e"} 
+[2025-08-02 13:45:17] production.INFO: Verification email sent successfully {"user_id":"08031d18-21a9-41e4-928a-500f1ad67dda","email":"jamiejack@gmail.com"} 

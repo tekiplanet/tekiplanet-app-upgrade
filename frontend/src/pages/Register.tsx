@@ -7,14 +7,15 @@ import { useAuthStore } from "@/store/useAuthStore";
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const requiresVerification = useAuthStore((state) => state.requiresVerification);
   const register = useAuthStore((state) => state.register);
 
-  // Redirect to dashboard if already authenticated
+  // Redirect to dashboard if already authenticated and verified
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !requiresVerification) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, requiresVerification, navigate]);
 
   const handleRegister = async (data: RegisterFormData) => {
     try {
@@ -45,8 +46,8 @@ const Register: React.FC = () => {
     }
   };
 
-  // Only render registration form if not authenticated
-  if (isAuthenticated) {
+  // Only render registration form if not authenticated or if requires verification
+  if (isAuthenticated && !requiresVerification) {
     return null; // Prevents flashing of registration form before redirect
   }
 
