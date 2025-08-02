@@ -46,7 +46,7 @@ class CurrencyController extends Controller
                         'name' => $request->name,
                         'symbol' => $request->symbol,
                         'rate' => $request->rate,
-                        'is_active' => $request->boolean('is_active', true),
+                        'is_active' => $request->boolean('is_active', true), // Use the form value or default to true
                         'decimal_places' => $request->decimal_places
                     ]);
 
@@ -160,6 +160,8 @@ class CurrencyController extends Controller
                 ]);
         }
 
+        // Soft delete and set is_active to false
+        $currency->update(['is_active' => false]);
         $currency->delete(); // This will soft delete (set deleted_at)
 
         return redirect()->route('admin.currencies.index')
