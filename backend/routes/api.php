@@ -52,6 +52,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\ProductRequestController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\DeviceTokenController;
+use App\Http\Controllers\OnboardingController;
 use App\Notifications\TestPushNotification;
 
 /*
@@ -73,6 +74,13 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email/verify', [AuthController::class, 'verifyEmail']);
     Route::post('/email/resend', [AuthController::class, 'resendVerification']);
+    
+    // Onboarding routes
+    Route::prefix('onboarding')->group(function () {
+        Route::get('/status', [OnboardingController::class, 'getOnboardingStatus']);
+        Route::post('/account-type', [OnboardingController::class, 'updateAccountType']);
+        Route::post('/profile', [OnboardingController::class, 'updateProfile']);
+    });
     
     // Add the email verification middleware to protected routes
     Route::middleware('verified.email')->group(function () {

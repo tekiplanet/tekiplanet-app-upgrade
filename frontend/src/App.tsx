@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '@/store/useAuthStore';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -124,9 +124,49 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
+const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
+  const [isChecking, setIsChecking] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const navigate = useNavigate();
+  const authStore = useAuthStore();
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const status = await authStore.checkOnboardingStatus();
+        if (!status.is_complete) {
+          setShouldRedirect(true);
+        }
+      } catch (error) {
+        console.error('Failed to check onboarding status:', error);
+        // If we can't check onboarding status, allow access to dashboard
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkOnboarding();
+  }, [authStore]);
+
+  useEffect(() => {
+    if (!isChecking && shouldRedirect) {
+      navigate('/onboarding');
+    }
+  }, [isChecking, shouldRedirect, navigate]);
+
+  if (isChecking) {
+    return <PagePreloader />;
+  }
+
+  if (shouldRedirect) {
+    return null; // Will redirect to onboarding
+  }
+
+  return <>{children}</>;
+};
+
 const AppContent = () => {
   const { isLoading } = useLoading();
-  const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
   return (
     <>
       {isLoading && <PagePreloader />}
@@ -135,7 +175,9 @@ const AppContent = () => {
           <Route 
             path="/onboarding" 
             element={
-              !hasSeenOnboarding ? <Onboarding /> : <Navigate to="/login" replace />
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
             } 
           />
           <Route path="/login" element={<Login />} />
@@ -155,7 +197,13 @@ const AppContent = () => {
             path="/two-factor-auth" 
             element={<TwoFactorAuth />} 
           />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <OnboardingGuard>
+                <Dashboard />
+              </OnboardingGuard>
+            </ProtectedRoute>
+          }>
             <Route index element={<DashboardHome />} />
             <Route path="store" element={<Store />} />
             <Route path="products" element={<Products />} />
@@ -234,11 +282,9 @@ const AppContent = () => {
           <Route 
             path="/" 
             element={
-              !hasSeenOnboarding ? (
-                <Navigate to="/onboarding" replace />
-              ) : (
+              <ProtectedRoute>
                 <Navigate to="/dashboard" replace />
-              )
+              </ProtectedRoute>
             } 
           />
           <Route path="/admin/login" element={<AdminLogin />} />

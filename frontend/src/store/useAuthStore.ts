@@ -58,6 +58,7 @@ type AuthState = {
   }) => Promise<any>;
   verifyEmail: (code: string) => Promise<any>;
   resendVerification: () => Promise<any>;
+  checkOnboardingStatus: () => Promise<{ is_complete: boolean; current_step: string }>;
 };
 
 const useAuthStore = create(
@@ -419,6 +420,16 @@ const useAuthStore = create(
           const response = await authService.resendVerification();
           return response;
         } catch (error) {
+          throw error;
+        }
+      },
+
+      checkOnboardingStatus: async () => {
+        try {
+          const response = await authService.checkOnboardingStatus();
+          return response;
+        } catch (error) {
+          console.error('Failed to check onboarding status:', error);
           throw error;
         }
       }

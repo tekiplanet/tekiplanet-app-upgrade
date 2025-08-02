@@ -297,4 +297,14 @@ export const authService = {
       throw error;
     }
   },
+
+  async checkOnboardingStatus() {
+    try {
+      const response = await apiClient.get('/onboarding/status');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to check onboarding status:', error);
+      throw error;
+    }
+  },
 };

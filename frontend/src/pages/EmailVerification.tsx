@@ -51,7 +51,23 @@ const EmailVerification = () => {
       await authStore.verifyEmail(code);
       await authStore.initialize();
       toast.success('Email verified successfully');
-      navigate('/dashboard');
+      
+      // Check onboarding status after email verification
+      try {
+        const status = await authStore.checkOnboardingStatus();
+        
+        if (!status.is_complete) {
+          // Redirect to onboarding if not complete
+          navigate('/onboarding');
+        } else {
+          // Redirect to dashboard if onboarding is complete
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Failed to check onboarding status:', error);
+        // Fallback to dashboard if onboarding check fails
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to verify email');
       setLoading(false);
