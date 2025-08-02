@@ -113,11 +113,30 @@ class OnboardingController extends Controller
     {
         $user = $request->user();
         
-        $validatedData = $request->validate([
-            'country_code' => 'required|string|size:3',
-            'country_name' => 'required|string|max:255',
-            'currency_code' => 'required|string|size:3'
+        // Log the incoming request data for debugging
+        Log::info('updateCountryCurrency request data', [
+            'request_data' => $request->all(),
+            'user_id' => $user->id
         ]);
+        
+        try {
+            $validatedData = $request->validate([
+                'country_code' => 'required|string|size:2',
+                'country_name' => 'required|string|max:255',
+                'currency_code' => 'required|string|size:3'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed in updateCountryCurrency', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         try {
             $user->country_code = strtoupper($validatedData['country_code']);

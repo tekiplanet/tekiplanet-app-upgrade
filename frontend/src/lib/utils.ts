@@ -6,17 +6,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Import the new currency helpers
+import { formatCurrencySync } from './currency';
+
 export const formatCurrency = (amount: number, currency: string = 'USD') => {
-  console.log('formatCurrency input:', { amount, currency });
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  } catch (error) {
-    console.error('Error formatting currency:', error);
-    return `${currency} ${amount}`;
-  }
+  return formatCurrencySync(amount, currency);
 };
 
 export const PLAN_HIERARCHY = {

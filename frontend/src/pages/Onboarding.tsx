@@ -6,12 +6,13 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { onboardingService, OnboardingStatus } from '@/services/onboardingService';
 import AccountTypeStep from '@/components/onboarding/AccountTypeStep';
 import ProfileStep from '@/components/onboarding/ProfileStep';
+import CountryCurrencyStep from '@/components/onboarding/CountryCurrencyStep';
 import { Loader2 } from 'lucide-react';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const { user, updateUser } = useAuthStore();
-  const [currentStep, setCurrentStep] = useState<'account_type' | 'profile' | 'complete'>('account_type');
+  const [currentStep, setCurrentStep] = useState<'account_type' | 'profile' | 'country_currency' | 'complete'>('account_type');
   const [loading, setLoading] = useState(true);
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus | null>(null);
 
@@ -67,6 +68,23 @@ const Onboarding: React.FC = () => {
       }
       
       toast.success('Profile updated successfully');
+      setCurrentStep('country_currency');
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+      toast.error(error.message || 'Failed to update profile');
+    }
+  };
+
+  const handleCountryCurrencyComplete = async (data: { country_code: string; country_name: string; currency_code: string }) => {
+    try {
+      const response = await onboardingService.updateCountryCurrency(data);
+      
+      // Update user in auth store
+      if (response.user) {
+        updateUser(response.user);
+      }
+      
+      toast.success('Location and currency preferences updated successfully');
       setCurrentStep('complete');
       
       // Redirect to dashboard after a short delay
@@ -74,8 +92,8 @@ const Onboarding: React.FC = () => {
         navigate('/dashboard', { replace: true });
       }, 1500);
     } catch (error: any) {
-      console.error('Failed to update profile:', error);
-      toast.error(error.message || 'Failed to update profile');
+      console.error('Failed to update country and currency:', error);
+      toast.error(error.message || 'Failed to update preferences');
     }
   };
 
@@ -97,17 +115,26 @@ const Onboarding: React.FC = () => {
         <div className="h-2 bg-muted/50 backdrop-blur-sm">
           <motion.div
             className="h-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 shadow-lg"
-            initial={{ width: currentStep === 'account_type' ? '50%' : currentStep === 'profile' ? '100%' : '100%' }}
-            animate={{ width: currentStep === 'account_type' ? '50%' : currentStep === 'profile' ? '100%' : '100%' }}
+            initial={{ 
+              width: currentStep === 'account_type' ? '33%' : 
+                     currentStep === 'profile' ? '66%' : 
+                     currentStep === 'country_currency' ? '100%' : '100%' 
+            }}
+            animate={{ 
+              width: currentStep === 'account_type' ? '33%' : 
+                     currentStep === 'profile' ? '66%' : 
+                     currentStep === 'country_currency' ? '100%' : '100%' 
+            }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           />
         </div>
       </div>
 
-      {/* Enhanced Step Indicator */}
+      {/* Enhanced Step Indicator - Mobile Responsive */}
       <div className="pt-12 pb-6 px-4">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between">
+        <div className="max-w-2xl mx-auto">
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between">
             <motion.div 
               className={`flex items-center transition-all duration-300 ${
                 currentStep === 'account_type' ? 'text-primary scale-110' : 'text-muted-foreground'
@@ -124,7 +151,7 @@ const Onboarding: React.FC = () => {
               <span className="ml-3 text-sm font-semibold">Account Type</span>
             </motion.div>
             
-            <div className="flex-1 h-px bg-gradient-to-r from-muted via-muted-foreground/30 to-muted mx-6" />
+            <div className="flex-1 h-px bg-gradient-to-r from-muted via-muted-foreground/30 to-muted mx-4" />
             
             <motion.div 
               className={`flex items-center transition-all duration-300 ${
@@ -141,6 +168,95 @@ const Onboarding: React.FC = () => {
               </div>
               <span className="ml-3 text-sm font-semibold">Profile</span>
             </motion.div>
+
+            <div className="flex-1 h-px bg-gradient-to-r from-muted via-muted-foreground/30 to-muted mx-4" />
+            
+            <motion.div 
+              className={`flex items-center transition-all duration-300 ${
+                currentStep === 'country_currency' ? 'text-primary scale-110' : 'text-muted-foreground'
+              }`}
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                currentStep === 'country_currency' 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30' 
+                  : 'bg-muted text-muted-foreground'
+              }`}>
+                3
+              </div>
+              <span className="ml-3 text-sm font-semibold">Location</span>
+            </motion.div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden">
+            <div className="flex items-center justify-between mb-4">
+              <motion.div 
+                className={`flex flex-col items-center transition-all duration-300 ${
+                  currentStep === 'account_type' ? 'text-primary scale-110' : 'text-muted-foreground'
+                }`}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                  currentStep === 'account_type' 
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30' 
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  1
+                </div>
+                <span className="mt-1 text-xs font-medium text-center">Account</span>
+              </motion.div>
+              
+              <div className="flex-1 h-px bg-gradient-to-r from-muted via-muted-foreground/30 to-muted mx-2" />
+              
+              <motion.div 
+                className={`flex flex-col items-center transition-all duration-300 ${
+                  currentStep === 'profile' ? 'text-primary scale-110' : 'text-muted-foreground'
+                }`}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                  currentStep === 'profile' 
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30' 
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  2
+                </div>
+                <span className="mt-1 text-xs font-medium text-center">Profile</span>
+              </motion.div>
+
+              <div className="flex-1 h-px bg-gradient-to-r from-muted via-muted-foreground/30 to-muted mx-2" />
+              
+              <motion.div 
+                className={`flex flex-col items-center transition-all duration-300 ${
+                  currentStep === 'country_currency' ? 'text-primary scale-110' : 'text-muted-foreground'
+                }`}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                  currentStep === 'country_currency' 
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30' 
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  3
+                </div>
+                <span className="mt-1 text-xs font-medium text-center">Location</span>
+              </motion.div>
+            </div>
+            
+            {/* Mobile Step Title */}
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-foreground">
+                {currentStep === 'account_type' && 'Select Account Type'}
+                {currentStep === 'profile' && 'Complete Your Profile'}
+                {currentStep === 'country_currency' && 'Choose Location & Currency'}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {currentStep === 'account_type' && 'Tell us how you plan to use our platform'}
+                {currentStep === 'profile' && 'Add your personal information'}
+                {currentStep === 'country_currency' && 'Set your location and preferred currency'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -169,6 +285,18 @@ const Onboarding: React.FC = () => {
               transition={{ duration: 0.4, ease: "easeInOut" }}
             >
               <ProfileStep onComplete={handleProfileComplete} />
+            </motion.div>
+          )}
+          
+          {currentStep === 'country_currency' && (
+            <motion.div
+              key="country-currency"
+              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+            >
+              <CountryCurrencyStep onComplete={handleCountryCurrencyComplete} />
             </motion.div>
           )}
         </AnimatePresence>
