@@ -91,7 +91,7 @@ class OnboardingController extends Controller
                 'success' => true,
                 'message' => 'Profile updated successfully',
                 'user' => $user->fresh(),
-                'onboarding_complete' => true
+                'next_step' => 'country_currency'
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to update profile during onboarding', [
@@ -107,15 +107,60 @@ class OnboardingController extends Controller
     }
 
     /**
+     * Step 3: Update country and currency preferences
+     */
+    public function updateCountryCurrency(Request $request)
+    {
+        $user = $request->user();
+        
+        $validatedData = $request->validate([
+            'country_code' => 'required|string|size:3',
+            'country_name' => 'required|string|max:255',
+            'currency_code' => 'required|string|size:3'
+        ]);
+
+        try {
+            $user->country_code = strtoupper($validatedData['country_code']);
+            $user->country_name = $validatedData['country_name'];
+            $user->currency_code = strtoupper($validatedData['currency_code']);
+            $user->save();
+
+            Log::info('Country and currency updated during onboarding', [
+                'user_id' => $user->id,
+                'country_code' => $validatedData['country_code'],
+                'country_name' => $validatedData['country_name'],
+                'currency_code' => $validatedData['currency_code']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Country and currency preferences updated successfully',
+                'user' => $user->fresh(),
+                'onboarding_complete' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to update country and currency during onboarding', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update country and currency preferences'
+            ], 500);
+        }
+    }
+
+    /**
      * Get onboarding status
      */
     public function getOnboardingStatus(Request $request)
     {
         $user = $request->user();
         
-        // Onboarding is complete if user has first/last name (regardless of account type)
+        // Onboarding is complete if user has first/last name and country/currency (regardless of account type)
         // Once onboarding is complete, user should never need to go through it again
-        $isComplete = !empty($user->first_name) && !empty($user->last_name);
+        $isComplete = !empty($user->first_name) && !empty($user->last_name) && !empty($user->country_code) && !empty($user->currency_code);
 
         return response()->json([
             'is_complete' => $isComplete,
@@ -129,8 +174,8 @@ class OnboardingController extends Controller
      */
     private function getCurrentStep(User $user)
     {
-        // If user has completed onboarding (has first_name and last_name), they're done
-        if (!empty($user->first_name) && !empty($user->last_name)) {
+        // If user has completed onboarding (has first_name, last_name, country_code, and currency_code), they're done
+        if (!empty($user->first_name) && !empty($user->last_name) && !empty($user->country_code) && !empty($user->currency_code)) {
             return 'complete';
         }
         
@@ -144,7 +189,12 @@ class OnboardingController extends Controller
             return 'profile';
         }
         
-        // Step 3: Complete
+        // Step 3: Select country and currency (if profile complete but missing country/currency)
+        if (empty($user->country_code) || empty($user->currency_code)) {
+            return 'country_currency';
+        }
+        
+        // Step 4: Complete
         return 'complete';
     }
 } 

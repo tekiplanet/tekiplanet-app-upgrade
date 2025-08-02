@@ -76,11 +76,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email/resend', [AuthController::class, 'resendVerification']);
     
     // Onboarding routes
-    Route::prefix('onboarding')->group(function () {
-        Route::get('/status', [OnboardingController::class, 'getOnboardingStatus']);
-        Route::post('/account-type', [OnboardingController::class, 'updateAccountType']);
-        Route::post('/profile', [OnboardingController::class, 'updateProfile']);
-    });
+Route::prefix('onboarding')->group(function () {
+Route::get('/status', [OnboardingController::class, 'getOnboardingStatus']);
+Route::post('/account-type', [OnboardingController::class, 'updateAccountType']);
+Route::post('/profile', [OnboardingController::class, 'updateProfile']);
+Route::post('/country-currency', [OnboardingController::class, 'updateCountryCurrency']);
+});
     
     // Add the email verification middleware to protected routes
     Route::middleware('verified.email')->group(function () {
@@ -546,3 +547,12 @@ Route::middleware('auth:sanctum')->post('/test-push-notification', function (Req
         ], 500);
     }
 });
+
+// Currency routes
+Route::post('/currency/convert', [App\Http\Controllers\Api\CurrencyController::class, 'convert']);
+Route::get('/currencies', [App\Http\Controllers\Api\CurrencyController::class, 'index']);
+Route::get('/currency/format', [App\Http\Controllers\Api\CurrencyController::class, 'format']);
+
+// Onboarding data routes
+Route::get('/onboarding/countries', [App\Http\Controllers\Api\OnboardingController::class, 'getCountries']);
+Route::get('/onboarding/currencies', [App\Http\Controllers\Api\OnboardingController::class, 'getCurrencies']);

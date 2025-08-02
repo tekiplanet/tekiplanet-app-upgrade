@@ -42,6 +42,9 @@ class User extends Authenticatable
         'profile_visibility',
         'timezone',
         'language',
+        'country_code',
+        'country_name',
+        'currency_code',
         'two_factor_enabled',
         'two_factor_secret',
         'two_factor_recovery_codes'
