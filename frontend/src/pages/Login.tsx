@@ -52,7 +52,10 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background relative flex items-center justify-center p-4">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-background" />
+      
       <LoginForm onSubmit={handleLogin} />
     </div>
   );
