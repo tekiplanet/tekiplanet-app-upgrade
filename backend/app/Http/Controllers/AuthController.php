@@ -29,8 +29,8 @@ class AuthController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            // Set default account type as student, can be changed later
-            'account_type' => 'student',
+            // Don't set default account type - user must complete onboarding
+            // 'account_type' => 'student',
         ]);
 
         // Create and send verification code

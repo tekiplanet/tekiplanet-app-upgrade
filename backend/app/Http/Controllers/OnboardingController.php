@@ -134,8 +134,8 @@ class OnboardingController extends Controller
             return 'complete';
         }
         
-        // Step 1: Select account type (if still default 'student' and no name)
-        if ($user->account_type === 'student') {
+        // Step 1: Select account type (if account_type is null or empty)
+        if (empty($user->account_type)) {
             return 'account_type';
         }
         
