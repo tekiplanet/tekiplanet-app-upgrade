@@ -113,11 +113,9 @@ class OnboardingController extends Controller
     {
         $user = $request->user();
         
-        // Onboarding is complete if user has selected account type AND has first/last name
-        $isComplete = !empty($user->account_type) && 
-                     $user->account_type !== 'student' &&
-                     !empty($user->first_name) && 
-                     !empty($user->last_name);
+        // Onboarding is complete if user has first/last name (regardless of account type)
+        // Once onboarding is complete, user should never need to go through it again
+        $isComplete = !empty($user->first_name) && !empty($user->last_name);
 
         return response()->json([
             'is_complete' => $isComplete,
@@ -131,7 +129,12 @@ class OnboardingController extends Controller
      */
     private function getCurrentStep(User $user)
     {
-        // Step 1: Select account type (if still default 'student')
+        // If user has completed onboarding (has first_name and last_name), they're done
+        if (!empty($user->first_name) && !empty($user->last_name)) {
+            return 'complete';
+        }
+        
+        // Step 1: Select account type (if still default 'student' and no name)
         if ($user->account_type === 'student') {
             return 'account_type';
         }

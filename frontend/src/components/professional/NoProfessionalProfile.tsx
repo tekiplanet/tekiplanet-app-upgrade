@@ -23,7 +23,7 @@ const NoProfessionalProfile = () => {
               Complete Your Professional Profile
             </CardTitle>
             <p className="text-muted-foreground text-lg">
-              You need to set up your professional profile to access the dashboard features.
+              You need to set up your professional profile to access the professional features.
             </p>
           </CardHeader>
           <CardContent className="space-y-6">

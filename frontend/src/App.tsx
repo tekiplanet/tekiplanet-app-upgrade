@@ -129,16 +129,23 @@ const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const navigate = useNavigate();
   const authStore = useAuthStore();
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
+        console.log('🔍 OnboardingGuard: Checking onboarding status...');
         const status = await authStore.checkOnboardingStatus();
+        console.log('🔍 OnboardingGuard: Status received:', status);
+        
         if (!status.is_complete) {
+          console.log('🔍 OnboardingGuard: Onboarding incomplete, redirecting to onboarding');
           setShouldRedirect(true);
+        } else {
+          console.log('🔍 OnboardingGuard: Onboarding complete, allowing dashboard access');
         }
       } catch (error) {
-        console.error('Failed to check onboarding status:', error);
+        console.error('🔍 OnboardingGuard: Failed to check onboarding status:', error);
         // If we can't check onboarding status, allow access to dashboard
       } finally {
         setIsChecking(false);
@@ -146,10 +153,11 @@ const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
     };
 
     checkOnboarding();
-  }, [authStore]);
+  }, [authStore, user]); // Added user as dependency
 
   useEffect(() => {
     if (!isChecking && shouldRedirect) {
+      console.log('🔍 OnboardingGuard: Redirecting to onboarding...');
       navigate('/onboarding');
     }
   }, [isChecking, shouldRedirect, navigate]);

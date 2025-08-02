@@ -23,7 +23,7 @@ const NoBusinessProfile = () => {
               Complete Your Business Profile
             </CardTitle>
             <p className="text-muted-foreground text-lg">
-              You need to set up your business profile to access the dashboard features.
+              You need to set up your business profile to access the business features.
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
