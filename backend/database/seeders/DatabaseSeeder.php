@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
             HustleSeeder::class,
             HustlePaymentSeeder::class,
             CourseCategorySeeder::class,
+            CurrencySeeder::class,
         ]);
     }
 }

@@ -37,6 +37,8 @@ use App\Http\Controllers\Admin\ProjectFileController;
 use App\Http\Controllers\Admin\ProjectInvoiceController;
 use App\Http\Controllers\Admin\ProductRequestController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\CurrencyController;
+use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
@@ -352,6 +354,28 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::patch('/{coupon}', [CouponController::class, 'update'])->name('update');
             Route::delete('/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
             Route::patch('/{coupon}/toggle', [CouponController::class, 'toggle'])->name('toggle');
+        });
+
+        // Settings Management - accessible by super admin and admin
+        Route::middleware('admin.roles:super_admin,admin')->group(function () {
+            Route::prefix('settings')->name('settings.')->group(function () {
+                Route::get('/', [SettingsController::class, 'index'])->name('index');
+                Route::put('/', [SettingsController::class, 'update'])->name('update');
+            });
+        });
+
+        // Currency Management - accessible by super admin and admin
+        Route::middleware('admin.roles:super_admin,admin')->group(function () {
+            Route::prefix('currencies')->name('currencies.')->group(function () {
+                Route::get('/', [CurrencyController::class, 'index'])->name('index');
+                Route::get('/create', [CurrencyController::class, 'create'])->name('create');
+                Route::post('/', [CurrencyController::class, 'store'])->name('store');
+                Route::get('/{currency}/edit', [CurrencyController::class, 'edit'])->name('edit');
+                Route::put('/{currency}', [CurrencyController::class, 'update'])->name('update');
+                Route::delete('/{currency}', [CurrencyController::class, 'destroy'])->name('destroy');
+                Route::patch('/{currency}/toggle-status', [CurrencyController::class, 'toggleStatus'])->name('toggle-status');
+                Route::post('/update-positions', [CurrencyController::class, 'updatePositions'])->name('update-positions');
+            });
         });
     });
 }); 
