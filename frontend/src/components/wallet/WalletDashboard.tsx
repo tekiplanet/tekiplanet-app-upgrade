@@ -3,7 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useCurrencyFormat, formatAmountSync, formatAmountInUserCurrencySync, formatAmountInUserCurrency, testCurrencyConversion, testCurrencySymbol } from "@/lib/currency";
+import { 
+  useCurrencyFormat, 
+  formatAmountSync, 
+  formatAmountInUserCurrencySync, 
+  formatAmountInUserCurrency, 
+  testCurrencyConversion, 
+  testCurrencySymbol,
+  getCurrencySymbol
+} from "@/lib/currency";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useWalletStore } from "@/store/useWalletStore";
@@ -93,35 +101,27 @@ const transactionService = {
   }
 };
 
-// Currency display component that handles conversion properly
-const CurrencyDisplay = ({ amount, userCurrencyCode }: { amount: number, userCurrencyCode?: string }) => {
-  const [formattedAmount, setFormattedAmount] = useState<string>('0');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const formatAmount = async () => {
-      try {
-        setIsLoading(true);
-        const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
-        setFormattedAmount(formatted);
-      } catch (error) {
-        console.error('Error formatting currency:', error);
-        // Fallback to sync version with default symbol
-        setFormattedAmount(formatAmountInUserCurrencySync(amount, userCurrencyCode));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    formatAmount();
-  }, [amount, userCurrencyCode]);
-
-  if (isLoading) {
-    return <span className="text-sm md:text-2xl font-bold truncate mt-1">...</span>;
-  }
-
+// Currency display component that formats amounts with user's currency symbol (no conversion)
+const CurrencyDisplay = ({ 
+  amount, 
+  userCurrencyCode,
+  currencySymbol 
+}: { 
+  amount: number, 
+  userCurrencyCode?: string,
+  currencySymbol?: string 
+}) => {
+  // Use synchronous formatting with the provided currency symbol
+  const formattedAmount = formatAmountInUserCurrencySync(
+    amount, 
+    userCurrencyCode, 
+    currencySymbol
+  );
+  
   return <span className="text-sm md:text-2xl font-bold truncate mt-1">{formattedAmount}</span>;
 };
+
+
 
 // Type definition for transactions
 type Transaction = {
@@ -142,23 +142,23 @@ type StatementExportParams = {
 
 // Explicit DateRange type
 type DateRange = {
-  from?: Date;
-  to?: Date;
-};
+  from: Date;
+  to: Date;
+} | null;
 
 // Custom Date Range Picker Component
 const DateRangePicker = ({ 
   value, 
   onChange 
 }: { 
-  value: { from?: Date; to?: Date }, 
-  onChange: (range: { from?: Date; to?: Date }) => void 
+  value: DateRange, 
+  onChange: (range: DateRange) => void 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelect = (range: { from?: Date; to?: Date }) => {
+  const handleSelect = (range: DateRange) => {
     // If a full range is selected, close the picker
-    if (range.from && range.to) {
+    if (range?.from && range?.to) {
       setIsOpen(false);
     }
     onChange(range);
@@ -244,8 +244,50 @@ export default function WalletDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
+  
   // Currency formatting hooks
   const { formattedAmount: formattedBalance, isLoading: balanceLoading } = useCurrencyFormat(user?.wallet_balance || 0, user?.currency_code);
+  
+  // Fetch user's currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
   
   // Test currency APIs on component mount
   useEffect(() => {
@@ -270,7 +312,7 @@ export default function WalletDashboard() {
   const [visibleTransactions, setVisibleTransactions] = useState(10);
 
   // New state for statement export with explicit typing
-  const [dateRange, setDateRange] = useState<DateRange>({
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: undefined,
     to: undefined
   });
@@ -282,7 +324,11 @@ export default function WalletDashboard() {
   // Add settings query
   const { data: settings } = useQuery({
     queryKey: ['settings'],
-    queryFn: settingsService.fetchSettings
+    queryFn: settingsService.fetchSettings,
+    retry: 2, // Retry up to 2 times
+    retryDelay: 1000, // Wait 1 second between retries
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   // Fetch transactions on component mount
@@ -452,16 +498,31 @@ export default function WalletDashboard() {
 
   // Status label component
   const StatusLabel = ({ status }: { status: string }) => {
-    const statusStyles = {
-      'completed': 'bg-green-100 text-green-800',
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'cancelled': 'bg-red-100 text-red-800'
+    const statusConfig = {
+      'completed': {
+        className: 'bg-green-50 text-green-700 dark:bg-green-500/20 dark:text-green-400 border-green-200 dark:border-green-500/30',
+        icon: '✓'
+      },
+      'pending': {
+        className: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30',
+        icon: '⏳'
+      },
+      'cancelled': {
+        className: 'bg-red-50 text-red-700 dark:bg-red-500/20 dark:text-red-400 border-red-200 dark:border-red-500/30',
+        icon: '✕'
+      }
+    };
+
+    const config = statusConfig[status] || {
+      className: 'bg-gray-50 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400 border-gray-200 dark:border-gray-500/30',
+      icon: '?'
     };
 
     return (
       <span 
-        className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}
+        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${config.className}`}
       >
+        <span className="mr-1 text-[10px]">{config.icon}</span>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -558,6 +619,7 @@ export default function WalletDashboard() {
                     })
                     .reduce((acc, t) => acc + parseFloat(t.amount), 0)} 
                   userCurrencyCode={user?.currency_code}
+                  currencySymbol={currencySymbol}
                 />
               </div>
             </div>
@@ -582,6 +644,7 @@ export default function WalletDashboard() {
                     .filter(t => t.type === 'credit' && t.status === 'completed')
                     .reduce((acc, t) => acc + parseFloat(t.amount), 0)} 
                   userCurrencyCode={user?.currency_code}
+                  currencySymbol={currencySymbol}
                 />
               </div>
             </div>
@@ -663,100 +726,119 @@ export default function WalletDashboard() {
             </CardContent>
           </Card>
 
-          {/* Transactions Section */}
+          {/* Recent Transactions Preview */}
           <Card className="border-none shadow-lg rounded-2xl">
             <CardHeader className="pb-2">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
                 <CardTitle className="text-lg md:text-2xl font-bold text-foreground">
-                  Transaction History
+                  Recent Transactions
                 </CardTitle>
-                <div className="flex items-center space-x-2 w-full md:w-auto">
-                  <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input 
-                      placeholder="Search transactions" 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-full bg-secondary/50 border-none rounded-full"
-                    />
-                  </div>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-[120px] bg-secondary/50 border-none rounded-full">
-                      <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <SelectValue placeholder="Filter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Transactions</SelectItem>
-                      <SelectItem value="credit">Credits</SelectItem>
-                      <SelectItem value="debit">Debits</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/dashboard/transactions')}
+                  className="text-sm"
+                >
+                  View All
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               {filteredTransactions.length > 0 ? (
-                <div className="divide-y divide-border/50">
-                  {displayedTransactions.map((transaction) => (
+                <div className="space-y-0">
+                  {displayedTransactions.slice(0, 5).map((transaction) => (
                     <div 
                       key={transaction.id} 
-                      className="flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors group cursor-pointer relative overflow-hidden"
+                      className="group relative overflow-hidden transition-all duration-200 hover:bg-secondary/20 active:bg-secondary/30"
                       onClick={() => navigate(`/dashboard/wallet/transactions/${transaction.id}`)}
                     >
-                      {/* Background decoration for transaction type */}
-                      <div className={`
-                        absolute inset-y-0 left-0 w-1
-                        ${transaction.type === 'credit' 
-                          ? 'bg-green-500/20' 
-                          : 'bg-red-500/20'}
-                      `} />
-                      
-                      <div className="flex items-center space-x-4">
-                        <div className={`
-                          w-10 h-10 rounded-full flex items-center justify-center
-                          ${transaction.type === 'credit' 
-                            ? 'bg-green-100 text-green-600 dark:bg-green-500/20' 
-                            : 'bg-red-100 text-red-600 dark:bg-red-500/20'}
-                        `}>
-                          {transaction.type === 'credit' ? (
-                            <ArrowDownRight className="w-5 h-5" />
-                          ) : (
-                            <ArrowUpRight className="w-5 h-5" />
-                          )}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-medium text-sm text-foreground line-clamp-1">
-                            {transaction.description}
-                          </p>
-                          <div className="flex flex-col space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(transaction.created_at).toLocaleString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
+                      {/* Compact transaction design */}
+                      <div className="p-4 cursor-pointer">
+                        {/* Top row: Icon, Amount, Status */}
+                        <div className="flex items-start justify-between mb-3">
+                          {/* Left: Icon and Type */}
+                          <div className="flex items-center space-x-3">
+                            <div className={`
+                              relative w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                              ${transaction.type === 'credit' 
+                                ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400' 
+                                : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400'}
+                            `}>
+                              {transaction.type === 'credit' ? (
+                                <ArrowDownRight className="w-4 h-4" />
+                              ) : (
+                                <ArrowUpRight className="w-4 h-4" />
+                              )}
+                              {/* Status indicator */}
+                              <div className={`
+                                absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-white dark:border-gray-900
+                                ${transaction.status === 'completed' ? 'bg-green-500' : 
+                                  transaction.status === 'pending' ? 'bg-yellow-500' : 'bg-red-500'}
+                              `} />
+                            </div>
+                            
+                            {/* Transaction type label */}
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                {transaction.type === 'credit' ? 'Received' : 'Sent'}
+                              </span>
                               <StatusLabel status={transaction.status} />
                             </div>
                           </div>
+                          
+                          {/* Right: Amount */}
+                          <div className="text-right">
+                            <div className={`
+                              text-lg font-bold
+                              ${transaction.type === 'credit' 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'}
+                            `}>
+                              {transaction.type === 'credit' ? '+' : '-'}
+                              <CurrencyDisplay 
+                                amount={parseFloat(transaction.amount)} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Description - Full width */}
+                        <div className="mb-3">
+                          <p className="text-sm font-medium text-foreground leading-relaxed break-words">
+                            {transaction.description}
+                          </p>
+                        </div>
+                        
+                        {/* Bottom row: Date and Time */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                            <CalendarIcon className="w-3 h-3" />
+                            <span>
+                              {new Date(transaction.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="hidden sm:inline">
+                              {new Date(transaction.created_at).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          
+                          {/* Transaction ID (truncated) */}
+                          <div className="text-xs text-muted-foreground font-mono">
+                            #{transaction.id.slice(-8)}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`
-                          text-sm font-semibold
-                          ${transaction.type === 'credit' 
-                            ? 'text-green-600 dark:text-green-500' 
-                            : 'text-red-600 dark:text-red-500'}
-                        `}>
-                          {transaction.type === 'credit' ? '+' : '-'}
-                          <CurrencyDisplay 
-                            amount={parseFloat(transaction.amount)} 
-                            userCurrencyCode={user?.currency_code}
-                          />
-                        </p>
-                      </div>
+                      
+                      {/* Subtle divider */}
+                      <div className="absolute bottom-0 left-4 right-4 h-px bg-border/30" />
                     </div>
                   ))}
                 </div>
@@ -776,17 +858,15 @@ export default function WalletDashboard() {
                 </div>
               )}
               
-              {/* Load More/View Less Button */}
-              {filteredTransactions.length > 10 && (
-                <div className="p-4">
+              {/* View All Button */}
+              {filteredTransactions.length > 5 && (
+                <div className="p-4 border-t border-border/50">
                   <Button 
                     variant="outline" 
-                    onClick={toggleTransactionsVisibility}
-                    className="w-full rounded-full text-sm"
+                    onClick={() => navigate('/dashboard/transactions')}
+                    className="w-full rounded-full text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
                   >
-                    {visibleTransactions === 10 
-                      ? `View All (${filteredTransactions.length})` 
-                      : 'View Less'}
+                    View All Transactions
                   </Button>
                 </div>
               )}
@@ -1066,7 +1146,7 @@ export const FundWalletModal = ({
                   amount === quickAmount.toString() && "bg-primary text-primary-foreground"
                 )}
               >
-                {formatAmountSync(quickAmount, user?.currency_code, settings?.currency_symbol)}
+                {formatAmountSync(quickAmount, user?.currency_code, { currencySymbol: settings?.currency_symbol })}
               </Button>
             ))}
           </div>

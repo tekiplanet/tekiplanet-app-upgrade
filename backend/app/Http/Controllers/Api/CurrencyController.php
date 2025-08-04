@@ -34,26 +34,11 @@ class CurrencyController extends Controller
             $fromCurrency = strtoupper($request->from_currency);
             $toCurrency = strtoupper($request->to_currency);
 
-            // Add debugging
-            \Log::info('Currency conversion request', [
-                'amount' => $amount,
-                'from_currency' => $fromCurrency,
-                'to_currency' => $toCurrency
-            ]);
-
             $convertedAmount = $this->currencyService->convertAmount(
                 $amount,
                 $fromCurrency,
                 $toCurrency
             );
-
-            // Add debugging
-            \Log::info('Currency conversion result', [
-                'original_amount' => $amount,
-                'from_currency' => $fromCurrency,
-                'to_currency' => $toCurrency,
-                'converted_amount' => $convertedAmount
-            ]);
 
             return response()->json([
                 'success' => true,
@@ -69,6 +54,57 @@ class CurrencyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Currency conversion failed',
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Batch convert multiple amounts from one currency to another
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function batchConvert(Request $request): JsonResponse
+    {
+        $request->validate([
+            'amounts' => 'required|array|min:1',
+            'amounts.*' => 'required|numeric|min:0',
+            'from_currency' => 'required|string|size:3',
+            'to_currency' => 'required|string|size:3',
+        ]);
+
+        try {
+            $amounts = $request->amounts;
+            $fromCurrency = strtoupper($request->from_currency);
+            $toCurrency = strtoupper($request->to_currency);
+
+            $results = [];
+            foreach ($amounts as $index => $amount) {
+                $convertedAmount = $this->currencyService->convertAmount(
+                    (float) $amount,
+                    $fromCurrency,
+                    $toCurrency
+                );
+                
+                $results[] = [
+                    'original_amount' => (float) $amount,
+                    'converted_amount' => $convertedAmount,
+                    'formatted_amount' => $this->currencyService->formatCurrency($convertedAmount, $toCurrency)
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'from_currency' => $fromCurrency,
+                    'to_currency' => $toCurrency,
+                    'conversions' => $results
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Batch currency conversion failed',
                 'error' => $e->getMessage()
             ], 400);
         }

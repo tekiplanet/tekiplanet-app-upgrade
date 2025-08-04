@@ -14,6 +14,15 @@ export interface Transaction {
   updated_at: string;
 }
 
+export interface TransactionStats {
+  total_transactions: number;
+  this_month: number;
+  total_received: number;
+  total_spent: number;
+  this_month_received: number;
+  this_month_spent: number;
+}
+
 export const transactionService = {
   async getUserTransactions() {
     const response = await api.get<Transaction[]>('/transactions');
@@ -22,6 +31,11 @@ export const transactionService = {
 
   async getTransaction(id: string) {
     const response = await api.get<Transaction>(`/transactions/${id}`);
+    return response.data;
+  },
+
+  async getTransactionStats() {
+    const response = await api.get<{ success: boolean; data: TransactionStats }>('/transactions/stats');
     return response.data;
   }
 }; 

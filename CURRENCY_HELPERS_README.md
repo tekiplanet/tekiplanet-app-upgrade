@@ -5,20 +5,23 @@ This document outlines the comprehensive currency formatting, conversion, and us
 ## 🎯 Current Implementation Status
 
 ### ✅ **Completed Features:**
-- [x] Backend currency service with formatting and conversion
+- [x] Backend currency service with formatting and symbol management
 - [x] Frontend currency helpers (async and sync)
 - [x] User currency selection during onboarding
 - [x] Database structure for user currency preferences
 - [x] Mobile-responsive onboarding flow
 - [x] ISO3166 country integration
 - [x] API endpoints for currency operations
+- [x] Currency symbol caching for performance
+- [x] **User-specific currency symbol display** ← **NEW**
+- [x] **Efficient currency symbol fetching** ← **NEW**
 
 ### 🔄 **Pending Implementation:**
-- [ ] Exchange rate API integration
-- [ ] Currency display throughout the application
+- [ ] Exchange rate API integration for actual conversions
+- [ ] Currency conversion for payments and purchases
 - [ ] Admin currency management interface
 - [ ] Real-time rate updates
-- [ ] Currency conversion in transactions/payments
+- [ ] Advanced currency conversion features
 
 ---
 
@@ -27,19 +30,19 @@ This document outlines the comprehensive currency formatting, conversion, and us
 ### Frontend Usage
 
 ```typescript
-import { formatAmount, convertAmount, formatCurrency } from '@/lib/currency';
+import { formatAmount, formatAmountInUserCurrency, getCurrencySymbol } from '@/lib/currency';
 
-// Format amount in user's currency
-const formatted = await formatAmount(1000, 'USD');
-// Result: "$1,000.00"
+// Format amount with user's currency symbol (no conversion)
+const formatted = await formatAmountInUserCurrency(1000, 'GBP');
+// Result: "£1,000.00"
 
-// Convert amount between currencies
-const converted = await convertAmount(1000, 'USD', 'EUR');
-// Result: 850.00 (example rate)
+// Get currency symbol
+const symbol = await getCurrencySymbol('USD');
+// Result: "$"
 
 // Quick currency formatting
-const display = await formatCurrency(1000, 'USD');
-// Result: "$1,000.00"
+const display = await formatAmount(1000, 'EUR');
+// Result: "€1,000.00"
 ```
 
 ### Backend Usage
@@ -53,10 +56,13 @@ class YourController extends Controller
     
     public function example()
     {
-        // Format amount in user's currency
+        // Format amount with currency symbol
         $formatted = $this->formatAmount(1000, 'USD');
         
-        // Convert between currencies
+        // Get currency symbol
+        $symbol = $this->getCurrencySymbol('GBP');
+        
+        // Convert between currencies (for payments/purchases)
         $converted = $this->convertAmount(1000, 'USD', 'EUR');
     }
 }
@@ -85,8 +91,53 @@ frontend/
 │   ├── services/onboardingService.ts         # Onboarding API calls
 │   ├── components/onboarding/
 │   │   └── CountryCurrencyStep.tsx          # Currency selection UI
-│   └── pages/Onboarding.tsx                 # Mobile-responsive flow
+│   ├── components/wallet/
+│   │   ├── WalletDashboard.tsx              # Main wallet dashboard
+│   │   └── TransactionHistory.tsx           # Transaction history component
+│   └── pages/
+│       ├── Onboarding.tsx                   # Mobile-responsive flow
+│       └── TransactionHistory.tsx           # Dedicated transaction page
 ```
+
+---
+
+## 🎯 Current Approach
+
+### Display Strategy
+Our currency system uses a **symbol-based display approach** where:
+- Amounts are displayed with the user's preferred currency symbol
+- No conversion is performed for display purposes
+- Users see consistent values regardless of exchange rate fluctuations
+- Conversion is only used when actual currency exchange is needed (payments, purchases)
+
+### User-Specific Currency Implementation
+**NEW:** We now fetch and display the user's specific currency symbol instead of using general site settings:
+
+```typescript
+// ✅ CORRECT: User-specific currency symbol
+const CurrencyDisplay = ({ amount, userCurrencyCode, currencySymbol }) => {
+  const formattedAmount = formatAmountInUserCurrencySync(
+    amount, 
+    userCurrencyCode, 
+    currencySymbol // User's actual currency symbol
+  );
+  return <span>{formattedAmount}</span>;
+};
+
+// ❌ WRONG: Using general site settings
+const formattedAmount = formatAmountInUserCurrencySync(
+  amount, 
+  userCurrencyCode, 
+  settings?.currency_symbol // General site currency, not user's
+);
+```
+
+### Benefits
+- **Consistent User Experience**: Amounts don't change unexpectedly
+- **Performance**: No conversion API calls for display
+- **Simplicity**: Clear and predictable behavior
+- **Flexibility**: Easy to implement conversion when needed
+- **User-Specific**: Each user sees their own currency symbol
 
 ---
 
@@ -94,7 +145,7 @@ frontend/
 
 ### CurrencyService
 
-The core service providing currency formatting and conversion:
+The core service providing currency formatting, symbol management, and conversion capabilities:
 
 ```php
 use App\Services\CurrencyService;
@@ -136,10 +187,18 @@ class YourModel extends Model
 ### API Endpoints
 
 ```bash
-# Currency conversion
+# Currency conversion (for payments/purchases)
 POST /api/currency/convert
 {
     "amount": 1000,
+    "from_currency": "USD",
+    "to_currency": "EUR"
+}
+
+# Batch currency conversion
+POST /api/currency/batch-convert
+{
+    "amounts": [1000, 2000, 3000],
     "from_currency": "USD",
     "to_currency": "EUR"
 }
@@ -150,6 +209,9 @@ POST /api/currency/format
     "amount": 1000,
     "currency_code": "USD"
 }
+
+# Get currency symbol - USER SPECIFIC
+GET /api/currency/{userCurrencyCode}/symbol
 
 # Get all active currencies
 GET /api/currencies
@@ -167,19 +229,20 @@ GET /api/currencies/USD
 ```typescript
 import { 
     formatAmount, 
-    formatCurrency, 
+    formatAmountInUserCurrency,
+    formatAmountInUserCurrencySync,
     convertAmount,
     getCurrencySymbol 
 } from '@/lib/currency';
 
-// Async formatting (recommended)
-const formatted = await formatAmount(1000, 'USD');
-// Result: "$1,000.00"
+// Format amount with user's currency symbol (no conversion)
+const formatted = await formatAmountInUserCurrency(1000, 'GBP');
+// Result: "£1,000.00"
 
 // Sync formatting (fallback)
-const formattedSync = formatAmountSync(1000, 'USD', '$');
+const formattedSync = formatAmountInUserCurrencySync(1000, 'GBP', '£');
 
-// Currency conversion
+// Currency conversion (for payments/purchases only)
 const converted = await convertAmount(1000, 'USD', 'EUR');
 
 // Get currency symbol
@@ -189,19 +252,72 @@ const symbol = await getCurrencySymbol('USD');
 
 ### User Currency Integration
 
-The system automatically uses the user's selected currency:
+The system automatically uses the user's selected currency for display:
 
 ```typescript
 import { useAuthStore } from '@/store/useAuthStore';
 
 const { user } = useAuthStore();
 
-// Format in user's currency
-const formatted = await formatAmount(1000, user.currency_code);
+// Format amount with user's currency symbol (no conversion)
+const formatted = await formatAmountInUserCurrency(1000, user.currency_code);
 
 // Display user's currency info
 console.log(`User currency: ${user.currency_code} (${user.country_name})`);
 ```
+
+### User-Specific Currency Display Component
+
+**NEW:** Efficient currency symbol fetching and caching:
+
+```typescript
+// ✅ RECOMMENDED: Component-level currency symbol caching
+const WalletDashboard = () => {
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  
+  // Fetch user's currency symbol once
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) return;
+      
+      try {
+        const response = await fetch(`/api/currency/${user.currency_code}/symbol`);
+        const data = await response.json();
+        setCurrencySymbol(data.data?.symbol || '$');
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      }
+    };
+    
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // Use cached symbol for all transactions
+  return (
+    <CurrencyDisplay 
+      amount={transaction.amount}
+      userCurrencyCode={user?.currency_code}
+      currencySymbol={currencySymbol} // User's specific symbol
+    />
+  );
+};
+```
+
+---
+
+## ⚡ Performance Optimizations
+
+### Symbol Caching
+- **Component-level caching**: Currency symbols are cached to avoid repeated API calls
+- **Single API call**: Fetch user's currency symbol once per component
+- **Automatic cache management**: Symbols are fetched once and reused
+- **Fallback handling**: Graceful degradation when cache is unavailable
+
+### Display Optimization
+- **No conversion overhead**: Display formatting doesn't require conversion API calls
+- **Immediate rendering**: Amounts are displayed instantly with cached symbols
+- **Reduced API load**: Significantly fewer API calls for currency operations
 
 ---
 
@@ -330,7 +446,34 @@ const formatted = await formatAmount(price, user.currency_code);
 const formatted = formatAmount(price, 'USD'); // Hardcoded
 ```
 
-### 2. Handle Currency Errors
+### 2. Use User-Specific Currency Symbol
+```typescript
+// ✅ Good: Fetch user's currency symbol
+const symbol = await getCurrencySymbol(user.currency_code);
+const formatted = formatAmountInUserCurrencySync(amount, user.currency_code, symbol);
+
+// ❌ Bad: Use general site settings
+const formatted = formatAmountInUserCurrencySync(amount, user.currency_code, settings?.currency_symbol);
+```
+
+### 3. Cache Currency Symbols Efficiently
+```typescript
+// ✅ Good: Component-level caching
+const [currencySymbol, setCurrencySymbol] = useState('$');
+useEffect(() => {
+  fetchUserCurrencySymbol();
+}, [user?.currency_code]);
+
+// ❌ Bad: Individual API calls per transaction
+const CurrencyDisplay = ({ amount }) => {
+  const [symbol, setSymbol] = useState('$');
+  useEffect(() => {
+    fetchCurrencySymbol(); // Called for each transaction
+  }, []);
+};
+```
+
+### 4. Handle Currency Errors
 ```typescript
 try {
     const formatted = await formatAmount(price, currency);
@@ -340,7 +483,7 @@ try {
 }
 ```
 
-### 3. Cache Exchange Rates
+### 5. Cache Exchange Rates
 ```php
 // Use caching for exchange rates
 $rate = Cache::remember("exchange_rate_{$from}_{$to}", 3600, function() {
@@ -348,7 +491,7 @@ $rate = Cache::remember("exchange_rate_{$from}_{$to}", 3600, function() {
 });
 ```
 
-### 4. Validate Currency Codes
+### 6. Validate Currency Codes
 ```php
 // Always validate currency codes
 if (!$this->isValidCurrencyCode($currency)) {
@@ -374,6 +517,11 @@ if (!$this->isValidCurrencyCode($currency)) {
    - Ensure proper decimal places for currency
    - Check currency symbol configuration
 
+4. **User currency symbol not displaying correctly**
+   - Verify user has `currency_code` set in database
+   - Check API endpoint `/currency/{code}/symbol` is working
+   - Ensure component is using user's currency symbol, not site settings
+
 ### Debug Commands
 ```bash
 # Check currency data
@@ -383,6 +531,21 @@ php artisan tinker
 # Test conversion
 php artisan tinker
 >>> app(App\Services\CurrencyService::class)->convertAmount(100, 'USD', 'EUR')
+
+# Check user currency
+php artisan tinker
+>>> App\Models\User::find(1)->currency_code
+```
+
+### User Currency Debugging
+```typescript
+// Check user's currency in browser console
+console.log('User currency:', user?.currency_code);
+
+// Test currency symbol API
+const response = await fetch('/api/currency/USD/symbol');
+const data = await response.json();
+console.log('Currency symbol response:', data);
 ```
 
 ---
@@ -394,8 +557,9 @@ For currency-related issues:
 2. Review the implementation examples
 3. Check the logs for detailed error messages
 4. Test with the provided debugging commands
+5. **For user currency issues**: Verify user has correct `currency_code` and API endpoint is working
 
 ---
 
 *Last updated: August 2024*
-*Version: 1.0.0* 
+*Version: 2.0.0* 

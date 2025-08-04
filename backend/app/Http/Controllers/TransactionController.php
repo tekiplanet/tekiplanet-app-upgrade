@@ -61,6 +61,37 @@ class TransactionController extends Controller
         return response()->json($transactions);
     }
 
+    public function getStats(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Get current month start and end dates
+        $currentMonthStart = Carbon::now()->startOfMonth();
+        $currentMonthEnd = Carbon::now()->endOfMonth();
+        
+        // Get all transactions for the user
+        $allTransactions = Transaction::where('user_id', $user->id)->get();
+        
+        // Get current month transactions
+        $currentMonthTransactions = Transaction::where('user_id', $user->id)
+            ->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])
+            ->get();
+        
+        $stats = [
+            'total_transactions' => $allTransactions->count(),
+            'this_month' => $currentMonthTransactions->count(),
+            'total_received' => $allTransactions->where('type', 'credit')->sum('amount'),
+            'total_spent' => $allTransactions->where('type', 'debit')->sum('amount'),
+            'this_month_received' => $currentMonthTransactions->where('type', 'credit')->sum('amount'),
+            'this_month_spent' => $currentMonthTransactions->where('type', 'debit')->sum('amount'),
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'data' => $stats
+        ]);
+    }
+
     public function exportStatement(Request $request)
     {
         try {

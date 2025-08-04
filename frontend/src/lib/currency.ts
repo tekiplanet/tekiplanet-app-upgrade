@@ -18,6 +18,11 @@ export interface CurrencySettings {
   currency_symbol?: string;
 }
 
+// Cache for currency symbols to avoid repeated API calls
+// Note: We no longer convert amounts for display purposes
+// Amounts are displayed with the user's preferred currency symbol but keep the original value
+const symbolCache = new Map<string, string>();
+
 /**
  * Format amount with proper currency symbol and decimal places (synchronous version)
  * @param amount - The amount to format
@@ -185,9 +190,6 @@ export const convertAmount = async (
 
   try {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    
-    // For now, we'll use a simple conversion based on stored rates
-    // In a real implementation, you'd fetch current exchange rates
     const token = localStorage.getItem('token');
     const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/convert`, {
       method: 'POST',
@@ -214,6 +216,8 @@ export const convertAmount = async (
     return typeof amount === 'string' ? parseFloat(amount) : amount;
   }
 };
+
+
 
 /**
  * Convert amount to base currency
@@ -256,6 +260,11 @@ export const getCurrencySymbol = async (currencyCode?: string): Promise<string> 
   try {
     const targetCurrency = currencyCode || 'USD';
     
+    // Check cache first
+    if (symbolCache.has(targetCurrency)) {
+      return symbolCache.get(targetCurrency)!;
+    }
+    
     // Fetch currency symbol from API
     const token = localStorage.getItem('token');
     const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${targetCurrency}/symbol`, {
@@ -272,7 +281,12 @@ export const getCurrencySymbol = async (currencyCode?: string): Promise<string> 
     }
 
     const data = await response.json();
-    return data.data?.symbol || data.symbol || '$';
+    const symbol = data.data?.symbol || data.symbol || '$';
+    
+    // Cache the result
+    symbolCache.set(targetCurrency, symbol);
+    
+    return symbol;
   } catch (error) {
     console.error('Error getting currency symbol:', error);
     return '$';
@@ -342,9 +356,9 @@ export const getAvailableCurrencies = async (): Promise<Currency[]> => {
 }; 
 
 /**
- * Format amount in user's currency by converting from base currency (NGN)
- * This is the main function to use for displaying amounts in user's preferred currency
- * @param amount - The amount in base currency (NGN)
+ * Format amount in user's currency (no conversion, just display formatting)
+ * This function formats the amount using the user's preferred currency symbol
+ * @param amount - The amount from database (stored in base currency)
  * @param userCurrencyCode - The user's preferred currency code
  * @param options - Additional formatting options
  * @returns Formatted currency string in user's currency
@@ -372,22 +386,11 @@ export const formatAmountInUserCurrency = async (
   try {
     const targetCurrency = userCurrencyCode || 'NGN';
     
-    // If target currency is NGN (base currency), no conversion needed
-    if (targetCurrency === 'NGN') {
-      return formatAmountSync(numAmount, 'NGN', {
-        ...options,
-        currencySymbol: '₦'
-      });
-    }
-
-    // Convert from NGN (base) to user's currency using database rates
-    const convertedAmount = await convertAmount(numAmount, 'NGN', targetCurrency);
-    
     // Get currency symbol for the target currency from database
     const currencySymbol = await getCurrencySymbol(targetCurrency);
     
-    // Format the converted amount
-    return formatAmountSync(convertedAmount, targetCurrency, {
+    // Format the amount with the user's currency symbol (no conversion)
+    return formatAmountSync(numAmount, targetCurrency, {
       ...options,
       currencySymbol
     });
@@ -403,7 +406,7 @@ export const formatAmountInUserCurrency = async (
 
 /**
  * Format amount in user's currency (synchronous version with fallback)
- * @param amount - The amount in base currency (NGN)
+ * @param amount - The amount from database (stored in base currency)
  * @param userCurrencyCode - The user's preferred currency code
  * @param currencySymbol - The currency symbol to use
  * @returns Formatted currency string in user's currency
@@ -424,19 +427,7 @@ export const formatAmountInUserCurrencySync = (
   }
 
   const targetCurrency = userCurrencyCode || 'NGN';
-  
-  // If target currency is NGN (base currency), no conversion needed
-  if (targetCurrency === 'NGN') {
-    return formatAmountSync(numAmount, 'NGN', {
-      showSymbol: true,
-      currencySymbol: '₦'
-    });
-  }
-
-  // For sync version, we can't do conversion without API call
-  // So we'll just format with the provided symbol
-  // The actual conversion should be done in the async version
-  const symbol = currencySymbol || '$';
+  const symbol = currencySymbol || (targetCurrency === 'NGN' ? '₦' : '$');
   
   return formatAmountSync(numAmount, targetCurrency, {
     showSymbol: true,

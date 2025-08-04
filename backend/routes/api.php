@@ -91,6 +91,7 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
         Route::post('/logout', [LoginController::class, 'logout']);
         Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/transactions', [TransactionController::class, 'index']);
+            Route::get('/transactions/stats', [TransactionController::class, 'getStats']);
             Route::get('/transactions/filter', [TransactionController::class, 'filter']);
             Route::post('/transactions/export-statement', [TransactionController::class, 'exportStatement']);
             Route::get('/transactions/{transactionId}', [TransactionController::class, 'getTransactionDetails']);
@@ -552,6 +553,7 @@ Route::middleware('auth:sanctum')->post('/test-push-notification', function (Req
 // Currency routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/currency/convert', [CurrencyController::class, 'convert']);
+    Route::post('/currency/batch-convert', [CurrencyController::class, 'batchConvert']);
     Route::get('/currencies', [CurrencyController::class, 'index']);
     Route::get('/currency/format', [CurrencyController::class, 'format']);
     Route::get('/currency/{code}/symbol', [CurrencyController::class, 'symbol']);

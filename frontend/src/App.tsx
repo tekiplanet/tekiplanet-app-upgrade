@@ -87,6 +87,7 @@ const PaymentConfirmation = React.lazy(() => import('@/pages/PaymentConfirmation
 const PaystackCallback = React.lazy(() => import('@/pages/PaystackCallback'));
 const ActivitiesPage = React.lazy(() => import('@/pages/dashboard/ActivitiesPage'));
 const CertificatesPage = lazy(() => import("@/pages/dashboard/CertificatesPage"));
+const TransactionHistory = React.lazy(() => import('@/pages/TransactionHistory'));
 const EmailVerification = React.lazy(() => import('@/pages/EmailVerification'));
 const TwoFactorAuth = React.lazy(() => import('@/pages/TwoFactorAuth'));
 const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
@@ -227,6 +228,7 @@ const AppContent = () => {
             <Route path="academy/course/:courseId/manage" element={<CourseManagement />} />
             <Route path="wallet" element={<WalletDashboard />} />
             <Route path="wallet/transactions/:transactionId" element={<TransactionDetails />} />
+            <Route path="transactions" element={<TransactionHistory />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="services/quote/software-engineering/:serviceId" element={<SoftwareEngineeringQuote />} />
