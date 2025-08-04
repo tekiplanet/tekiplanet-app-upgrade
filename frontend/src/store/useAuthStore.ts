@@ -14,6 +14,9 @@ type UserData = {
   wallet_balance?: number;
   account_type?: 'student' | 'business' | 'professional';
   two_factor_enabled?: boolean;
+  currency_code?: string;
+  country_code?: string;
+  country_name?: string;
   preferences?: {
     dark_mode?: boolean;
     theme?: 'light' | 'dark';

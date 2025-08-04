@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
+import { useCurrencyFormat, formatAmountSync, formatAmountInUserCurrencySync, formatAmountInUserCurrency, testCurrencyConversion, testCurrencySymbol } from "@/lib/currency";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useWalletStore } from "@/store/useWalletStore";
@@ -91,6 +91,36 @@ const transactionService = {
     // Extract transactions from the nested structure
     return data.transactions?.data || [];
   }
+};
+
+// Currency display component that handles conversion properly
+const CurrencyDisplay = ({ amount, userCurrencyCode }: { amount: number, userCurrencyCode?: string }) => {
+  const [formattedAmount, setFormattedAmount] = useState<string>('0');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const formatAmount = async () => {
+      try {
+        setIsLoading(true);
+        const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
+        setFormattedAmount(formatted);
+      } catch (error) {
+        console.error('Error formatting currency:', error);
+        // Fallback to sync version with default symbol
+        setFormattedAmount(formatAmountInUserCurrencySync(amount, userCurrencyCode));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    formatAmount();
+  }, [amount, userCurrencyCode]);
+
+  if (isLoading) {
+    return <span className="text-sm md:text-2xl font-bold truncate mt-1">...</span>;
+  }
+
+  return <span className="text-sm md:text-2xl font-bold truncate mt-1">{formattedAmount}</span>;
 };
 
 // Type definition for transactions
@@ -213,6 +243,22 @@ export default function WalletDashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Currency formatting hooks
+  const { formattedAmount: formattedBalance, isLoading: balanceLoading } = useCurrencyFormat(user?.wallet_balance || 0, user?.currency_code);
+  
+  // Test currency APIs on component mount
+  useEffect(() => {
+    if (user) {
+      console.log('Testing currency APIs...');
+      testCurrencyConversion().then(success => {
+        console.log('Currency conversion test:', success ? 'PASSED' : 'FAILED');
+      });
+      testCurrencySymbol().then(success => {
+        console.log('Currency symbol test:', success ? 'PASSED' : 'FAILED');
+      });
+    }
+  }, [user]);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -477,7 +523,7 @@ export default function WalletDashboard() {
               <div className="min-w-0">
                 <p className="text-xs md:text-sm font-medium opacity-80 truncate">Current Balance</p>
                 <h2 className="text-lg md:text-2xl font-bold truncate">
-                  {formatCurrency(user?.wallet_balance || 0, settings?.default_currency)}
+                  {balanceLoading ? 'Loading...' : formattedBalance}
                 </h2>
               </div>
               <div className="p-2 md:p-3 bg-white/10 rounded-full shrink-0">
@@ -500,8 +546,8 @@ export default function WalletDashboard() {
                     <ArrowDownRight className="h-3 w-3 text-destructive" />
                   </div>
                 </div>
-                <h2 className="text-sm md:text-2xl font-bold truncate mt-1">
-                  {formatCurrency(transactions
+                <CurrencyDisplay 
+                  amount={transactions
                     .filter(t => {
                       const date = new Date(t.created_at);
                       const now = new Date();
@@ -510,8 +556,9 @@ export default function WalletDashboard() {
                              t.type === 'debit' &&
                              t.status === 'completed';
                     })
-                    .reduce((acc, t) => acc + parseFloat(t.amount), 0), settings?.default_currency)}
-                </h2>
+                    .reduce((acc, t) => acc + parseFloat(t.amount), 0)} 
+                  userCurrencyCode={user?.currency_code}
+                />
               </div>
             </div>
           </CardContent>
@@ -530,11 +577,12 @@ export default function WalletDashboard() {
                     <ArrowUpRight className="h-3 w-3 text-green-500" />
                   </div>
                 </div>
-                <h2 className="text-sm md:text-2xl font-bold truncate mt-1">
-                  {formatCurrency(transactions
+                <CurrencyDisplay 
+                  amount={transactions
                     .filter(t => t.type === 'credit' && t.status === 'completed')
-                    .reduce((acc, t) => acc + parseFloat(t.amount), 0), settings?.default_currency)}
-                </h2>
+                    .reduce((acc, t) => acc + parseFloat(t.amount), 0)} 
+                  userCurrencyCode={user?.currency_code}
+                />
               </div>
             </div>
           </CardContent>
@@ -703,7 +751,10 @@ export default function WalletDashboard() {
                             : 'text-red-600 dark:text-red-500'}
                         `}>
                           {transaction.type === 'credit' ? '+' : '-'}
-                          {formatCurrency(transaction.amount, settings?.default_currency)}
+                          <CurrencyDisplay 
+                            amount={parseFloat(transaction.amount)} 
+                            userCurrencyCode={user?.currency_code}
+                          />
                         </p>
                       </div>
                     </div>
@@ -936,6 +987,7 @@ export const FundWalletModal = ({
   open: boolean; 
   onOpenChange: (open: boolean) => void;
 }) => {
+  const user = useAuthStore(state => state.user);
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("paystack");
   const [loading, setLoading] = useState(false);
@@ -1014,7 +1066,7 @@ export const FundWalletModal = ({
                   amount === quickAmount.toString() && "bg-primary text-primary-foreground"
                 )}
               >
-                {formatCurrency(quickAmount, settings?.default_currency)}
+                {formatAmountSync(quickAmount, user?.currency_code, settings?.currency_symbol)}
               </Button>
             ))}
           </div>
@@ -1024,7 +1076,7 @@ export const FundWalletModal = ({
             <Label className="text-sm font-medium">Or enter custom amount</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {settings?.currency_symbol || '₦'}
+                {user?.currency_code === 'NGN' ? '₦' : settings?.currency_symbol || '$'}
               </span>   
               <Input
                 type="number"

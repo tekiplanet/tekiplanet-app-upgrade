@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useWalletStore } from "@/store/useWalletStore";
-import { formatCurrency } from "@/lib/utils";
+import { formatAmountInUserCurrencySync, formatAmountInUserCurrency } from "@/lib/currency";
 import { toast } from "sonner";
 import {
   LineChart,
@@ -48,6 +48,38 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
+
+// Currency display component that handles conversion properly
+const CurrencyDisplay = ({ amount, userCurrencyCode }: { amount: number, userCurrencyCode?: string }) => {
+  const [formattedAmount, setFormattedAmount] = useState<string>('0');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const formatAmount = async () => {
+      try {
+        setIsLoading(true);
+        const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
+        setFormattedAmount(formatted);
+      } catch (error) {
+        console.error('Error formatting currency:', error);
+        // Fallback to sync version with default symbol
+        setFormattedAmount(formatAmountInUserCurrencySync(amount, userCurrencyCode));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    formatAmount();
+  }, [amount, userCurrencyCode]);
+
+  if (isLoading) {
+    return <span>...</span>;
+  }
+
+  return <span>{formattedAmount}</span>;
+};
 
 export default function WalletPage() {
   const user = useAuthStore(state => state.user);
@@ -58,15 +90,21 @@ export default function WalletPage() {
     addTransaction 
   } = useWalletStore();
   
+  // Add settings query for currency
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+  
   const [amount, setAmount] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
 
-  // Get user-specific data
-  const balance = getBalance(user?.id || '');
-  const transactions = getTransactions(user?.id || '');
+  // Get user-specific data - fix type issues
+  const balance = getBalance(user?.id?.toString() || '');
+  const transactions = getTransactions(user?.id?.toString() || '');
 
   // Calculate statistics
   const stats = {
@@ -135,9 +173,9 @@ export default function WalletPage() {
       
       const fundAmount = Number(amount);
       
-      // Update both balance and transactions
-      addBalance(user.id, fundAmount);
-      addTransaction(user.id, {
+      // Update both balance and transactions - fix type issues
+      addBalance(user.id.toString(), fundAmount);
+      addTransaction(user.id.toString(), {
         id: `FUND-${Date.now()}`,
         type: 'credit',
         amount: fundAmount,
@@ -200,7 +238,9 @@ export default function WalletPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium opacity-80">Current Balance</p>
-                <h2 className="text-2xl font-bold">{formatCurrency(balance)}</h2>
+                <h2 className="text-2xl font-bold">
+                  <CurrencyDisplay amount={balance} userCurrencyCode={user?.currency_code} />
+                </h2>
               </div>
               <div className="p-3 bg-white/10 rounded-full">
                 <Wallet className="h-5 w-5" />
@@ -216,7 +256,9 @@ export default function WalletPage() {
                 <p className="text-sm font-medium text-muted-foreground">
                   Monthly Spending
                 </p>
-                <h2 className="text-2xl font-bold">{formatCurrency(stats.monthlySpending)}</h2>
+                <h2 className="text-2xl font-bold">
+                  <CurrencyDisplay amount={stats.monthlySpending} userCurrencyCode={user?.currency_code} />
+                </h2>
               </div>
               <div className="p-3 bg-destructive/10 rounded-full">
                 <ArrowDownRight className="h-5 w-5 text-destructive" />
@@ -232,7 +274,9 @@ export default function WalletPage() {
                 <p className="text-sm font-medium text-muted-foreground">
                   Total Funded
                 </p>
-                <h2 className="text-2xl font-bold">{formatCurrency(stats.totalFunded)}</h2>
+                <h2 className="text-2xl font-bold">
+                  <CurrencyDisplay amount={stats.totalFunded} userCurrencyCode={user?.currency_code} />
+                </h2>
               </div>
               <div className="p-3 bg-green-500/10 rounded-full">
                 <ArrowUpRight className="h-5 w-5 text-green-500" />
@@ -249,7 +293,7 @@ export default function WalletPage() {
                   Average Transaction
                 </p>
                 <h2 className="text-2xl font-bold">
-                  {formatCurrency(stats.averageTransaction)}
+                  <CurrencyDisplay amount={stats.averageTransaction} userCurrencyCode={user?.currency_code} />
                 </h2>
               </div>
               <div className="p-3 bg-blue-500/10 rounded-full">
@@ -359,7 +403,7 @@ export default function WalletPage() {
                           : 'text-destructive'
                       }`}>
                         {transaction.type === 'credit' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
+                        {formatAmountInUserCurrencySync(transaction.amount, user?.currency_code)}
                       </p>
                       <Badge variant={transaction.type === 'credit' ? "default" : "destructive"}>
                         {transaction.type === 'credit' ? 'Credit' : 'Debit'}

@@ -126,7 +126,20 @@ class CurrencyService
             }
 
             // Convert using stored rates
-            $convertedAmount = $fromCurrencyObj->convertAmount($amount, $toCurrencyObj);
+            // If converting from base currency to another currency
+            if ($fromCurrencyObj->is_base) {
+                $convertedAmount = $amount * $toCurrencyObj->rate;
+            }
+            // If converting from another currency to base currency
+            elseif ($toCurrencyObj->is_base) {
+                $convertedAmount = $amount / $fromCurrencyObj->rate;
+            }
+            // If converting between two non-base currencies
+            else {
+                // Convert from currency A to base, then from base to currency B
+                $amountInBase = $amount / $fromCurrencyObj->rate;
+                $convertedAmount = $amountInBase * $toCurrencyObj->rate;
+            }
             
             return round($convertedAmount, $toCurrencyObj->decimal_places);
         } catch (\Exception $e) {

@@ -1,342 +1,401 @@
-# Currency Formatting and Conversion Helpers
+# Currency Helpers & User Currency System
 
-This document describes the comprehensive currency formatting and conversion system implemented for the TekiPlanet project.
+This document outlines the comprehensive currency formatting, conversion, and user currency management system implemented in our project.
 
-## Overview
+## 🎯 Current Implementation Status
 
-The system provides both frontend (TypeScript/JavaScript) and backend (PHP/Laravel) helpers for:
-- Formatting amounts with proper currency symbols and decimal places
-- Converting amounts between different currencies
-- Managing currency settings and exchange rates
+### ✅ **Completed Features:**
+- [x] Backend currency service with formatting and conversion
+- [x] Frontend currency helpers (async and sync)
+- [x] User currency selection during onboarding
+- [x] Database structure for user currency preferences
+- [x] Mobile-responsive onboarding flow
+- [x] ISO3166 country integration
+- [x] API endpoints for currency operations
 
-## Frontend Usage (TypeScript/JavaScript)
+### 🔄 **Pending Implementation:**
+- [ ] Exchange rate API integration
+- [ ] Currency display throughout the application
+- [ ] Admin currency management interface
+- [ ] Real-time rate updates
+- [ ] Currency conversion in transactions/payments
 
-### Import the helpers
+---
 
-```typescript
-import { 
-  formatCurrency, 
-  formatCurrencySync, 
-  formatAmount, 
-  convertAmount,
-  convertToBase,
-  convertFromBase,
-  getCurrencySymbol,
-  parseCurrency 
-} from '@/lib/currency';
-```
+## 🚀 Quick Start
 
-### Basic Formatting
+### Frontend Usage
 
 ```typescript
-// Synchronous formatting (immediate use)
-const formatted = formatCurrencySync(1234.56, 'USD', '$');
-// Result: "$1,234.56"
+import { formatAmount, convertAmount, formatCurrency } from '@/lib/currency';
 
-// Asynchronous formatting (with settings from server)
-const formatted = await formatCurrency(1234.56, 'USD');
-// Result: "$1,234.56" (uses settings from server)
+// Format amount in user's currency
+const formatted = await formatAmount(1000, 'USD');
+// Result: "$1,000.00"
 
-// Format without symbol
-const numberOnly = await formatNumber(1234.56, 'USD');
-// Result: "1,234.56"
+// Convert amount between currencies
+const converted = await convertAmount(1000, 'USD', 'EUR');
+// Result: 850.00 (example rate)
+
+// Quick currency formatting
+const display = await formatCurrency(1000, 'USD');
+// Result: "$1,000.00"
 ```
 
-### Advanced Formatting
-
-```typescript
-// Custom formatting options
-const formatted = await formatAmount(1234.56, 'USD', {
-  showSymbol: true,
-  showCode: true,
-  decimalPlaces: 2,
-  locale: 'en-US'
-});
-// Result: "$1,234.56 USD"
-```
-
-### Currency Conversion
-
-```typescript
-// Convert between currencies
-const converted = await convertAmount(100, 'USD', 'EUR');
-// Result: 85.50 (example rate)
-
-// Convert to base currency
-const baseAmount = await convertToBase(100, 'EUR');
-// Result: 117.65 (converted to base currency)
-
-// Convert from base currency
-const targetAmount = await convertFromBase(100, 'EUR');
-// Result: 85.50 (converted from base currency)
-```
-
-### Utility Functions
-
-```typescript
-// Get currency symbol
-const symbol = await getCurrencySymbol('USD');
-// Result: "$"
-
-// Parse formatted currency back to number
-const amount = parseCurrency('$1,234.56');
-// Result: 1234.56
-
-// Validate currency code
-const isValid = isValidCurrencyCode('USD');
-// Result: true
-```
-
-## Backend Usage (PHP/Laravel)
-
-### Using the CurrencyService
-
-```php
-use App\Services\CurrencyService;
-
-class SomeController extends Controller
-{
-    protected $currencyService;
-
-    public function __construct(CurrencyService $currencyService)
-    {
-        $this->currencyService = $currencyService;
-    }
-
-    public function someMethod()
-    {
-        // Format currency
-        $formatted = $this->currencyService->formatCurrency(1234.56, 'USD');
-        // Result: "$1,234.56"
-
-        // Convert currency
-        $converted = $this->currencyService->convertAmount(100, 'USD', 'EUR');
-        // Result: 85.50
-
-        // Get currency symbol
-        $symbol = $this->currencyService->getCurrencySymbol('USD');
-        // Result: "$"
-    }
-}
-```
-
-### Using the Trait
+### Backend Usage
 
 ```php
 use App\Traits\HasCurrencyFormatting;
 
-class Transaction extends Model
+class YourController extends Controller
 {
     use HasCurrencyFormatting;
-
-    public function getFormattedAmountAttribute()
+    
+    public function example()
     {
-        return $this->formatCurrency($this->amount, $this->currency_code);
+        // Format amount in user's currency
+        $formatted = $this->formatAmount(1000, 'USD');
+        
+        // Convert between currencies
+        $converted = $this->convertAmount(1000, 'USD', 'EUR');
     }
+}
+```
 
-    public function convertToBase()
+---
+
+## 📁 File Structure
+
+```
+backend/
+├── app/
+│   ├── Services/CurrencyService.php          # Core currency logic
+│   ├── Traits/HasCurrencyFormatting.php      # Reusable trait
+│   ├── Http/Controllers/
+│   │   ├── OnboardingController.php          # User currency selection
+│   │   └── Api/CurrencyController.php        # Currency API endpoints
+│   └── Models/User.php                       # User currency fields
+├── database/migrations/
+│   └── add_country_currency_to_users_table.php
+└── routes/api.php                            # Currency routes
+
+frontend/
+├── src/
+│   ├── lib/currency.ts                       # Frontend currency helpers
+│   ├── services/onboardingService.ts         # Onboarding API calls
+│   ├── components/onboarding/
+│   │   └── CountryCurrencyStep.tsx          # Currency selection UI
+│   └── pages/Onboarding.tsx                 # Mobile-responsive flow
+```
+
+---
+
+## 🔧 Backend Implementation
+
+### CurrencyService
+
+The core service providing currency formatting and conversion:
+
+```php
+use App\Services\CurrencyService;
+
+$currencyService = new CurrencyService();
+
+// Format amount with currency symbol
+$formatted = $currencyService->formatAmount(1000, 'USD');
+// Result: "$1,000.00"
+
+// Convert between currencies
+$converted = $currencyService->convertAmount(1000, 'USD', 'EUR');
+// Result: 850.00
+
+// Get currency details
+$currency = $currencyService->getCurrency('USD');
+$symbol = $currencyService->getCurrencySymbol('USD');
+```
+
+### HasCurrencyFormatting Trait
+
+Add to any model or controller for easy currency access:
+
+```php
+use App\Traits\HasCurrencyFormatting;
+
+class YourModel extends Model
+{
+    use HasCurrencyFormatting;
+    
+    // Now you have access to all currency methods
+    public function getFormattedPrice()
     {
-        return $this->convertToBase($this->amount, $this->currency_code);
+        return $this->formatAmount($this->price, $this->currency_code);
     }
 }
 ```
 
 ### API Endpoints
 
-The system provides several API endpoints for currency operations:
-
-#### Convert Currency
-```http
+```bash
+# Currency conversion
 POST /api/currency/convert
-Content-Type: application/json
-
 {
-    "amount": 100,
+    "amount": 1000,
     "from_currency": "USD",
     "to_currency": "EUR"
 }
-```
 
-Response:
-```json
+# Amount formatting
+POST /api/currency/format
 {
-    "success": true,
-    "data": {
-        "original_amount": 100,
-        "from_currency": "USD",
-        "to_currency": "EUR",
-        "converted_amount": 85.50,
-        "formatted_amount": "€85.50"
-    }
+    "amount": 1000,
+    "currency_code": "USD"
 }
-```
 
-#### Format Amount
-```http
-GET /api/currency/format?amount=1234.56&currency_code=USD&show_symbol=true
-```
-
-Response:
-```json
-{
-    "success": true,
-    "data": {
-        "amount": 1234.56,
-        "currency_code": "USD",
-        "formatted_amount": "$1,234.56",
-        "options": {
-            "show_symbol": true
-        }
-    }
-}
-```
-
-#### Get All Currencies
-```http
+# Get all active currencies
 GET /api/currencies
+
+# Get specific currency
+GET /api/currencies/USD
 ```
 
-Response:
-```json
-{
-    "success": true,
-    "data": {
-        "currencies": [
-            {
-                "id": "1",
-                "name": "US Dollar",
-                "code": "USD",
-                "symbol": "$",
-                "rate": 1.0,
-                "is_base": true,
-                "is_active": true,
-                "decimal_places": 2,
-                "position": 1
-            }
-        ],
-        "base_currency": {
-            "id": "1",
-            "name": "US Dollar",
-            "code": "USD",
-            "symbol": "$",
-            "rate": 1.0,
-            "is_base": true,
-            "is_active": true,
-            "decimal_places": 2,
-            "position": 1
-        },
-        "total": 1
-    }
-}
-```
+---
 
-## Configuration
+## 🎨 Frontend Implementation
 
-### Environment Variables
-
-```env
-# Exchange rate API key (optional)
-EXCHANGE_RATE_API_KEY=your_api_key_here
-```
-
-### Database Migration
-
-The system uses the existing `currencies` table with the following structure:
-
-```sql
-CREATE TABLE currencies (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    code VARCHAR(3) NOT NULL UNIQUE,
-    symbol VARCHAR(10) NOT NULL,
-    rate DECIMAL(10,6) NOT NULL DEFAULT 1.000000,
-    is_base BOOLEAN NOT NULL DEFAULT FALSE,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    decimal_places INTEGER NOT NULL DEFAULT 2,
-    position INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NULL,
-    updated_at TIMESTAMP NULL,
-    deleted_at TIMESTAMP NULL
-);
-```
-
-## Features
-
-### 1. Proper Decimal Places
-Each currency can have its own decimal places (e.g., JPY typically has 0, USD has 2).
-
-### 2. Currency Symbols
-Proper currency symbols are used (e.g., $, €, ₦, ¥).
-
-### 3. Exchange Rate Management
-- Admin can manage exchange rates through the admin panel
-- Automatic exchange rate updates from external API (optional)
-- Caching of exchange rates for performance
-
-### 4. Base Currency System
-- One currency is designated as the base currency
-- All conversions go through the base currency
-- Base currency cannot be deleted or deactivated
-
-### 5. Fallback Handling
-- Graceful fallbacks when currency data is unavailable
-- Error logging for debugging
-- Returns original amount if conversion fails
-
-## Migration Guide
-
-### From Old Formatting
-
-Replace old formatting calls:
+### Currency Helpers
 
 ```typescript
-// Old way
-const formatted = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-}).format(amount);
+import { 
+    formatAmount, 
+    formatCurrency, 
+    convertAmount,
+    getCurrencySymbol 
+} from '@/lib/currency';
 
-// New way
-const formatted = await formatCurrency(amount, 'USD');
+// Async formatting (recommended)
+const formatted = await formatAmount(1000, 'USD');
+// Result: "$1,000.00"
+
+// Sync formatting (fallback)
+const formattedSync = formatAmountSync(1000, 'USD', '$');
+
+// Currency conversion
+const converted = await convertAmount(1000, 'USD', 'EUR');
+
+// Get currency symbol
+const symbol = await getCurrencySymbol('USD');
+// Result: "$"
 ```
 
-### From Old Conversion
+### User Currency Integration
 
-Replace old conversion calls:
+The system automatically uses the user's selected currency:
 
+```typescript
+import { useAuthStore } from '@/store/useAuthStore';
+
+const { user } = useAuthStore();
+
+// Format in user's currency
+const formatted = await formatAmount(1000, user.currency_code);
+
+// Display user's currency info
+console.log(`User currency: ${user.currency_code} (${user.country_name})`);
+```
+
+---
+
+## 👤 User Currency Selection
+
+### Onboarding Flow
+
+Users select their country and currency during onboarding:
+
+1. **Step 1:** Account Type Selection
+2. **Step 2:** Profile Information
+3. **Step 3:** **Country & Currency Selection** ← New Step
+
+### Country Data
+
+- Uses ISO3166 package for complete country list
+- 249+ countries and territories
+- Auto-suggests default currency for each country
+- Mobile-responsive selection interface
+
+### Currency Data
+
+- Fetches active currencies from database
+- Shows currency symbols and examples
+- Validates against available currencies
+
+---
+
+## 🗄️ Database Schema
+
+### Users Table
+```sql
+ALTER TABLE users ADD COLUMN country_code VARCHAR(2) NULL;
+ALTER TABLE users ADD COLUMN country_name VARCHAR(255) NULL;
+ALTER TABLE users ADD COLUMN currency_code VARCHAR(3) NULL;
+```
+
+### Currencies Table
+```sql
+-- Already exists in your system
+-- Contains: code, name, symbol, rate, is_base, is_active, etc.
+```
+
+---
+
+## 🔄 Future Implementation Roadmap
+
+### Phase 1: Exchange Rate Integration
+- [ ] Integrate with exchange rate API (e.g., Fixer.io, ExchangeRate-API)
+- [ ] Implement rate caching and updates
+- [ ] Add rate update scheduling
+
+### Phase 2: Application Integration
+- [ ] Update product pricing display
+- [ ] Implement currency in transactions
+- [ ] Add currency to invoices and receipts
+- [ ] Update wallet balance display
+
+### Phase 3: Admin Management
+- [ ] Admin interface for currency management
+- [ ] Exchange rate monitoring
+- [ ] Currency activation/deactivation
+
+### Phase 4: Advanced Features
+- [ ] Real-time rate updates
+- [ ] Currency conversion in cart
+- [ ] Multi-currency support for businesses
+- [ ] Currency preference per transaction
+
+---
+
+## 🛠️ Configuration
+
+### Environment Variables
+```env
+# Exchange Rate API (for future implementation)
+EXCHANGE_RATE_API_KEY=your_api_key
+EXCHANGE_RATE_API_URL=https://api.exchangerate-api.com/v4/latest/
+
+# Default currency
+DEFAULT_CURRENCY=USD
+```
+
+### Currency Settings
 ```php
-// Old way
-$converted = $this->currencyService->convertToNGN($amount, $fromCurrency);
-
-// New way
-$converted = $this->currencyService->convertAmount($amount, $fromCurrency, 'NGN');
+// In config/currency.php (create if needed)
+return [
+    'default' => env('DEFAULT_CURRENCY', 'USD'),
+    'api_key' => env('EXCHANGE_RATE_API_KEY'),
+    'cache_duration' => 3600, // 1 hour
+];
 ```
 
-## Best Practices
+---
 
-1. **Use synchronous functions for immediate display** when you already have the currency symbol
-2. **Use asynchronous functions** when you need to fetch settings from the server
-3. **Always handle errors gracefully** - the helpers will return fallback values
-4. **Cache currency data** on the frontend to avoid repeated API calls
-5. **Use the trait** in models that deal with currency amounts
-6. **Validate currency codes** before processing
+## 🧪 Testing
 
-## Troubleshooting
+### Backend Tests
+```bash
+# Test currency service
+php artisan test --filter=CurrencyServiceTest
+
+# Test onboarding flow
+php artisan test --filter=OnboardingTest
+```
+
+### Frontend Tests
+```bash
+# Test currency helpers
+npm test -- --testPathPattern=currency
+
+# Test onboarding components
+npm test -- --testPathPattern=onboarding
+```
+
+---
+
+## 📚 Best Practices
+
+### 1. Always Use User's Currency
+```typescript
+// ✅ Good
+const formatted = await formatAmount(price, user.currency_code);
+
+// ❌ Bad
+const formatted = formatAmount(price, 'USD'); // Hardcoded
+```
+
+### 2. Handle Currency Errors
+```typescript
+try {
+    const formatted = await formatAmount(price, currency);
+} catch (error) {
+    // Fallback to default currency
+    const formatted = formatAmountSync(price, 'USD', '$');
+}
+```
+
+### 3. Cache Exchange Rates
+```php
+// Use caching for exchange rates
+$rate = Cache::remember("exchange_rate_{$from}_{$to}", 3600, function() {
+    return $this->fetchExchangeRate($from, $to);
+});
+```
+
+### 4. Validate Currency Codes
+```php
+// Always validate currency codes
+if (!$this->isValidCurrencyCode($currency)) {
+    throw new InvalidArgumentException("Invalid currency code: {$currency}");
+}
+```
+
+---
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Currency not found**: Check if the currency is active in the admin panel
-2. **Conversion fails**: Verify exchange rates are set correctly
-3. **Formatting issues**: Ensure decimal places are configured properly
-4. **API errors**: Check if the exchange rate API key is configured (optional)
+1. **Currency not found**
+   - Check if currency is active in database
+   - Verify currency code format (3 characters)
 
-### Debugging
+2. **Exchange rate errors**
+   - Check API key configuration
+   - Verify API endpoint availability
 
-Enable logging to see detailed error messages:
+3. **Formatting issues**
+   - Ensure proper decimal places for currency
+   - Check currency symbol configuration
 
-```php
-// In your .env file
-LOG_LEVEL=debug
+### Debug Commands
+```bash
+# Check currency data
+php artisan tinker
+>>> app(App\Services\CurrencyService::class)->getActiveCurrencies()
+
+# Test conversion
+php artisan tinker
+>>> app(App\Services\CurrencyService::class)->convertAmount(100, 'USD', 'EUR')
 ```
 
-The system logs all currency-related errors for debugging purposes. 
+---
+
+## 📞 Support
+
+For currency-related issues:
+1. Check this README first
+2. Review the implementation examples
+3. Check the logs for detailed error messages
+4. Test with the provided debugging commands
+
+---
+
+*Last updated: August 2024*
+*Version: 1.0.0* 

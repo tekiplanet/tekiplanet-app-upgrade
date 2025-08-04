@@ -53,6 +53,7 @@ use App\Http\Controllers\ProductRequestController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Api\CurrencyController;
 use App\Notifications\TestPushNotification;
 
 /*
@@ -549,9 +550,12 @@ Route::middleware('auth:sanctum')->post('/test-push-notification', function (Req
 });
 
 // Currency routes
-Route::post('/currency/convert', [App\Http\Controllers\Api\CurrencyController::class, 'convert']);
-Route::get('/currencies', [App\Http\Controllers\Api\CurrencyController::class, 'index']);
-Route::get('/currency/format', [App\Http\Controllers\Api\CurrencyController::class, 'format']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/currency/convert', [CurrencyController::class, 'convert']);
+    Route::get('/currencies', [CurrencyController::class, 'index']);
+    Route::get('/currency/format', [CurrencyController::class, 'format']);
+    Route::get('/currency/{code}/symbol', [CurrencyController::class, 'symbol']);
+});
 
 // Onboarding data routes
 Route::get('/onboarding/countries', [App\Http\Controllers\Api\OnboardingController::class, 'getCountries']);

@@ -135,10 +135,10 @@ class AuthController extends Controller
         // Create a new token
         $token = $user->createToken('login_token')->plainTextToken;
 
-        // Return full user data including wallet_balance
+        // Return full user data including wallet_balance and currency
         return response()->json([
             'user' => array_merge(
-                $user->makeVisible(['wallet_balance', 'dark_mode', 'two_factor_enabled', 'email_notifications', 'push_notifications', 'marketing_notifications'])->toArray(),
+                $user->makeVisible(['wallet_balance', 'dark_mode', 'two_factor_enabled', 'email_notifications', 'push_notifications', 'marketing_notifications', 'currency_code', 'country_code', 'country_name'])->toArray(),
                 [
                     'preferences' => [
                         'dark_mode' => $user->dark_mode ?? false,
@@ -170,7 +170,7 @@ class AuthController extends Controller
         //     'two_factor_enabled' => $user->two_factor_enabled
         // ]);
 
-        // Return user data with professional profile
+        // Return user data with professional profile and currency
         return response()->json($user->makeVisible([
             'email_notifications',
             'push_notifications',
@@ -178,6 +178,9 @@ class AuthController extends Controller
             'profile_visibility',
             'dark_mode',
             'wallet_balance',
+            'currency_code',
+            'country_code',
+            'country_name',
             'professional',
             'business_profile'
         ]));

@@ -34,11 +34,26 @@ class CurrencyController extends Controller
             $fromCurrency = strtoupper($request->from_currency);
             $toCurrency = strtoupper($request->to_currency);
 
+            // Add debugging
+            \Log::info('Currency conversion request', [
+                'amount' => $amount,
+                'from_currency' => $fromCurrency,
+                'to_currency' => $toCurrency
+            ]);
+
             $convertedAmount = $this->currencyService->convertAmount(
                 $amount,
                 $fromCurrency,
                 $toCurrency
             );
+
+            // Add debugging
+            \Log::info('Currency conversion result', [
+                'original_amount' => $amount,
+                'from_currency' => $fromCurrency,
+                'to_currency' => $toCurrency,
+                'converted_amount' => $convertedAmount
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -160,6 +175,32 @@ class CurrencyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch currency',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get currency symbol by code
+     * @param string $code
+     * @return JsonResponse
+     */
+    public function symbol(string $code): JsonResponse
+    {
+        try {
+            $symbol = $this->currencyService->getCurrencySymbol(strtoupper($code));
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'currency_code' => strtoupper($code),
+                    'symbol' => $symbol
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch currency symbol',
                 'error' => $e->getMessage()
             ], 500);
         }

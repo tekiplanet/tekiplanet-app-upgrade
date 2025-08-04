@@ -65,6 +65,10 @@ class Currency extends Model
     {
         if ($fromCurrency) {
             // Convert from another currency to this currency
+            // Both rates are relative to base currency (NGN)
+            // To convert from currency A to currency B:
+            // 1. Convert A to base: amount / A_rate
+            // 2. Convert base to B: (amount / A_rate) * B_rate
             $fromRate = $fromCurrency->rate;
             $toRate = $this->rate;
             return ($amount / $fromRate) * $toRate;

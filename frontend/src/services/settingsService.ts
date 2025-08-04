@@ -43,7 +43,7 @@ class SettingsService {
   }
 
   getDefaultCurrency(): string {
-    return this.settings.currency_symbol || '$';
+    return this.settings.default_currency || 'USD';
   }
 
   getEnrollmentFee(): number {

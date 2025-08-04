@@ -1,4 +1,5 @@
 import { settingsService } from '@/services/settingsService';
+import { useState, useEffect } from 'react';
 
 export interface Currency {
   id: string;
@@ -187,10 +188,12 @@ export const convertAmount = async (
     
     // For now, we'll use a simple conversion based on stored rates
     // In a real implementation, you'd fetch current exchange rates
-    const response = await fetch(`/api/currency/convert`, {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/convert`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         amount: numAmount,
@@ -204,7 +207,7 @@ export const convertAmount = async (
     }
 
     const data = await response.json();
-    return data.converted_amount;
+    return data.data?.converted_amount || data.converted_amount;
   } catch (error) {
     console.error('Error converting currency:', error);
     // Return original amount if conversion fails
@@ -251,12 +254,25 @@ export const convertFromBase = async (
  */
 export const getCurrencySymbol = async (currencyCode?: string): Promise<string> => {
   try {
-    const settings = await settingsService.getAllSettings();
-    const targetCurrency = currencyCode || settings?.default_currency || 'USD';
+    const targetCurrency = currencyCode || 'USD';
     
-    // For now, return the default symbol from settings
-    // In a full implementation, you'd fetch this from the currency database
-    return settings?.currency_symbol || '$';
+    // Fetch currency symbol from API
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${targetCurrency}/symbol`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Currency symbol API error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`Failed to fetch currency symbol: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data?.symbol || data.symbol || '$';
   } catch (error) {
     console.error('Error getting currency symbol:', error);
     return '$';
@@ -312,15 +328,254 @@ export const isValidCurrencyCode = (currencyCode: string): boolean => {
  */
 export const getAvailableCurrencies = async (): Promise<Currency[]> => {
   try {
-    const response = await fetch('/api/currencies');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/currencies`);
     if (!response.ok) {
       throw new Error('Failed to fetch currencies');
     }
     
     const data = await response.json();
-    return data.currencies || [];
+    return data.data?.currencies || data.currencies || [];
   } catch (error) {
     console.error('Error fetching currencies:', error);
     return [];
+  }
+}; 
+
+/**
+ * Format amount in user's currency by converting from base currency (NGN)
+ * This is the main function to use for displaying amounts in user's preferred currency
+ * @param amount - The amount in base currency (NGN)
+ * @param userCurrencyCode - The user's preferred currency code
+ * @param options - Additional formatting options
+ * @returns Formatted currency string in user's currency
+ */
+export const formatAmountInUserCurrency = async (
+  amount: number | string | null | undefined,
+  userCurrencyCode?: string,
+  options: {
+    showSymbol?: boolean;
+    showCode?: boolean;
+    decimalPlaces?: number;
+    locale?: string;
+  } = {}
+): Promise<string> => {
+  if (amount === null || amount === undefined) {
+    return '0';
+  }
+
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  if (isNaN(numAmount)) {
+    return '0';
+  }
+
+  try {
+    const targetCurrency = userCurrencyCode || 'NGN';
+    
+    // If target currency is NGN (base currency), no conversion needed
+    if (targetCurrency === 'NGN') {
+      return formatAmountSync(numAmount, 'NGN', {
+        ...options,
+        currencySymbol: '₦'
+      });
+    }
+
+    // Convert from NGN (base) to user's currency using database rates
+    const convertedAmount = await convertAmount(numAmount, 'NGN', targetCurrency);
+    
+    // Get currency symbol for the target currency from database
+    const currencySymbol = await getCurrencySymbol(targetCurrency);
+    
+    // Format the converted amount
+    return formatAmountSync(convertedAmount, targetCurrency, {
+      ...options,
+      currencySymbol
+    });
+  } catch (error) {
+    console.error('Error formatting amount in user currency:', error);
+    // Fallback to base currency formatting
+    return formatAmountSync(numAmount, 'NGN', {
+      ...options,
+      currencySymbol: '₦'
+    });
+  }
+};
+
+/**
+ * Format amount in user's currency (synchronous version with fallback)
+ * @param amount - The amount in base currency (NGN)
+ * @param userCurrencyCode - The user's preferred currency code
+ * @param currencySymbol - The currency symbol to use
+ * @returns Formatted currency string in user's currency
+ */
+export const formatAmountInUserCurrencySync = (
+  amount: number | string | null | undefined,
+  userCurrencyCode?: string,
+  currencySymbol?: string
+): string => {
+  if (amount === null || amount === undefined) {
+    return '0';
+  }
+
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  if (isNaN(numAmount)) {
+    return '0';
+  }
+
+  const targetCurrency = userCurrencyCode || 'NGN';
+  
+  // If target currency is NGN (base currency), no conversion needed
+  if (targetCurrency === 'NGN') {
+    return formatAmountSync(numAmount, 'NGN', {
+      showSymbol: true,
+      currencySymbol: '₦'
+    });
+  }
+
+  // For sync version, we can't do conversion without API call
+  // So we'll just format with the provided symbol
+  // The actual conversion should be done in the async version
+  const symbol = currencySymbol || '$';
+  
+  return formatAmountSync(numAmount, targetCurrency, {
+    showSymbol: true,
+    currencySymbol: symbol
+  });
+};
+
+/**
+ * React hook for formatting amounts in user's currency
+ * @param amount - The amount in base currency (NGN)
+ * @param userCurrencyCode - The user's preferred currency code
+ * @returns Formatted currency string and loading state
+ */
+export const useCurrencyFormat = (amount: number | string | null | undefined, userCurrencyCode?: string) => {
+  const [formattedAmount, setFormattedAmount] = useState<string>('0');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const formatAmount = async () => {
+      try {
+        setIsLoading(true);
+        const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
+        setFormattedAmount(formatted);
+      } catch (error) {
+        console.error('Error formatting currency:', error);
+        setFormattedAmount('0');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    formatAmount();
+  }, [amount, userCurrencyCode]);
+
+  return { formattedAmount, isLoading };
+};
+
+/**
+ * React hook for formatting amounts in user's currency with symbol caching
+ * @param amount - The amount in base currency (NGN)
+ * @param userCurrencyCode - The user's preferred currency code
+ * @param currencySymbol - Optional currency symbol to avoid API call
+ * @returns Formatted currency string and loading state
+ */
+export const useCurrencyFormatWithSymbol = (
+  amount: number | string | null | undefined, 
+  userCurrencyCode?: string,
+  currencySymbol?: string
+) => {
+  const [formattedAmount, setFormattedAmount] = useState<string>('0');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const formatAmount = async () => {
+      try {
+        setIsLoading(true);
+        
+        if (currencySymbol) {
+          // Use provided symbol to avoid API call
+          const formatted = formatAmountInUserCurrencySync(amount, userCurrencyCode, currencySymbol);
+          setFormattedAmount(formatted);
+        } else {
+          // Do full conversion with API call
+          const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
+          setFormattedAmount(formatted);
+        }
+      } catch (error) {
+        console.error('Error formatting currency:', error);
+        setFormattedAmount('0');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    formatAmount();
+  }, [amount, userCurrencyCode, currencySymbol]);
+
+  return { formattedAmount, isLoading };
+};
+
+/**
+ * Test currency conversion API
+ * @returns Promise<boolean>
+ */
+export const testCurrencyConversion = async (): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/convert`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        amount: 1000,
+        from_currency: 'NGN',
+        to_currency: 'USD',
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Currency conversion API test failed:', response.status, response.statusText);
+      return false;
+    }
+
+    const data = await response.json();
+    console.log('Currency conversion API test successful:', data);
+    console.log('Conversion API Response structure:', JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Currency conversion API test error:', error);
+    return false;
+  }
+};
+
+/**
+ * Test currency symbol API
+ * @returns Promise<boolean>
+ */
+export const testCurrencySymbol = async (): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/USD/symbol`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Currency symbol API test failed:', response.status, response.statusText);
+      return false;
+    }
+
+    const data = await response.json();
+    console.log('Currency symbol API test successful:', data);
+    console.log('API Response structure:', JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Currency symbol API test error:', error);
+    return false;
   }
 }; 
