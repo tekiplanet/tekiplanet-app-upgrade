@@ -39,6 +39,14 @@ import { settingsService } from '@/services/settingsService';
 import { useQuery } from "@tanstack/react-query";
 import { formatAmountInUserCurrencySync } from '@/lib/currency';
 
+interface Installment {
+  number: number;
+  amount: number;
+  dueDate: string;
+  paid: boolean;
+  overdue: boolean;
+}
+
 interface EnrolledCourse {
   enrollment_id: string;
   course_id: string;
@@ -46,7 +54,7 @@ interface EnrolledCourse {
   course_image: string;
   enrollment_status: string;
   enrolled_at: string;
-  payment_status: 'not_started' | 'partially_paid' | 'fully_paid' | 'overdue' | 'pending_installments';
+  payment_status: 'not_started' | 'partially_paid' | 'fully_paid' | 'overdue';
   total_tuition: number;
   paid_amount: number;
   progress: number;
@@ -216,6 +224,27 @@ export default function MyCourses() {
     );
     
     return <span>{formattedAmount}</span>;
+  };
+
+  // Function to check if user can manage course
+  const canManageCourse = (enrollment: EnrolledCourse): { canManage: boolean; reason: string | null } => {
+    // Check if payment plan is selected
+    if (enrollment.payment_status === 'not_started') {
+      return { canManage: false, reason: 'Payment plan not selected' };
+    }
+
+    // Check for overdue installments
+    if (enrollment.installments && enrollment.installments.length > 0) {
+      const hasOverdueInstallments = enrollment.installments.some(installment => 
+        installment.status !== 'paid' && new Date(installment.due_date) < new Date()
+      );
+      
+      if (hasOverdueInstallments) {
+        return { canManage: false, reason: 'Overdue installment payment' };
+      }
+    }
+
+    return { canManage: true, reason: null };
   };
 
   useEffect(() => {
@@ -390,8 +419,11 @@ export default function MyCourses() {
             course.course_id === processingCourse.course_id 
               ? {
                   ...course, 
-                  installments: response.installments || [],
-                  payment_status: 'partially_paid'
+                  installments: (response.installments || []).map(inst => ({
+                    ...inst,
+                    order: inst.order || 0
+                  })),
+                  payment_status: 'partially_paid' as const
                 } 
               : course
           )
@@ -471,7 +503,7 @@ export default function MyCourses() {
         course.enrollment_id === fullPaymentCourse.enrollment_id
           ? { 
               ...course, 
-              payment_status: 'fully_paid',
+              payment_status: 'fully_paid' as const,
               paid_amount: fullAmount
             }
           : course
@@ -483,7 +515,7 @@ export default function MyCourses() {
         course.enrollment_id === fullPaymentCourse.enrollment_id
           ? { 
               ...course, 
-              payment_status: 'fully_paid',
+              payment_status: 'fully_paid' as const,
               paid_amount: fullAmount
             }
           : course
@@ -868,16 +900,40 @@ export default function MyCourses() {
                     </div>
                   )}
 
-                  {/* Action Button */}
-                  <div className="pt-3 border-t border-border/50">
-                    <Button 
-                      className="w-full font-medium bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors h-10"
-                      onClick={() => navigate(`/dashboard/academy/course/${enrollment.course_id}/manage`)}
-                    >
-                      Manage Course
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
+                                     {/* Action Button */}
+                   <div className="pt-3 border-t border-border/50">
+                     {(() => {
+                       const { canManage, reason } = canManageCourse(enrollment);
+                       return (
+                         <Button 
+                           className={`w-full font-medium transition-colors h-10 ${
+                             canManage 
+                               ? 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground' 
+                               : 'bg-muted text-muted-foreground cursor-not-allowed'
+                           }`}
+                           onClick={() => {
+                             if (canManage) {
+                               navigate(`/dashboard/academy/course/${enrollment.course_id}/manage`);
+                             } else {
+                               toast.error(`Cannot manage course: ${reason}`);
+                             }
+                           }}
+                           disabled={!canManage}
+                         >
+                           {canManage ? (
+                             <>
+                               Manage Course
+                               <ArrowRight className="ml-2 h-4 w-4" />
+                             </>
+                           ) : (
+                             <>
+                               {reason === 'Payment plan not selected' ? 'Select Payment Plan First' : 'Payment Required'}
+                             </>
+                           )}
+                         </Button>
+                       );
+                     })()}
+                   </div>
                 </div>
               </CardContent>
             </Card>
@@ -933,6 +989,8 @@ export default function MyCourses() {
         currentBalance={balance}
         selectedPaymentPlan={selectedPaymentPlan}
         courseName={selectedCourse?.course_title || ''}
+        userCurrencyCode={user?.currency_code}
+        currencySymbol={currencySymbol}
         onConfirmPayment={() => {
           // Prevent multiple simultaneous payment attempts
           if (isProcessingPayment) return;
@@ -996,8 +1054,8 @@ export default function MyCourses() {
                       payment_status: course.installments?.every(inst => 
                         inst.id === selectedInstallment.id || inst.status === 'paid'
                       ) 
-                        ? 'fully_paid' 
-                        : 'partially_paid'
+                        ? 'fully_paid' as const
+                        : 'partially_paid' as const
                     }
                   : course
               );

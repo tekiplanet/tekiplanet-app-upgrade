@@ -53,7 +53,17 @@ const CourseManagement: React.FC = () => {
       enrolled_at: string;
     } | null;
     installments: any[];
+    canAccessCourse: boolean;
+    accessReason: string | null;
   } | null>(null);
+
+  // Access control check - moved after state declaration
+  React.useEffect(() => {
+    if (courseDetails && !courseDetails.canAccessCourse) {
+      toast.error(`Access denied: ${courseDetails.accessReason || 'No reason provided'}`);
+      navigate('/dashboard/academy/my-courses');
+    }
+  }, [courseDetails, navigate]);
 
   const [errorMessage, setErrorMessage] = React.useState('');
   // const [enrollments, setEnrollments] = React.useState<any[]>([]);
@@ -145,31 +155,8 @@ const CourseManagement: React.FC = () => {
   }, [courseIdState, calculateUpcomingExams, courseDetails, handleUpcomingExamsCountChange]);
 
 
-  // Separate effect to fetch exams
-  React.useEffect(() => {
-    const fetchCourseExams = async () => {
-      try {
-        if (!courseIdState) return;
-
-        const examsResponse = await apiClient.get(`/courses/${courseIdState}/exams`);
-        const exams = examsResponse.data;
-
-        // Update course details with exams
-        setCourseDetails(prevDetails => ({
-          ...prevDetails!,
-          exams: exams
-        }));
-        
-        // Calculate and set upcoming exams count
-        const count = calculateUpcomingExams(exams);
-        setUpcomingExamsCount(count);
-      } catch (error) {
-        console.error('Error fetching exams:', error);
-      }
-    };
-
-    fetchCourseExams();
-  }, [courseIdState]);
+  // Remove this separate effect as it conflicts with the main courseDetails fetch
+  // The exams are already included in the main courseDetails response
 
   // React.useEffect(() => {
   //   const fetchCourseDetails = async () => {
@@ -205,6 +192,12 @@ const CourseManagement: React.FC = () => {
   
         const courseDetails = await courseManagementService.getCourseDetails(courseIdState, user?.currency_code);
         setCourseDetails(courseDetails);
+        
+        // Calculate and set upcoming exams count from the fetched data
+        if (courseDetails.exams) {
+          const count = calculateUpcomingExams(courseDetails.exams);
+          setUpcomingExamsCount(count);
+        }
   
         // If enrollment is not in course details, fetch it separately
         if (!courseDetails.enrollment) {

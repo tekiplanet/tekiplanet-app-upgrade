@@ -399,10 +399,46 @@ class CourseController extends Controller
 
             // Get enrollment details if user is authenticated
             $enrollment = null;
+            $canAccessCourse = false;
+            $accessReason = null;
+            
             if (auth()->check()) {
                 $enrollment = Enrollment::where('user_id', auth()->id())
                     ->where('course_id', $courseId)
+                    ->with('installments')
                     ->first();
+                
+                if ($enrollment) {
+                    // Check if user can access the course based on payment status
+                    if ($enrollment->payment_status === 'not_started') {
+                        $canAccessCourse = false;
+                        $accessReason = 'Payment plan not selected';
+                    } elseif ($enrollment->payment_status === 'fully_paid') {
+                        $canAccessCourse = true;
+                    } elseif ($enrollment->payment_status === 'partially_paid') {
+                        // Check for overdue installments
+                        $hasOverdueInstallments = $enrollment->installments()
+                            ->where('status', '!=', 'paid')
+                            ->where('due_date', '<', now())
+                            ->exists();
+                        
+                        if ($hasOverdueInstallments) {
+                            $canAccessCourse = false;
+                            $accessReason = 'Overdue installment payment';
+                        } else {
+                            $canAccessCourse = true;
+                        }
+                    } else {
+                        $canAccessCourse = false;
+                        $accessReason = 'Payment required';
+                    }
+                } else {
+                    $canAccessCourse = false;
+                    $accessReason = 'Not enrolled in course';
+                }
+            } else {
+                $canAccessCourse = false;
+                $accessReason = 'Authentication required';
             }
 
             // Calculate next class date from schedules
@@ -484,7 +520,9 @@ class CourseController extends Controller
                 'instructor' => $course->instructor,
                 'enrollment' => $enrollment,
                 'installments' => $enrollment ? $enrollment->installments : [],
-                'nextLesson' => $nextClassFormatted
+                'nextLesson' => $nextClassFormatted,
+                'canAccessCourse' => $canAccessCourse,
+                'accessReason' => $accessReason
             ]);
 
         } catch (\Exception $e) {

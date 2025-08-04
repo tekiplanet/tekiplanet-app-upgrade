@@ -127,12 +127,7 @@ export const enrollmentService = {
           paid_amount: enrollment.paid_amount || 0,
           installments: enrollment.installments.map(installment => ({
             ...installment,
-            due_date: new Date(installment.due_date).toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })
+            due_date: installment.due_date // Keep as ISO string for proper date comparison
           })),
           course: {
             id: enrollment.course_id,
@@ -371,10 +366,10 @@ export const enrollmentService = {
   }> {
     try {
       // console.log('Processing initial installment plan', { courseId, amount });
-      // const response = await api.post('/enrollments/installment-plan', {
-      //   course_id: courseId,
-      //   amount: amount
-      // });
+      const response = await api.post('/enrollments/installment-plan', {
+        course_id: courseId,
+        amount: amount
+      });
 
       // console.log('Installment plan response:', JSON.stringify(response.data, null, 2));
 

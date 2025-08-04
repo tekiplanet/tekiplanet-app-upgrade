@@ -377,6 +377,10 @@ class EnrollmentController extends Controller
                 ]
             ]);
 
+            // Update enrollment payment status to fully_paid
+            $enrollment->payment_status = 'fully_paid';
+            $enrollment->save();
+
             // Commit transaction
             DB::commit();
 
@@ -1024,7 +1028,7 @@ class EnrollmentController extends Controller
     private function calculateOverallPaymentStatus($installments)
     {
         if (!$installments || $installments->isEmpty()) {
-            return 'pending_installments';
+            return 'not_started';
         }
 
         // Check if all installments are paid
@@ -1041,7 +1045,7 @@ class EnrollmentController extends Controller
             return $installment->status === 'paid';
         });
 
-        return $anyPaid ? 'partially_paid' : 'pending_installments';
+        return $anyPaid ? 'partially_paid' : 'not_started';
     }
 
 

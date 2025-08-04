@@ -12,6 +12,8 @@ export interface CourseDetails {
   instructor: any;
   enrollment: any;
   installments: any[];
+  canAccessCourse: boolean;
+  accessReason: string | null;
 }
 
 const courseNotices = {

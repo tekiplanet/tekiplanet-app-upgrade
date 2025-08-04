@@ -351,3 +351,513 @@
 [2025-08-04 17:50:20] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
 [2025-08-04 17:50:20] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
 [2025-08-04 17:50:20] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:51:20] production.INFO: Recent transactions requested {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","limit":"5","requested_limit":"5"} 
+[2025-08-04 17:51:20] production.INFO: Recent transactions returned {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","requested_limit":"5","actual_count":3} 
+[2025-08-04 17:52:12] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:52:12] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:52:12] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:52:12] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:52:12] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:52:12] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:53:27] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:53:27] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:53:27] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:53:27] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:53:27] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:53:27] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:53:36] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:53:36] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:53:36] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:53:36] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:53:36] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:53:36] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:53:58] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:53:58] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:53:58] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:53:58] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:53:58] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:53:58] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:54:08] production.INFO: Installment plan created {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","first_installment_id":"7d56a6ff-1683-4d07-98b1-9d745f7bec8c","second_installment_id":"e3a3bdbb-4bc5-4ac8-b827-555049768875","installment_amount":109.765,"user_currency":"GBP"} 
+[2025-08-04 17:54:24] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:54:24] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:54:24] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:54:24] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:54:24] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:54:24] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:58:03] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:58:03] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:03] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:03] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:03] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:03] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:58:05] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:58:05] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:05] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:05] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:05] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:05] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:58:17] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:58:17] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:17] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:17] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:17] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:17] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 17:58:18] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 17:58:18] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:18] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:18] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 17:58:18] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 17:58:18] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:02:18] production.ERROR: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it {"exception":"[object] (PDOException(code: 2002): SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it at C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connectors\\Connector.php:65)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connectors\\Connector.php(65): PDO->__construct('mysql:host=loca...', 'root', '', Array)
+#1 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connectors\\Connector.php(83): Illuminate\\Database\\Connectors\\Connector->createPdoConnection('mysql:host=loca...', 'root', '', Array)
+#2 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connectors\\Connector.php(49): Illuminate\\Database\\Connectors\\Connector->tryAgainIfCausedByLostConnection(Object(PDOException), 'mysql:host=loca...', 'root', '', Array)
+#3 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connectors\\MySqlConnector.php(24): Illuminate\\Database\\Connectors\\Connector->createConnection('mysql:host=loca...', Array, Array)
+#4 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connectors\\ConnectionFactory.php(184): Illuminate\\Database\\Connectors\\MySqlConnector->connect(Array)
+#5 [internal function]: Illuminate\\Database\\Connectors\\ConnectionFactory->Illuminate\\Database\\Connectors\\{closure}()
+#6 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(1339): call_user_func(Object(Closure))
+#7 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Concerns\\ManagesTransactions.php(185): Illuminate\\Database\\Connection->getPdo()
+#8 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Concerns\\ManagesTransactions.php(151): Illuminate\\Database\\Connection->handleBeginTransactionException(Object(PDOException))
+#9 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Concerns\\ManagesTransactions.php(125): Illuminate\\Database\\Connection->createTransaction()
+#10 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Concerns\\ManagesTransactions.php(24): Illuminate\\Database\\Connection->beginTransaction()
+#11 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Queue\\DatabaseQueue.php(227): Illuminate\\Database\\Connection->transaction(Object(Closure))
+#12 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Queue\\Worker.php(349): Illuminate\\Queue\\DatabaseQueue->pop('default')
+#13 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Queue\\Worker.php(363): Illuminate\\Queue\\Worker->Illuminate\\Queue\\{closure}('default')
+#14 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Queue\\Worker.php(163): Illuminate\\Queue\\Worker->getNextJob(Object(Illuminate\\Queue\\DatabaseQueue), 'default')
+#15 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Queue\\Console\\WorkCommand.php(138): Illuminate\\Queue\\Worker->daemon('database', 'default', Object(Illuminate\\Queue\\WorkerOptions))
+#16 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Queue\\Console\\WorkCommand.php(121): Illuminate\\Queue\\Console\\WorkCommand->runWorker('database', 'default')
+#17 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Queue\\Console\\WorkCommand->handle()
+#18 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#19 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#20 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#21 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#22 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#23 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#24 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#25 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#26 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Queue\\Console\\WorkCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#27 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\tekiplanet\\backend\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 {main}
+"} 
+[2025-08-04 18:04:00] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:04:00] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:04:00] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:04:00] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:04:07] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:04:07] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:04:07] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:04:07] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:04:07] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:04:07] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:04:25] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:04:25] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:04:25] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:04:25] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:04:25] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:04:25] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:04:27] production.INFO: Installment payment processed {"installment_id":"7d56a6ff-1683-4d07-98b1-9d745f7bec8c","new_status":"paid","new_paid_at":"2025-08-04 18:04:27"} 
+[2025-08-04 18:04:38] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:04:38] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:04:38] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:04:38] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:04:38] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:04:38] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:07:13] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:07:13] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:07:13] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:07:13] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:07:13] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:07:13] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:10:55] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:10:55] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:10:55] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:10:55] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:10:55] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:10:55] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:10:58] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:10:58] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:10:58] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:10:58] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:10:58] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:10:58] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:11:05] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:11:05] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:05] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:05] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:05] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:05] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:11:06] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:11:06] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:06] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:06] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:06] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:06] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:11:13] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:11:13] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:13] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:13] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:13] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:13] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:11:14] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:11:14] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:14] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:14] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:11:14] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:11:14] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:13:35] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:13:35] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:13:35] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:13:35] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:13:35] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:13:35] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:18:18] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:18:18] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:18:18] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:18:18] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:18:18] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:18:18] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:18:59] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:18:59] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:18:59] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:18:59] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:18:59] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:18:59] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:21:55] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:21:55] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:21:55] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:21:55] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:21:55] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:21:55] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:21:57] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:21:57] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:21:57] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:21:57] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:21:57] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:21:57] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:22:44] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:22:44] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:22:44] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:22:44] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:22:44] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:22:44] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:24:25] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:24:25] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:24:25] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:24:25] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:24:25] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:24:25] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:40:14] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:40:14] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:14] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:14] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:14] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:14] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:40:23] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:40:23] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:23] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:23] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:23] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:23] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:40:28] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:40:28] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:28] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:28] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:28] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:28] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:40:42] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:40:42] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:42] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:42] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:42] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:42] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:40:44] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:40:44] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:44] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:44] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:40:44] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:40:44] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:42:34] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:42:34] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:42:34] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:42:34] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:42:34] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:42:34] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:43:32] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:43:32] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:43:32] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:43:32] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:43:32] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:43:32] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:43:43] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:43:43] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:43:43] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:43:43] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:43:43] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:43:43] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:43:52] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:43:53] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:43:53] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:43:53] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:43:53] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:43:53] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:44:00] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:44:00] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:00] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:00] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:00] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:00] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:44:09] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:44:09] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:09] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:09] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:09] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:09] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:44:30] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:44:31] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:31] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:31] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:31] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:31] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:44:43] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:44:43] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:43] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:43] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:43] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:43] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:44:46] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:44:46] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:46] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:46] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:44:46] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:44:46] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:46:20] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:46:20] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:46:20] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:46:20] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:46:20] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:46:20] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:46:45] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:46:45] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:46:45] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:46:45] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:47:11] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:47:11] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:47:11] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:47:11] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:47:16] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:47:16] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:47:16] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:47:16] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:47:16] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:47:16] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:48:27] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:48:28] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:48:28] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:48:28] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:48:28] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:48:28] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:48:56] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:48:56] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:48:56] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:48:56] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:49:01] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:49:01] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:49:01] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:49:01] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:49:01] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:49:01] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:52:25] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:52:25] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:52:25] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:52:25] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:52:25] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:52:25] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:52:32] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:52:32] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:52:32] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:52:32] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:53:08] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:53:08] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:53:08] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:53:08] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:53:12] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:53:12] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:53:12] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:53:12] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:53:12] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:53:12] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:54:15] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:54:15] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:54:15] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:54:15] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:54:15] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:54:15] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:54:26] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:54:26] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:54:26] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:54:26] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:54:31] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:54:31] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:54:31] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:54:31] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:54:31] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:54:31] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:57:03] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:57:03] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:57:03] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:57:03] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:57:08] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:57:08] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:57:08] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:57:08] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:57:08] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:57:08] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:57:15] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:57:15] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:57:15] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:57:15] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:57:19] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:57:19] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:57:19] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:57:19] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:57:19] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:57:19] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:59:17] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:59:17] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:59:17] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 18:59:17] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 18:59:22] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:59:22] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:59:22] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:59:22] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:59:22] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:59:22] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 18:59:57] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 18:59:57] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:59:57] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:59:57] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 18:59:57] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 18:59:57] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:00:22] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:00:22] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:00:22] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:00:22] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:00:22] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:00:22] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:00:26] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:00:26] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:00:26] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:00:26] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:00:26] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:00:26] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:00:40] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:00:40] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:00:40] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:00:40] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:00:40] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:00:40] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:02:35] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:02:35] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:02:35] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:02:35] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:02:35] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:02:35] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:05:04] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:05:04] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:05:04] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:05:04] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:05:04] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:05:04] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:06:15] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:06:15] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:06:15] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:06:15] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:06:15] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:06:15] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:07:11] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:07:11] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:07:11] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:07:11] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:07:11] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:07:11] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:07:26] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:07:26] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:07:26] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:07:26] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:07:27] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:07:27] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:11:39] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:11:39] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:11:39] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:11:39] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:11:39] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:11:39] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:12:32] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:12:32] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:12:32] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:12:32] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:12:32] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:12:32] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:13:45] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:13:45] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:13:45] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:13:45] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:13:45] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:13:45] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:13:55] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 19:13:55] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 19:13:55] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 19:13:55] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 19:14:07] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:14:07] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:14:07] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:14:07] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:14:07] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:14:07] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:14:14] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 19:14:14] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 19:14:14] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 19:14:14] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 19:14:38] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:14:38] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:14:38] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:14:38] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:14:38] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:14:38] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:14:54] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 19:14:54] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 19:14:54] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-04 19:14:54] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-04 19:15:02] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:15:02] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:15:02] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:15:02] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:15:02] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:15:02] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:15:46] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:15:46] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:15:46] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:15:46] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:15:46] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:15:46] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:15:53] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:15:53] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:15:53] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:15:53] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:15:53] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:15:53] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:18:29] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:18:29] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:18:29] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:18:29] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:18:29] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:18:29] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-04 19:19:05] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-04 19:19:05] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:19:05] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:19:05] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-04 19:19:05] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-04"} 
+[2025-08-04 19:19:05] production.INFO: Enrollment query results {"total_enrollments":2} 

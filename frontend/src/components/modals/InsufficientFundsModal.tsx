@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Loader2 } from 'lucide-react';
 import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "@/services/settingsService";
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
 
 interface InsufficientFundsModalProps {
   open: boolean;
@@ -23,6 +24,8 @@ interface InsufficientFundsModalProps {
   isProcessingPayment?: boolean;
   selectedPaymentPlan: string;
   courseName: string;
+  userCurrencyCode?: string;
+  currencySymbol?: string;
 }
 
 const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
@@ -33,7 +36,9 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
   onConfirmPayment,
   isProcessingPayment = false,
   selectedPaymentPlan,
-  courseName
+  courseName,
+  userCurrencyCode,
+  currencySymbol
 }) => {
   const navigate = useNavigate();
   const { data: settings } = useQuery({
@@ -43,6 +48,16 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
 
   const amountNeeded = requiredAmount - currentBalance;
   const isBalanceSufficient = currentBalance >= requiredAmount;
+
+  // Currency display component that formats amounts with user's currency symbol
+  const CurrencyDisplay = ({ amount }: { amount: number }) => {
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    return <span>{formattedAmount}</span>;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -61,20 +76,20 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
           <div className="flex justify-between">
             <span>Required Amount:</span>
             <span className="font-bold text-primary">
-              {formatCurrency(requiredAmount, settings?.default_currency)}
+              <CurrencyDisplay amount={requiredAmount} />
             </span>
           </div>
           <div className="flex justify-between">
             <span>Current Wallet Balance:</span>
             <span className={`font-bold ${!isBalanceSufficient ? 'text-destructive' : 'text-primary'}`}>
-              {formatCurrency(currentBalance, settings?.default_currency)}
+              <CurrencyDisplay amount={currentBalance} />
             </span>
           </div>
           {!isBalanceSufficient && (
             <div className="flex justify-between">
               <span>Additional Amount Needed:</span>
               <span className="font-bold text-destructive">
-                {formatCurrency(amountNeeded, settings?.default_currency)}
+                <CurrencyDisplay amount={amountNeeded} />
               </span>
             </div>
           )}
