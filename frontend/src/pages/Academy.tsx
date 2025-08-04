@@ -4,8 +4,6 @@ import { apiClient } from '@/lib/axios';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Dashboard from "@/pages/Dashboard";
-
-
 import { Badge } from "@/components/ui/badge"
 import { useNavigate } from "react-router-dom"
 import { 
@@ -20,6 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useAuthStore } from '@/store/useAuthStore';
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
+import { useEffect } from 'react';
 
 interface Course {
   id: string;
@@ -38,9 +39,10 @@ interface Settings {
   default_currency: string;
 }
 
-const fetchCourses = async (): Promise<Course[]> => {
+const fetchCourses = async (userCurrency?: string): Promise<Course[]> => {
   try {
-    const response = await apiClient.get('/courses');
+    const params = userCurrency ? { currency: userCurrency } : {};
+    const response = await apiClient.get('/courses', { params });
     return response.data.courses || [];
   } catch (error) {
     console.error("Failed to fetch courses", error);
@@ -60,9 +62,14 @@ const fetchSettings = async (): Promise<Settings> => {
 
 export default function Academy() {
   const navigate = useNavigate()
+  const user = useAuthStore(state => state.user);
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedLevel, setSelectedLevel] = useState<string>("all")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
 
   const settingsQuery = useQuery<Settings>({
     queryKey: ['settings'],
@@ -70,10 +77,68 @@ export default function Academy() {
   });
 
   const coursesQuery = useQuery<Course[]>({
-    queryKey: ['courses'],
-    queryFn: fetchCourses,
+    queryKey: ['courses', user?.currency_code],
+    queryFn: () => fetchCourses(user?.currency_code),
     placeholderData: [] // Provide a default empty array
   });
+
+  // Fetch user's currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // Currency display component that formats amounts with user's currency symbol (no conversion)
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    // Use synchronous formatting with the provided currency symbol
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    
+    return <span>{formattedAmount}</span>;
+  };
 
   if (coursesQuery.isLoading || settingsQuery.isLoading) {
     return (
@@ -216,12 +281,16 @@ export default function Academy() {
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                    <div className="space-y-0.5">
-                      <p className="text-xs text-muted-foreground">Course Fee</p>
-                      <div className="text-lg font-bold text-primary">
-                        {settings.currency_symbol}{formatPrice(course.price)}
+                                          <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">Course Fee</p>
+                        <div className="text-lg font-bold text-primary">
+                          <CurrencyDisplay 
+                            amount={typeof course.price === 'string' ? parseFloat(course.price) : course.price} 
+                            userCurrencyCode={user?.currency_code}
+                            currencySymbol={currencySymbol}
+                          />
+                        </div>
                       </div>
-                    </div>
                     <Button 
                       size="sm" 
                       onClick={() => navigate(`/dashboard/academy/${course.id}`)}

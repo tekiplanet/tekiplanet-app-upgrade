@@ -14,9 +14,17 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Jobs\SendCourseNoticeJob;
+use App\Services\CurrencyService;
 
 class CourseController extends Controller
 {
+    protected $currencyService;
+
+    public function __construct(CurrencyService $currencyService)
+    {
+        $this->currencyService = $currencyService;
+    }
+
     public function index(Request $request)
     {
         $query = Course::query();
@@ -40,8 +48,30 @@ class CourseController extends Controller
         $perPage = $request->input('per_page', 8);
         $courses = $query->paginate($perPage);
 
+        // Get user's currency for conversion
+        $userCurrency = null;
+        if (auth()->check()) {
+            // If authenticated, get from user
+            $userCurrency = auth()->user()->currency_code;
+        } elseif ($request->has('currency')) {
+            // If not authenticated but currency provided in query
+            $userCurrency = $request->input('currency');
+        }
+
+        // Convert course prices if user has a different currency
+        $coursesData = $courses->items();
+        if ($userCurrency && $userCurrency !== 'NGN') {
+            foreach ($coursesData as $course) {
+                $course->price = $this->currencyService->convertAmount(
+                    $course->price,
+                    'NGN', // Course prices are stored in NGN
+                    $userCurrency
+                );
+            }
+        }
+
         return response()->json([
-            'courses' => $courses->items(),
+            'courses' => $coursesData,
             'total' => $courses->total(),
             'current_page' => $courses->currentPage(),
             'per_page' => $courses->perPage(),
@@ -49,7 +79,7 @@ class CourseController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
         $course = Course::with([
             'modules' => function($query) {
@@ -64,6 +94,25 @@ class CourseController extends Controller
             'instructor',
             'schedules'
         ])->findOrFail($id);
+        
+        // Get user's currency for conversion
+        $userCurrency = null;
+        if (auth()->check()) {
+            // If authenticated, get from user
+            $userCurrency = auth()->user()->currency_code;
+        } elseif ($request->has('currency')) {
+            // If not authenticated but currency provided in query
+            $userCurrency = $request->input('currency');
+        }
+
+        // Convert course price if user has a different currency
+        if ($userCurrency && $userCurrency !== 'NGN') {
+            $course->price = $this->currencyService->convertAmount(
+                $course->price,
+                'NGN', // Course prices are stored in NGN
+                $userCurrency
+            );
+        }
         
         return response()->json([
             'course' => $course,
@@ -291,7 +340,7 @@ class CourseController extends Controller
         }
     }
 
-    public function getCourseDetails($courseId)
+    public function getCourseDetails($courseId, Request $request)
     {
         try {
             $course = Course::with([
@@ -301,6 +350,25 @@ class CourseController extends Controller
                 'exams',
                 'notices'
             ])->findOrFail($courseId);
+
+            // Get user's currency for conversion
+            $userCurrency = null;
+            if (auth()->check()) {
+                // If authenticated, get from user
+                $userCurrency = auth()->user()->currency_code;
+            } elseif ($request->has('currency')) {
+                // If not authenticated but currency provided in query
+                $userCurrency = $request->input('currency');
+            }
+
+            // Convert course price if user has a different currency
+            if ($userCurrency && $userCurrency !== 'NGN') {
+                $course->price = $this->currencyService->convertAmount(
+                    $course->price,
+                    'NGN', // Course prices are stored in NGN
+                    $userCurrency
+                );
+            }
 
             // Get enrollment details if user is authenticated
             $enrollment = null;

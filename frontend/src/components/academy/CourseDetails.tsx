@@ -25,6 +25,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Course } from "@/data/mockCourses";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import PagePreloader from "@/components/ui/PagePreloader";
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
+import { useState, useEffect } from 'react';
 
 interface EnrollmentResponse {
   success: boolean;
@@ -43,6 +45,10 @@ export default function CourseDetails() {
   const user = useAuthStore((state) => state.user);
   const walletBalance = Number(user?.wallet_balance || 0);
   
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
+  
   // Add settings query at the top with other queries
   const { data: settings } = useQuery({
     queryKey: ['settings'],
@@ -52,14 +58,72 @@ export default function CourseDetails() {
   // Get enrollment fee from settings
   const ENROLLMENT_FEE = Number(settings?.enrollment_fee || 1000);
 
+  // Fetch user's currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // Currency display component that formats amounts with user's currency symbol (no conversion)
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    // Use synchronous formatting with the provided currency symbol
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    
+    return <span>{formattedAmount}</span>;
+  };
+
   // Fetch course details
   const { 
     data: courseData, 
     isLoading: isCourseLoading, 
     error: courseError 
   } = useQuery({
-    queryKey: ['courseDetails', courseId],
-    queryFn: () => courseService.getCourseDetails(courseId!),
+    queryKey: ['courseDetails', courseId, user?.currency_code],
+    queryFn: () => courseService.getCourseDetails(courseId!, user?.currency_code),
     enabled: !!courseId
   });
 
@@ -438,12 +502,24 @@ export default function CourseDetails() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h2 className="text-xl font-bold text-primary">{formatCurrency(course.price, settings?.default_currency)}</h2>
+                          <h2 className="text-xl font-bold text-primary">
+                            <CurrencyDisplay 
+                              amount={course.price} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </h2>
                           <p className="text-xs text-muted-foreground">Tuition Fee</p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs text-muted-foreground mb-1">Enrollment Fee</p>
-                          <p className="text-sm font-medium">{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</p>
+                          <p className="text-sm font-medium">
+                            <CurrencyDisplay 
+                              amount={ENROLLMENT_FEE} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </p>
                         </div>
                       </div>
                       <Button 
@@ -461,7 +537,11 @@ export default function CourseDetails() {
                         )}
                       </Button>
                       <p className="text-xs text-center text-muted-foreground">
-                        Wallet Balance: {formatCurrency(walletBalance, settings?.default_currency)}
+                        Wallet Balance: <CurrencyDisplay 
+                          amount={walletBalance} 
+                          userCurrencyCode={user?.currency_code}
+                          currencySymbol={currencySymbol}
+                        />
                       </p>
                     </div>
                   </CardContent>
@@ -565,13 +645,25 @@ export default function CourseDetails() {
             <Card className="sticky top-6 bg-card/50 backdrop-blur-sm">
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <h2 className="text-3xl font-bold text-primary">{formatCurrency(course.price, settings?.default_currency)}</h2>
+                                      <h2 className="text-3xl font-bold text-primary">
+                      <CurrencyDisplay 
+                        amount={course.price} 
+                        userCurrencyCode={user?.currency_code}
+                        currencySymbol={currencySymbol}
+                      />
+                    </h2>
                   <p className="text-sm text-muted-foreground">Tuition Fee</p>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Enrollment Fee:</span>
-                    <span className="font-medium">{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</span>
+                    <span className="font-medium">
+                      <CurrencyDisplay 
+                        amount={ENROLLMENT_FEE} 
+                        userCurrencyCode={user?.currency_code}
+                        currencySymbol={currencySymbol}
+                      />
+                    </span>
                   </div>
                   <Button 
                     size="lg" 
@@ -582,7 +674,11 @@ export default function CourseDetails() {
                     {loading ? 'Enrolling...' : 'Enroll Now'}
                   </Button>
                   <p className="text-xs text-center text-muted-foreground">
-                    Wallet Balance: {formatCurrency(walletBalance, settings?.default_currency)}
+                    Wallet Balance: <CurrencyDisplay 
+                      amount={walletBalance} 
+                      userCurrencyCode={user?.currency_code}
+                      currencySymbol={currencySymbol}
+                    />
                   </p>
                 </div>
                 <Separator className="bg-border/50" />
@@ -617,7 +713,13 @@ export default function CourseDetails() {
               </p>
               <div className="p-3 rounded-lg bg-muted/50 flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Enrollment Fee:</span>
-                <span className="font-medium">{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</span>
+                <span className="font-medium">
+                  <CurrencyDisplay 
+                    amount={ENROLLMENT_FEE} 
+                    userCurrencyCode={user?.currency_code}
+                    currencySymbol={currencySymbol}
+                  />
+                </span>
               </div>
             </DialogDescription>
           </DialogHeader>

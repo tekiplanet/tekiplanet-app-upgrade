@@ -97,6 +97,13 @@
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
 
+                    <!-- Enrollment Fee -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Enrollment Fee (₦)</label>
+                        <input type="number" name="enrollment_fee" step="0.01" required min="0"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
                     <!-- Duration -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (months)</label>

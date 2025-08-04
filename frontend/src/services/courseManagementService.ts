@@ -19,13 +19,14 @@ const courseNotices = {
 };
 
 export const courseManagementService = {
-  getCourseDetails: async (courseId: string) => {
+  getCourseDetails: async (courseId: string, userCurrency?: string) => {
     try {
       if (!courseId) {
         throw new Error('Course ID is required');
       }
 
-      const response = await apiClient.get(`/courses/${courseId}/details`);
+      const params = userCurrency ? { currency: userCurrency } : {};
+      const response = await apiClient.get(`/courses/${courseId}/details`, { params });
       
       if (!response.data) {
         throw new Error('No data received from server');

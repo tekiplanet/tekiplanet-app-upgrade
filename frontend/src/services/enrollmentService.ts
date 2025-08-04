@@ -194,9 +194,10 @@ export const enrollmentService = {
     }
   },  
 
-  async getCourseDetails(courseId: string) {
+  async getCourseDetails(courseId: string, userCurrency?: string) {
     try {
-      const response = await api.get(`/courses/${courseId}/details`);
+      const params = userCurrency ? { currency: userCurrency } : {};
+      const response = await api.get(`/courses/${courseId}/details`, { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching course details:', error);

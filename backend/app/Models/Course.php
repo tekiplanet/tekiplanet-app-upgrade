@@ -17,6 +17,7 @@ class Course extends Model
         'category_id', 
         'level', 
         'price', 
+        'enrollment_fee',
         'instructor_id',
         'image_url', 
         'duration_hours', 

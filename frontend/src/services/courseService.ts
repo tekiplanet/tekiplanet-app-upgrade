@@ -13,10 +13,13 @@ class CourseService {
     }
   }
 
-  async getCourseDetails(courseId: string) {
+  async getCourseDetails(courseId: string, userCurrency?: string) {
     try {
+      // Prepare params for currency conversion
+      const params = userCurrency ? { currency: userCurrency } : {};
+      
       // First, get the basic course details
-      const courseResponse = await apiClient.get(`/courses/${courseId}`);
+      const courseResponse = await apiClient.get(`/courses/${courseId}`, { params });
       
       // Get curriculum
       const curriculumResponse = await apiClient.get(`/courses/${courseId}/curriculum`);

@@ -203,7 +203,7 @@ const CourseManagement: React.FC = () => {
       try {
         if (!courseIdState) return;
   
-        const courseDetails = await courseManagementService.getCourseDetails(courseIdState);
+        const courseDetails = await courseManagementService.getCourseDetails(courseIdState, user?.currency_code);
         setCourseDetails(courseDetails);
   
         // If enrollment is not in course details, fetch it separately

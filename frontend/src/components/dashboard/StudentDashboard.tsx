@@ -16,9 +16,17 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { studentService } from "@/services/studentService";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from '@/store/useAuthStore';
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
+import { useState, useEffect } from 'react';
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  const user = useAuthStore(state => state.user);
+  
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['student-dashboard'],
@@ -26,18 +34,74 @@ export default function StudentDashboard() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: dashboardData?.currency.code || 'USD',
-      currencyDisplay: 'symbol'
-    }).format(amount);
+  // Fetch user's currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // Currency display component that formats amounts with user's currency symbol (no conversion)
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    // Use synchronous formatting with the provided currency symbol
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    
+    return <span>{formattedAmount}</span>;
   };
 
   const stats = [
     {
       title: "Wallet Balance",
-      value: dashboardData ? formatCurrency(dashboardData.user.wallet_balance) : '0',
+      value: dashboardData ? (
+        <CurrencyDisplay 
+          amount={dashboardData.user.wallet_balance} 
+          userCurrencyCode={user?.currency_code}
+          currencySymbol={currencySymbol}
+        />
+      ) : '0',
       icon: <Wallet className="h-5 w-5 text-primary" />,
       trend: "Available balance",
       color: "from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10 dark:to-transparent",
