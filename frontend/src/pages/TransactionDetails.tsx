@@ -26,6 +26,8 @@ import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "@/services/settingsService";
 import { platformService } from '@/services/platformService';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { useAuthStore } from '@/store/useAuthStore';
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
 
 interface TransactionDetails {
   transaction: {
@@ -48,15 +50,78 @@ interface TransactionDetails {
 const TransactionDetails: React.FC = () => {
   const { transactionId } = useParams<{ transactionId: string }>();
   const navigate = useNavigate();
+  const user = useAuthStore(state => state.user);
   const [transaction, setTransaction] = useState<TransactionDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
     queryFn: settingsService.fetchSettings
   });
+
+  // Fetch user's currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // Currency display component that formats amounts with user's currency symbol (no conversion)
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    // Use synchronous formatting with the provided currency symbol
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    
+    return <span>{formattedAmount}</span>;
+  };
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -213,7 +278,11 @@ const TransactionDetails: React.FC = () => {
                   : 'text-red-600'
               }`}>
                 {transaction.transaction.type === 'credit' ? '+' : '-'}
-                {formatCurrency(transaction.transaction.amount, settings?.default_currency)}
+                <CurrencyDisplay 
+                  amount={transaction.transaction.amount} 
+                  userCurrencyCode={user?.currency_code} 
+                  currencySymbol={currencySymbol} 
+                />
               </div>
               <div className="text-sm text-muted-foreground">
                 {transaction.transaction.description}

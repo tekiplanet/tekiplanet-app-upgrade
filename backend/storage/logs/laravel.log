@@ -52,3 +52,5 @@
 [2025-08-04 14:05:04] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
 [2025-08-04 14:32:53] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
 [2025-08-04 14:32:53] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 14:40:17] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 14:40:17] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
