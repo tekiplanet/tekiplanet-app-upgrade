@@ -18,10 +18,13 @@ class TransactionController extends Controller
         // Get the logged-in user
         $user = Auth::user();
 
+        // Get limit from request, default to 20 if not provided
+        $limit = $request->input('limit', 20);
+
         // Retrieve transactions for the logged-in user
         $transactions = Transaction::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->paginate(20); // 20 transactions per page
+            ->paginate($limit); // Use the limit parameter
 
         return response()->json([
             'transactions' => $transactions,
@@ -30,6 +33,40 @@ class TransactionController extends Controller
                 'total_funded' => $transactions->where('type', 'credit')->sum('amount'),
                 'total_transactions' => $transactions->count()
             ]
+        ]);
+    }
+
+    public function getRecentTransactions(Request $request)
+    {
+        // Get the logged-in user
+        $user = Auth::user();
+
+        // Get limit from request, default to 5 if not provided
+        $limit = $request->input('limit', 5);
+
+        // Log for debugging
+        Log::info('Recent transactions requested', [
+            'user_id' => $user->id,
+            'limit' => $limit,
+            'requested_limit' => $request->input('limit')
+        ]);
+
+        // Retrieve recent transactions for the logged-in user
+        $transactions = Transaction::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->take($limit) // Use take() to get exactly the requested number
+            ->get();
+
+        // Log the result
+        Log::info('Recent transactions returned', [
+            'user_id' => $user->id,
+            'requested_limit' => $limit,
+            'actual_count' => $transactions->count()
+        ]);
+
+        return response()->json([
+            'transactions' => $transactions,
+            'count' => $transactions->count()
         ]);
     }
 

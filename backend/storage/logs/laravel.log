@@ -4,3 +4,45 @@
 [2025-08-04 13:10:21] production.ERROR: Transaction Details Error: No query results for model [App\Models\Transaction].  
 [2025-08-04 13:10:29] production.ERROR: Transaction Details Error: No query results for model [App\Models\Transaction].  
 [2025-08-04 13:11:52] production.ERROR: Transaction Details Error: No query results for model [App\Models\Transaction].  
+[2025-08-04 13:49:48] production.ERROR: Transaction Details Error: No query results for model [App\Models\Transaction].  
+[2025-08-04 13:49:53] production.ERROR: Transaction Details Error: No query results for model [App\Models\Transaction].  
+[2025-08-04 13:50:52] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:50:52] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:50:55] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:50:55] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:51:03] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:51:03] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:51:05] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:51:05] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:51:52] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:51:52] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:51:56] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:51:56] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:04] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:04] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:10] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:10] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:16] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:16] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:20] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:20] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:29] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:29] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:34] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:34] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5,"total_count":54} 
+[2025-08-04 13:52:39] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:39] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:52:43] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:43] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:52:55] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:55] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:52:59] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:52:59] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:53:06] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:53:06] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:53:08] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:53:08] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:53:17] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:53:17] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 
+[2025-08-04 13:53:20] production.INFO: Recent transactions requested {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","limit":"5","requested_limit":"5"} 
+[2025-08-04 13:53:20] production.INFO: Recent transactions returned {"user_id":"3e2a1694-4958-4ff0-9d2d-a03031597266","requested_limit":"5","actual_count":5} 

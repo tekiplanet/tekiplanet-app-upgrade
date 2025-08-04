@@ -91,6 +91,7 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
         Route::post('/logout', [LoginController::class, 'logout']);
         Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/transactions', [TransactionController::class, 'index']);
+            Route::get('/transactions/recent', [TransactionController::class, 'getRecentTransactions']);
             Route::get('/transactions/stats', [TransactionController::class, 'getStats']);
             Route::get('/transactions/filter', [TransactionController::class, 'filter']);
             Route::post('/transactions/export-statement', [TransactionController::class, 'exportStatement']);

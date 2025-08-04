@@ -74,13 +74,17 @@ import WithdrawalModal from './WithdrawalModal';
 
 // Create a transaction service for API calls
 const transactionService = {
-  async getUserTransactions() {
+  async getUserTransactions(limit?: number) {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('No authentication token');
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/transactions`, {
+    const url = limit 
+      ? `${import.meta.env.VITE_API_URL}/transactions?limit=${limit}`
+      : `${import.meta.env.VITE_API_URL}/transactions`;
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -98,6 +102,29 @@ const transactionService = {
     
     // Extract transactions from the nested structure
     return data.transactions?.data || [];
+  },
+
+  async getRecentTransactions(limit: number = 5) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/transactions/recent?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to fetch recent transactions');
+    }
+
+    const data = await response.json();
+    return data.transactions || [];
   }
 };
 
@@ -247,6 +274,9 @@ export default function WalletDashboard() {
   // Currency symbol cache
   const [currencySymbol, setCurrencySymbol] = useState<string>('$');
   const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
+  const [monthlySpending, setMonthlySpending] = useState<number>(0);
+  const [totalFunded, setTotalFunded] = useState<number>(0);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   
   // Currency formatting hooks
   const { formattedAmount: formattedBalance, isLoading: balanceLoading } = useCurrencyFormat(user?.wallet_balance || 0, user?.currency_code);
@@ -288,6 +318,49 @@ export default function WalletDashboard() {
 
     fetchUserCurrencySymbol();
   }, [user?.currency_code]);
+
+  // Fetch transaction stats for monthly spending and total funded
+  useEffect(() => {
+    const fetchTransactionStats = async () => {
+      if (!user) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/transactions/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setMonthlySpending(data.data?.this_month_spent || 0);
+          setTotalFunded(data.data?.total_received || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching transaction stats:', error);
+      }
+    };
+
+    fetchTransactionStats();
+  }, [user]);
+
+  // Fetch recent transactions (only 5)
+  useEffect(() => {
+    const fetchRecentTransactions = async () => {
+      if (!user) return;
+
+      try {
+        const fetchedTransactions = await transactionService.getRecentTransactions(5);
+        console.log('Recent transactions fetched:', fetchedTransactions.length, 'transactions');
+        setRecentTransactions(fetchedTransactions);
+      } catch (error) {
+        console.error('Error fetching recent transactions:', error);
+      }
+    };
+
+    fetchRecentTransactions();
+  }, [user]);
   
   // Test currency APIs on component mount
   useEffect(() => {
@@ -608,16 +681,7 @@ export default function WalletDashboard() {
                   </div>
                 </div>
                 <CurrencyDisplay 
-                  amount={transactions
-                    .filter(t => {
-                      const date = new Date(t.created_at);
-                      const now = new Date();
-                      return date.getMonth() === now.getMonth() && 
-                             date.getFullYear() === now.getFullYear() &&
-                             t.type === 'debit' &&
-                             t.status === 'completed';
-                    })
-                    .reduce((acc, t) => acc + parseFloat(t.amount), 0)} 
+                  amount={monthlySpending} 
                   userCurrencyCode={user?.currency_code}
                   currencySymbol={currencySymbol}
                 />
@@ -640,9 +704,7 @@ export default function WalletDashboard() {
                   </div>
                 </div>
                 <CurrencyDisplay 
-                  amount={transactions
-                    .filter(t => t.type === 'credit' && t.status === 'completed')
-                    .reduce((acc, t) => acc + parseFloat(t.amount), 0)} 
+                  amount={totalFunded} 
                   userCurrencyCode={user?.currency_code}
                   currencySymbol={currencySymbol}
                 />
@@ -729,23 +791,14 @@ export default function WalletDashboard() {
           {/* Recent Transactions Preview */}
           <Card className="border-none shadow-lg rounded-2xl">
             <CardHeader className="pb-2">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
-                <CardTitle className="text-lg md:text-2xl font-bold text-foreground">
-                  Recent Transactions
-                </CardTitle>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/dashboard/transactions')}
-                  className="text-sm"
-                >
-                  View All
-                </Button>
-              </div>
+              <CardTitle className="text-lg md:text-2xl font-bold text-foreground">
+                Recent Transactions
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {filteredTransactions.length > 0 ? (
+              {recentTransactions.length > 0 ? (
                 <div className="space-y-0">
-                  {displayedTransactions.slice(0, 5).map((transaction) => (
+                  {recentTransactions.map((transaction) => (
                     <div 
                       key={transaction.id} 
                       className="group relative overflow-hidden transition-all duration-200 hover:bg-secondary/20 active:bg-secondary/30"
@@ -859,17 +912,15 @@ export default function WalletDashboard() {
               )}
               
               {/* View All Button */}
-              {filteredTransactions.length > 5 && (
-                <div className="p-4 border-t border-border/50">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => navigate('/dashboard/transactions')}
-                    className="w-full rounded-full text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
-                  >
-                    View All Transactions
-                  </Button>
-                </div>
-              )}
+              <div className="p-4 border-t border-border/50">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/dashboard/transactions')}
+                  className="w-full rounded-full text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  View All Transactions
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
