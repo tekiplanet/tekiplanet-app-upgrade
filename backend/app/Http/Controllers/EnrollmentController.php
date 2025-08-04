@@ -84,7 +84,10 @@ class EnrollmentController extends Controller
         // Eager load course and installments
         $enrollments = $user->enrollments()->with(['course', 'installments'])->get();
 
-        $enrichedEnrollments = $enrollments->map(function($enrollment) {
+        // Get user's currency for conversion
+        $userCurrency = $user->currency_code;
+
+        $enrichedEnrollments = $enrollments->map(function($enrollment) use ($userCurrency) {
             // Calculate overall payment status
             $installments = $enrollment->installments;
             $paymentStatus = $this->calculateOverallPaymentStatus($installments);
@@ -93,11 +96,23 @@ class EnrollmentController extends Controller
             $course = $enrollment->course;
             $totalTuition = $course ? $course->price : 0;
 
+            // Convert course price if user has a different currency
+            if ($userCurrency && $userCurrency !== 'NGN') {
+                $totalTuition = $this->currencyService->convertAmount(
+                    $totalTuition,
+                    'NGN', // Course prices are stored in NGN
+                    $userCurrency
+                );
+            }
+
+            // Note: Installment amounts are now stored in user's currency, so no conversion needed
+
             Log::info('Course details for enrollment', [
                 'course_id' => $enrollment->course_id,
                 'course_title' => optional($course)->title,
                 'course_price' => $totalTuition,
-                'course_exists' => $course ? 'Yes' : 'No'
+                'course_exists' => $course ? 'Yes' : 'No',
+                'user_currency' => $userCurrency
             ]);
 
             $paidAmount = $installments->where('status', 'paid')->sum('amount');
@@ -237,74 +252,36 @@ class EnrollmentController extends Controller
 
     public function processFullPayment(Request $request)
     {
-        $user = Auth::user();
-        
-        // Validate request
-        $validated = $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'amount' => 'required|numeric|min:0'
+        $request->validate([
+            'course_id' => 'required|exists:courses,id'
         ]);
 
-        // Find the course
-        $course = Course::findOrFail($validated['course_id']);
+        try {
+            $user = Auth::user();
+            $course = Course::findOrFail($request->course_id);
 
-        // Verify amount matches course price
-        if (abs($course->price - $validated['amount']) > 0.01) {
+            // Convert enrollment fee to user's currency if needed
+            if ($user->currency_code && $user->currency_code !== 'NGN') {
+                $course->enrollment_fee = $this->currencyService->convertAmount(
+                    $course->enrollment_fee,
+                    'NGN', // Course prices are stored in NGN
+                    $user->currency_code
+                );
+            }
+
+            $enrollment = $this->enrollmentService->enrollUserInCourse($user, $course);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully enrolled in the course',
+                'enrollment' => $enrollment
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid payment amount'
+                'message' => $e->getMessage()
             ], 400);
         }
-
-        // Check if already enrolled
-        $existingEnrollment = Enrollment::where('user_id', $user->id)
-            ->where('course_id', $course->id)
-            ->first();
-
-        if ($existingEnrollment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Already enrolled in this course'
-            ], 400);
-        }
-
-        // Create enrollment
-        $enrollment = Enrollment::create([
-            'user_id' => $user->id,
-            'course_id' => $course->id,
-            'status' => 'active',
-            'progress' => 0,
-            'enrolled_at' => now()
-        ]);
-
-        // Create full payment installment
-        $installment = Installment::create([
-            'enrollment_id' => $enrollment->id,
-            'user_id' => $user->id,
-            'amount' => $course->price,
-            'due_date' => now(),
-            'status' => 'paid',
-            'paid_at' => now()
-        ]);
-
-        // Get the enrollment
-        $enrollment = $installment->enrollment;    
-        $enrollment->payment_status = 'fully_paid';
-        $enrollment->save();
-
-        // Log the transaction
-        Log::info('Full course payment processed', [
-            'user_id' => $user->id,
-            'course_id' => $course->id,
-            'amount' => $course->price,
-            'enrollment_id' => $enrollment->id
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Course enrolled successfully',
-            'enrollment_id' => $enrollment->id
-        ]);
     }
 
     public function processFullTuitionPayment(Request $request)
@@ -321,13 +298,18 @@ class EnrollmentController extends Controller
         // Find the course
         $course = Course::findOrFail($validated['course_id']);
 
-        // Check if user is already enrolled
-        $enrollment = Enrollment::where('user_id', $user->id)
-            ->where('course_id', $course->id)
-            ->first();
+        // Convert course price to user's currency for validation
+        $coursePriceInUserCurrency = $course->price;
+        if ($user->currency_code && $user->currency_code !== 'NGN') {
+            $coursePriceInUserCurrency = $this->currencyService->convertAmount(
+                $course->price,
+                'NGN', // Course prices are stored in NGN
+                $user->currency_code
+            );
+        }
 
-        // Validate amount matches course price
-        if (abs($course->price - $validated['amount']) > 0.01) {
+        // Validate amount matches course price (in user's currency)
+        if (abs($coursePriceInUserCurrency - $validated['amount']) > 0.01) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid payment amount'
@@ -338,11 +320,15 @@ class EnrollmentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Deduct balance from user's wallet
+            // Deduct balance from user's wallet (use the submitted amount as-is)
             $user->wallet_balance -= $validated['amount'];
             $user->save();
 
             // If not enrolled, create enrollment
+            $enrollment = Enrollment::where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->first();
+
             if (!$enrollment) {
                 $enrollment = Enrollment::create([
                     'user_id' => $user->id,
@@ -362,19 +348,19 @@ class EnrollmentController extends Controller
                 ->where('status', 'paid')
                 ->first();
 
-            // Create full payment installment if not exists
+            // Create full payment installment if not exists (store in user's currency)
             if (!$existingInstallment) {
                 Installment::create([
                     'enrollment_id' => $enrollment->id,
                     'user_id' => $user->id,
-                    'amount' => $course->price,
+                    'amount' => $validated['amount'], // Store in user's currency
                     'due_date' => now(),
                     'status' => 'paid',
                     'paid_at' => now()
                 ]);
             }
 
-            // Record transaction
+            // Record transaction (use the submitted amount as-is)
             Transaction::create([
                 'user_id' => $user->id,
                 'type' => 'debit',
@@ -421,6 +407,7 @@ class EnrollmentController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
+            'course_id' => 'required|exists:courses,id',
             'installment_id' => 'required|exists:installments,id',
             'amount' => 'required|numeric|min:0'
         ]);
@@ -445,7 +432,7 @@ class EnrollmentController extends Controller
             ], 400);
         }
 
-        // Verify amount matches installment amount
+        // Verify amount matches installment amount (both are in user's currency)
         if (abs($installment->amount - $validated['amount']) > 0.01) {
             return response()->json([
                 'success' => false,
@@ -453,7 +440,7 @@ class EnrollmentController extends Controller
             ], 400);
         }
 
-        // Check wallet balance
+        // Check wallet balance (use submitted amount as-is)
         if ($user->wallet_balance < $validated['amount']) {
             return response()->json([
                 'success' => false,
@@ -465,7 +452,7 @@ class EnrollmentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Deduct from wallet
+            // Deduct from wallet (use the submitted amount as-is)
             $user->wallet_balance -= $validated['amount'];
             $user->save();
 
@@ -703,9 +690,19 @@ class EnrollmentController extends Controller
         // Find the course
         $course = Course::findOrFail($validated['course_id']);
 
-        // Validate amount is half of the course price
-        $halfPrice = $course->price / 2;
-        if (abs($halfPrice - $validated['amount']) > 0.01) {
+        // Convert course price to user's currency for validation
+        $coursePriceInUserCurrency = $course->price;
+        if ($user->currency_code && $user->currency_code !== 'NGN') {
+            $coursePriceInUserCurrency = $this->currencyService->convertAmount(
+                $course->price,
+                'NGN', // Course prices are stored in NGN
+                $user->currency_code
+            );
+        }
+
+        // Validate amount is half of the course price (in user's currency)
+        $halfPriceInUserCurrency = $coursePriceInUserCurrency / 2;
+        if (abs($halfPriceInUserCurrency - $validated['amount']) > 0.01) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid installment amount'
@@ -738,22 +735,22 @@ class EnrollmentController extends Controller
                 ], 400);
             }
 
-            // Create first installment (pending)
+            // Create first installment (pending) - store in user's currency
             $firstInstallment = Installment::create([
                 'enrollment_id' => $enrollment->id,
                 'user_id' => $user->id,
-                'amount' => $halfPrice,
+                'amount' => $validated['amount'], // Store in user's currency
                 'due_date' => now()->addWeeks(1),
                 'status' => 'pending',
                 'paid_at' => null,
                 'order' => 1
             ]);
 
-            // Create second installment (pending)
+            // Create second installment (pending) - store in user's currency
             $secondInstallment = Installment::create([
                 'enrollment_id' => $enrollment->id,
                 'user_id' => $user->id,
-                'amount' => $halfPrice,
+                'amount' => $validated['amount'], // Store in user's currency
                 'due_date' => now()->addMonths(1),
                 'status' => 'pending',
                 'paid_at' => null,
@@ -772,7 +769,9 @@ class EnrollmentController extends Controller
                 'user_id' => $user->id,
                 'course_id' => $course->id,
                 'first_installment_id' => $firstInstallment->id,
-                'second_installment_id' => $secondInstallment->id
+                'second_installment_id' => $secondInstallment->id,
+                'installment_amount' => $validated['amount'],
+                'user_currency' => $user->currency_code
             ]);
 
             return response()->json([
@@ -845,7 +844,15 @@ class EnrollmentController extends Controller
             ], 400);
         }
 
-        // Check wallet balance
+        // Validate amount matches installment amount (both are in user's currency)
+        if (abs($installment->amount - $validated['amount']) > 0.01) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid installment amount'
+            ], 400);
+        }
+
+        // Check wallet balance (use submitted amount as-is)
         if ($user->wallet_balance < $validated['amount']) {
             return response()->json([
                 'success' => false,
@@ -857,7 +864,7 @@ class EnrollmentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Deduct from wallet
+            // Deduct from wallet (use the submitted amount as-is)
             $user->wallet_balance -= $validated['amount'];
             $user->save();
 

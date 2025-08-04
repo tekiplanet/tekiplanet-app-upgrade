@@ -37,6 +37,7 @@ import { Loader2 } from 'lucide-react';
 import InsufficientFundsModal from '@/components/modals/InsufficientFundsModal';
 import { settingsService } from '@/services/settingsService';
 import { useQuery } from "@tanstack/react-query";
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
 
 interface EnrolledCourse {
   enrollment_id: string;
@@ -144,6 +145,10 @@ export default function MyCourses() {
   const [fullPaymentCourse, setFullPaymentCourse] = useState<EnrolledCourse | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = useState(false);
+
   // Get enrolled courses with details
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -154,6 +159,64 @@ export default function MyCourses() {
     queryKey: ['settings'],
     queryFn: settingsService.fetchSettings
   });
+
+  // Fetch user's currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // Currency display component that formats amounts with user's currency symbol (no conversion)
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    // Use synchronous formatting with the provided currency symbol
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    
+    return <span>{formattedAmount}</span>;
+  };
 
   useEffect(() => {
     // Ensure authentication is initialized before fetching courses
@@ -473,13 +536,21 @@ export default function MyCourses() {
             <div className="flex justify-between">
               <span>Total Tuition:</span>
               <span className="font-bold text-primary">
-                {formatCurrency(numTotalTuition, settings?.default_currency)}
+                <CurrencyDisplay 
+                  amount={numTotalTuition} 
+                  userCurrencyCode={user?.currency_code}
+                  currencySymbol={currencySymbol}
+                />
               </span>
             </div>
             <div className="flex justify-between">
               <span>Current Wallet Balance:</span>
               <span className={`font-bold ${numBalance < numTotalTuition ? 'text-destructive' : 'text-primary'}`}>
-                {formatCurrency(numBalance, settings?.default_currency)}
+                <CurrencyDisplay 
+                  amount={numBalance} 
+                  userCurrencyCode={user?.currency_code}
+                  currencySymbol={currencySymbol}
+                />
               </span>
             </div>
           </div>
@@ -719,7 +790,13 @@ export default function MyCourses() {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-xs text-muted-foreground font-medium">Total Tuition</p>
-                          <p className="text-lg font-bold text-primary">{formatCurrency(enrollment.total_tuition, settings?.default_currency)}</p>
+                          <p className="text-lg font-bold text-primary">
+                            <CurrencyDisplay 
+                              amount={enrollment.total_tuition} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </p>
                         </div>
                         <Badge variant="destructive" className="font-medium">
                           Payment Required
@@ -769,7 +846,11 @@ export default function MyCourses() {
                                       onClick={() => handleInstallmentPayment(enrollment, installment.id)}
                                       disabled={installment.status === 'paid' || !previousInstallmentsPaid}
                                     >
-                                      Pay {formatCurrency(installment.amount, settings?.default_currency)}
+                                      Pay <CurrencyDisplay 
+                                        amount={installment.amount} 
+                                        userCurrencyCode={user?.currency_code}
+                                        currencySymbol={currencySymbol}
+                                      />
                                     </Button>
                                   )}
                                 </div>
@@ -850,7 +931,6 @@ export default function MyCourses() {
             : (selectedCourse?.installments?.[0]?.amount || 0)
         }
         currentBalance={balance}
-        currencySymbol={settings?.currency_symbol}
         selectedPaymentPlan={selectedPaymentPlan}
         courseName={selectedCourse?.course_title || ''}
         onConfirmPayment={() => {
