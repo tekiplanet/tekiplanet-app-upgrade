@@ -172,6 +172,7 @@ export default function TransactionHistory({
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const navigate = useNavigate();
 
@@ -192,7 +193,13 @@ export default function TransactionHistory({
       }
 
       try {
-        setIsLoading(true);
+        // Only show loading spinner for filter changes, not initial load
+        if (debouncedSearchQuery || typeFilter !== 'all' || statusFilter !== 'all') {
+          setIsSearching(true);
+        } else {
+          setIsLoading(true);
+        }
+        
         const filters = {
           search: debouncedSearchQuery,
           type: typeFilter,
@@ -215,6 +222,7 @@ export default function TransactionHistory({
         });
       } finally {
         setIsLoading(false);
+        setIsSearching(false);
       }
     };
 
@@ -223,7 +231,7 @@ export default function TransactionHistory({
 
   // Load more transactions function
   const loadMoreTransactions = async () => {
-    if (!user || isLoadingMore || !hasMorePages) return;
+    if (!user || isLoadingMore || !hasMorePages || isSearching) return;
 
     try {
       setIsLoadingMore(true);
@@ -356,8 +364,13 @@ export default function TransactionHistory({
                       placeholder="Search by description or transaction ID..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-full bg-background/50 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                      className={`pl-10 w-full bg-background/50 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all duration-200 ${searchQuery ? 'border-primary/30 bg-primary/5' : ''}`}
                     />
+                    {isSearching && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-primary"></div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -454,34 +467,58 @@ export default function TransactionHistory({
               
               {/* Active Filters and Clear Button */}
               {hasActiveFilters && (
-                <div className="flex items-center justify-between pt-4 border-t border-border/30">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Active filters:</span>
-                    {searchQuery && (
-                      <Badge variant="secondary" className="text-xs">
-                        Search: "{searchQuery}"
-                      </Badge>
-                    )}
-                    {typeFilter !== 'all' && (
-                      <Badge variant="secondary" className="text-xs">
-                        Type: {typeFilter === 'credit' ? 'Credits' : 'Debits'}
-                      </Badge>
-                    )}
-                    {statusFilter !== 'all' && (
-                      <Badge variant="secondary" className="text-xs">
-                        Status: {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                      </Badge>
-                    )}
+                <div className="pt-4 border-t border-border/30">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {/* Active Filters Display */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({[searchQuery, typeFilter !== 'all', statusFilter !== 'all'].filter(Boolean).length} applied)
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {searchQuery && (
+                          <Badge variant="secondary" className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30">
+                            <Search className="w-3 h-3 mr-1" />
+                            Search: "{searchQuery.length > 20 ? searchQuery.substring(0, 20) + '...' : searchQuery}"
+                          </Badge>
+                        )}
+                        {typeFilter !== 'all' && (
+                          <Badge variant="secondary" className="text-xs px-2 py-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30">
+                            {typeFilter === 'credit' ? (
+                              <ArrowDownRight className="w-3 h-3 mr-1 text-green-500" />
+                            ) : (
+                              <ArrowUpRight className="w-3 h-3 mr-1 text-red-500" />
+                            )}
+                            Type: {typeFilter === 'credit' ? 'Credits' : 'Debits'}
+                          </Badge>
+                        )}
+                        {statusFilter !== 'all' && (
+                          <Badge variant="secondary" className="text-xs px-2 py-1 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30">
+                            <div className={`w-2 h-2 rounded-full mr-1 ${
+                              statusFilter === 'completed' ? 'bg-green-500' :
+                              statusFilter === 'pending' ? 'bg-yellow-500' : 'bg-red-500'
+                            }`} />
+                            Status: {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Clear Button */}
+                    <div className="flex-shrink-0">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={clearFilters}
+                        className="h-8 px-3 bg-background/50 border border-border/50 rounded-lg hover:bg-background/70 transition-all duration-200 text-xs"
+                      >
+                        <Filter className="w-3 h-3 mr-1" />
+                        Clear All
+                      </Button>
+                    </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={clearFilters}
-                    className="h-8 px-3 bg-background/50 border border-border/50 rounded-lg hover:bg-background/70 transition-all duration-200"
-                  >
-                    <Filter className="w-3 h-3 mr-1" />
-                    Clear All
-                  </Button>
                 </div>
               )}
             </div>
@@ -491,6 +528,16 @@ export default function TransactionHistory({
 
       <Card className="border-none shadow-lg rounded-2xl">
         <CardContent className="p-0">
+          {/* Search Loading Indicator */}
+          {isSearching && (
+            <div className="flex items-center justify-center py-4 border-b border-border/30">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-primary"></div>
+                Searching transactions...
+              </div>
+            </div>
+          )}
+          
           {displayedTransactions.length > 0 ? (
             <div className="space-y-0">
               {displayedTransactions.map((transaction) => (
@@ -598,10 +645,11 @@ export default function TransactionHistory({
                 </div>
               </div>
               <p className="text-base font-medium text-muted-foreground">
-                {isLoading ? 'Loading transactions...' : 'No transactions found'}
+                {isSearching ? 'Searching...' : 'No transactions found'}
               </p>
               <p className="text-sm text-muted-foreground">
-                {searchQuery || typeFilter !== 'all' || statusFilter !== 'all' 
+                {isSearching ? 'Please wait while we search for your transactions' :
+                 searchQuery || typeFilter !== 'all' || statusFilter !== 'all' 
                   ? 'Try adjusting your search or filter criteria'
                   : 'Your transactions will appear here'
                 }
