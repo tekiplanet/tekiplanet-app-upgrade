@@ -54,6 +54,7 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Api\CurrencyController;
+use App\Http\Controllers\LessonController;
 use App\Notifications\TestPushNotification;
 
 /*
@@ -203,7 +204,19 @@ Route::middleware('auth:sanctum')->group(function () {
         )->middleware(['auth:sanctum']);
         Route::get('/{courseId}/enrollment', [EnrollmentController::class, 'getUserCourseEnrollment']);        
         Route::get('/{courseId}/installments', [EnrollmentController::class, 'getCourseInstallments']);
+        Route::get('/{courseId}/lesson-progress', [LessonController::class, 'getCourseProgress']);
 
+    });
+});
+
+// Lesson Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('lessons')->group(function () {
+        Route::get('/{lessonId}', [LessonController::class, 'show']);
+        Route::post('/{lessonId}/complete', [LessonController::class, 'markComplete']);
+        Route::get('/{lessonId}/next', [LessonController::class, 'getNextLesson']);
+        Route::get('/{lessonId}/previous', [LessonController::class, 'getPreviousLesson']);
+        Route::get('/{lessonId}/access', [LessonController::class, 'checkAccess']);
     });
 });
 

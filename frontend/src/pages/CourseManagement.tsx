@@ -67,7 +67,7 @@ const CourseManagement: React.FC = () => {
 
   const [errorMessage, setErrorMessage] = React.useState('');
   // const [enrollments, setEnrollments] = React.useState<any[]>([]);
-  const [notices, setNotices] = React.useState<Notice[]>([]);
+  const [notices, setNotices] = React.useState<any[]>([]);
   const [noticesLoading, setNoticesLoading] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -280,7 +280,7 @@ const CourseManagement: React.FC = () => {
 
   // Render Curriculum Section
   const renderCurriculum = () => {
-    // console.log('Rendering Curriculum - Course:', course);
+    console.log('Rendering Curriculum - Course:', course);
     
     const curriculumData = 
       course?.curriculum || 
@@ -288,7 +288,21 @@ const CourseManagement: React.FC = () => {
       course?.content || 
       course?.courseContent;
 
-    // console.log('Curriculum Data:', curriculumData);
+    console.log('Curriculum Data:', curriculumData);
+    console.log('courseIdState:', courseIdState);
+    
+    // Log the first module structure to see how lessons are organized
+    if (curriculumData && curriculumData.length > 0) {
+      console.log('First module structure:', curriculumData[0]);
+      console.log('First module topics:', curriculumData[0].topics);
+      console.log('First module lessons:', curriculumData[0].lessons);
+      console.log('First module content:', curriculumData[0].content);
+      console.log('All module properties:', Object.keys(curriculumData[0]));
+      
+      if (curriculumData[0].topics && curriculumData[0].topics.length > 0) {
+        console.log('First topic lessons:', curriculumData[0].topics[0].lessons);
+      }
+    }
 
     if (!curriculumData || curriculumData.length === 0) {
       return (
@@ -312,56 +326,44 @@ const CourseManagement: React.FC = () => {
                 <h4 className="text-base font-semibold group-hover:text-primary transition-colors truncate">
                   {module.title || module.name || `Module ${moduleIndex + 1}`}
                 </h4>
-                <p className="text-xs text-muted-foreground">
-                  {module.topics?.length || module.lessons?.length || 0} Topics • {module.topics?.reduce((acc, topic) => acc + (topic.lessons?.length || 0), 0)} Lessons
-                </p>
+                                 <p className="text-xs text-muted-foreground">
+                   {module.lessons?.length || 0} Lessons
+                 </p>
               </div>
             </div>
             
-            {/* Topics and Lessons */}
-            {(module.topics || module.lessons || module.content) && (
-              <div className="ml-4 pl-8 border-l border-border/50 space-y-3">
-                {(module.topics || module.lessons || module.content)?.map((item, itemIndex) => (
-                  <div key={item.id || itemIndex} className="relative">
-                    <div className="absolute -left-[2.45rem] top-3 h-0.5 w-4 bg-border/50" />
-                    
-                    <Card className="bg-muted/50 hover:bg-muted/80 transition-colors border-none shadow-sm">
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-background flex items-center justify-center">
-                            <span className="text-xs font-medium">{moduleIndex + 1}.{itemIndex + 1}</span>
-                          </div>
-                          <h5 className="text-sm font-medium truncate">
-                            {item.title || item.name || `Topic ${itemIndex + 1}`}
-                          </h5>
-                        </div>
-                        
-                        {item.lessons && item.lessons.length > 0 && (
-                          <div className="space-y-1.5 ml-8">
-                            {item.lessons.map((lesson, lessonIndex) => (
-                              <div 
-                                key={lesson.id || lessonIndex}
-                                className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors"
-                              >
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                                  <span className="text-xs truncate">{lesson.title}</span>
-                                </div>
-                                {lesson.duration && (
-                                  <Badge variant="secondary" className="text-[10px] h-5">
-                                    {lesson.duration} mins
-                                  </Badge>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                ))}
-              </div>
-            )}
+                         {/* Lessons */}
+             {module.lessons && module.lessons.length > 0 && (
+               <div className="ml-4 pl-8 border-l border-border/50 space-y-2">
+                 {module.lessons.map((lesson, lessonIndex) => (
+                   <div 
+                     key={lesson.id || lessonIndex}
+                     className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors cursor-pointer"
+                                           onClick={() => {
+                        console.log('Lesson clicked!', {
+                          courseIdState,
+                          lessonId: lesson.id,
+                          lessonTitle: lesson.title,
+                          lessonData: lesson,
+                          navigateUrl: `/dashboard/academy/course/${courseIdState}/lesson/${lesson.id}`
+                        });
+                        navigate(`/dashboard/academy/course/${courseIdState}/lesson/${lesson.id}`);
+                      }}
+                     
+                   >
+                     <div className="flex items-center gap-2 flex-1 min-w-0">
+                       <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                       <span className="text-xs truncate">{lesson.title}</span>
+                     </div>
+                     {lesson.duration_minutes && (
+                       <Badge variant="secondary" className="text-[10px] h-5">
+                         {lesson.duration_minutes} mins
+                       </Badge>
+                     )}
+                   </div>
+                 ))}
+               </div>
+             )}
           </div>
         ))}
       </div>

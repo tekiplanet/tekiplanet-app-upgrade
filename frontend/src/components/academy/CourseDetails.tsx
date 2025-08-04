@@ -205,15 +205,23 @@ export default function CourseDetails() {
                             {topic.lessons.map((lesson, lessonIndex) => (
                               <div 
                                 key={lesson.id}
-                                className="flex items-center gap-3 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors"
+                                className="flex items-center gap-3 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors cursor-pointer"
+                                onClick={() => navigate(`/dashboard/academy/course/${courseId}/lesson/${lesson.id}`)}
                               >
                                 <div className="flex items-center gap-2 flex-1">
                                   <PlayCircle className="h-4 w-4 text-muted-foreground" />
                                   <span className="text-sm">{lesson.title}</span>
                                 </div>
-                                <Badge variant="secondary" className="text-xs">
-                                  {lesson.duration || '10'} mins
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {lesson.duration || '10'} mins
+                                  </Badge>
+                                  {lesson.is_preview && (
+                                    <Badge variant="outline" className="text-xs">
+                                      Preview
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>

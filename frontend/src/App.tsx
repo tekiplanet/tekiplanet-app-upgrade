@@ -80,6 +80,7 @@ const Hustles = React.lazy(() => import('@/pages/hustles/Hustles'));
 const HustleDetails = React.lazy(() => import('@/pages/hustles/HustleDetails'));
 const MyHustleApplications = React.lazy(() => import('@/pages/hustles/MyApplications'));
 const CourseManagement = React.lazy(() => import('@/pages/CourseManagement'));
+const LessonPlayer = React.lazy(() => import('@/components/lesson/LessonPlayer'));
 const Services = React.lazy(() => import('@/pages/Services'));
 const ServiceQuoteRequest = React.lazy(() => import('@/pages/ServiceQuoteRequest'));
 const Settings = React.lazy(() => import('@/pages/Settings'));
@@ -226,6 +227,7 @@ const AppContent = () => {
               element={<CourseDetails />}
             />
             <Route path="academy/course/:courseId/manage" element={<CourseManagement />} />
+            <Route path="academy/course/:courseId/lesson/:lessonId" element={<LessonPlayer />} />
             <Route path="wallet" element={<WalletDashboard />} />
             <Route path="wallet/transactions/:transactionId" element={<TransactionDetails />} />
             <Route path="transactions" element={<TransactionHistory />} />
