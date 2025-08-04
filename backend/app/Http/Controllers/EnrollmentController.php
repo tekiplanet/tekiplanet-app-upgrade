@@ -9,6 +9,7 @@ use App\Models\Installment;
 use App\Models\Transaction;
 use App\Models\CourseSchedule;
 use App\Services\EnrollmentService;
+use App\Services\CurrencyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,10 +20,12 @@ use Carbon\Carbon;
 class EnrollmentController extends Controller
 {
     protected $enrollmentService;
+    protected $currencyService;
 
-    public function __construct(EnrollmentService $enrollmentService)
+    public function __construct(EnrollmentService $enrollmentService, CurrencyService $currencyService)
     {
         $this->enrollmentService = $enrollmentService;
+        $this->currencyService = $currencyService;
     }
 
     public function enroll(Request $request)
@@ -34,6 +37,15 @@ class EnrollmentController extends Controller
         try {
             $user = Auth::user();
             $course = Course::findOrFail($request->course_id);
+
+            // Convert enrollment fee to user's currency if needed
+            if ($user->currency_code && $user->currency_code !== 'NGN') {
+                $course->enrollment_fee = $this->currencyService->convertAmount(
+                    $course->enrollment_fee,
+                    'NGN', // Course prices are stored in NGN
+                    $user->currency_code
+                );
+            }
 
             $enrollment = $this->enrollmentService->enrollUserInCourse($user, $course);
 
@@ -368,10 +380,15 @@ class EnrollmentController extends Controller
                 'type' => 'debit',
                 'amount' => $validated['amount'],
                 'description' => "Full tuition payment for {$course->title}",
+                'category' => 'tuition',
                 'status' => 'completed',
                 'payment_method' => $request->input('payment_method', 'wallet'),
-                'reference_number' => 'INST-' . Str::uuid(),
-                'notes' => 'Installment ID: ' . Str::uuid()                
+                'reference_number' => 'TUITION-' . Str::uuid(),
+                'notes' => [
+                    'enrollment_id' => $enrollment->id,
+                    'course_id' => $course->id,
+                    'course_title' => $course->title
+                ]
             ]);
 
             // Commit transaction
@@ -452,20 +469,26 @@ class EnrollmentController extends Controller
             $user->wallet_balance -= $validated['amount'];
             $user->save();
 
-            // Get the enrollment
+            // Get the enrollment and course
             $enrollment = $installment->enrollment;
+            $course = $enrollment->course;
 
             // Create transaction record
             $transaction = Transaction::create([
                 'user_id' => $user->id,
-                'enrollment_id' => $enrollment->id,
-                'installment_id' => $installment->id,
                 'amount' => $validated['amount'],
-                'type' => 'installment_payment',
+                'type' => 'debit',
+                'description' => "Installment payment for {$course->title}",
+                'category' => 'installment',
                 'status' => 'completed',
                 'payment_method' => $request->input('payment_method', 'wallet'),
-                'transaction_date' => now(),
-                'reference' => 'INST-' . uniqid()
+                'reference_number' => 'INST-' . uniqid(),
+                'notes' => [
+                    'enrollment_id' => $enrollment->id,
+                    'installment_id' => $installment->id,
+                    'course_id' => $course->id,
+                    'course_title' => $course->title
+                ]
             ]);
 
             // Update installment
@@ -600,11 +623,16 @@ class EnrollmentController extends Controller
                 'amount' => $validated['amount'],
                 'type' => 'debit',
                 'description' => 'Installment payment for course: ' . $enrollment->course->title,
-                'category' => 'course_payment',
+                'category' => 'installment',
                 'status' => 'completed',
                 'payment_method' => 'wallet',
-                'reference_number' => 'INST-' . $installment->id,
-                'notes' => 'Installment ID: ' . $installment->id
+                'reference_number' => 'INST-' . uniqid(),
+                'notes' => [
+                    'enrollment_id' => $enrollment->id,
+                    'installment_id' => $installment->id,
+                    'course_id' => $enrollment->course->id,
+                    'course_title' => $enrollment->course->title
+                ]
             ]);
 
             // Update installment status

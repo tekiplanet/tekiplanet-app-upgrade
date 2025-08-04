@@ -15,8 +15,8 @@ class EnrollmentService
 {
     public function enrollUserInCourse(User $user, Course $course)
     {
-        // Get enrollment fee directly from the first settings record
-        $enrollmentFee = Setting::first()->enrollment_fee ?? 0;
+        // Get enrollment fee from course or fallback to settings
+        $enrollmentFee = $course->enrollment_fee ?? Setting::first()->enrollment_fee ?? 0;
 
         // Start a database transaction
         return DB::transaction(function () use ($user, $course, $enrollmentFee) {
@@ -47,11 +47,29 @@ class EnrollmentService
                 'enrolled_at' => now()
             ]);
 
+            // Create transaction record for enrollment fee
+            Transaction::create([
+                'user_id' => $user->id,
+                'amount' => $enrollmentFee,
+                'type' => 'debit',
+                'description' => "Enrollment fee for course: {$course->title}",
+                'category' => 'enrollment',
+                'status' => 'completed',
+                'payment_method' => 'wallet',
+                'reference_number' => 'ENROLL-' . uniqid(),
+                'notes' => [
+                    'enrollment_id' => $enrollment->id,
+                    'course_id' => $course->id,
+                    'course_title' => $course->title
+                ]
+            ]);
+
             // Log the enrollment
             Log::info('User enrolled in course', [
                 'user_id' => $user->id,
                 'course_id' => $course->id,
-                'enrollment_id' => $enrollment->id
+                'enrollment_id' => $enrollment->id,
+                'enrollment_fee' => $enrollmentFee
             ]);
 
             return $enrollment;

@@ -58,7 +58,7 @@ class CourseController extends Controller
             $userCurrency = $request->input('currency');
         }
 
-        // Convert course prices if user has a different currency
+        // Convert course prices and enrollment fees if user has a different currency
         $coursesData = $courses->items();
         if ($userCurrency && $userCurrency !== 'NGN') {
             foreach ($coursesData as $course) {
@@ -67,6 +67,15 @@ class CourseController extends Controller
                     'NGN', // Course prices are stored in NGN
                     $userCurrency
                 );
+                
+                // Convert enrollment fee if it exists
+                if (isset($course->enrollment_fee)) {
+                    $course->enrollment_fee = $this->currencyService->convertAmount(
+                        $course->enrollment_fee,
+                        'NGN', // Enrollment fees are stored in NGN
+                        $userCurrency
+                    );
+                }
             }
         }
 
@@ -105,13 +114,22 @@ class CourseController extends Controller
             $userCurrency = $request->input('currency');
         }
 
-        // Convert course price if user has a different currency
+        // Convert course price and enrollment fee if user has a different currency
         if ($userCurrency && $userCurrency !== 'NGN') {
             $course->price = $this->currencyService->convertAmount(
                 $course->price,
                 'NGN', // Course prices are stored in NGN
                 $userCurrency
             );
+            
+            // Convert enrollment fee if it exists
+            if (isset($course->enrollment_fee)) {
+                $course->enrollment_fee = $this->currencyService->convertAmount(
+                    $course->enrollment_fee,
+                    'NGN', // Enrollment fees are stored in NGN
+                    $userCurrency
+                );
+            }
         }
         
         return response()->json([
@@ -361,13 +379,22 @@ class CourseController extends Controller
                 $userCurrency = $request->input('currency');
             }
 
-            // Convert course price if user has a different currency
+            // Convert course price and enrollment fee if user has a different currency
             if ($userCurrency && $userCurrency !== 'NGN') {
                 $course->price = $this->currencyService->convertAmount(
                     $course->price,
                     'NGN', // Course prices are stored in NGN
                     $userCurrency
                 );
+                
+                // Convert enrollment fee if it exists
+                if (isset($course->enrollment_fee)) {
+                    $course->enrollment_fee = $this->currencyService->convertAmount(
+                        $course->enrollment_fee,
+                        'NGN', // Enrollment fees are stored in NGN
+                        $userCurrency
+                    );
+                }
             }
 
             // Get enrollment details if user is authenticated

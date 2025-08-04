@@ -21,7 +21,7 @@ import { enrollmentService } from '@/services/enrollmentService';
 import { InsufficientFundsModal } from "@/components/wallet/InsufficientFundsModal";
 import { formatCurrency } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Course } from "@/data/mockCourses";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import PagePreloader from "@/components/ui/PagePreloader";
@@ -41,6 +41,7 @@ interface EnrollmentResponse {
 export default function CourseDetails() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = React.useState(false);
   const user = useAuthStore((state) => state.user);
   const walletBalance = Number(user?.wallet_balance || 0);
@@ -54,9 +55,6 @@ export default function CourseDetails() {
     queryKey: ['settings'],
     queryFn: settingsService.fetchSettings
   });
-
-  // Get enrollment fee from settings
-  const ENROLLMENT_FEE = Number(settings?.enrollment_fee || 1000);
 
   // Fetch user's currency symbol
   useEffect(() => {
@@ -124,7 +122,10 @@ export default function CourseDetails() {
   } = useQuery({
     queryKey: ['courseDetails', courseId, user?.currency_code],
     queryFn: () => courseService.getCourseDetails(courseId!, user?.currency_code),
-    enabled: !!courseId
+    enabled: !!courseId && !!user?.currency_code,
+    staleTime: 0, // Always refetch when currency changes
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
   });
 
   // Extract course and related data
@@ -132,6 +133,9 @@ export default function CourseDetails() {
   const instructor = courseData?.instructor;
   const features = courseData?.features;
   const curriculum = courseData?.curriculum;
+
+  // Get enrollment fee from course only - no fallback to settings
+  const ENROLLMENT_FEE = Number(course?.enrollment_fee || 0);
 
   // Add debugging logs
   // console.log('Course Loading:', isCourseLoading);
@@ -142,6 +146,9 @@ export default function CourseDetails() {
   // console.log('Extracted Features:', features);
   // console.log('Extracted Curriculum:', curriculum);
   // console.log('Course ID:', courseId);
+  // console.log('Enrollment Fee:', ENROLLMENT_FEE);
+  // console.log('User Wallet Balance:', walletBalance);
+  // console.log('User Currency:', user?.currency_code);
 
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = React.useState(false);
   const [showConfirmEnrollmentModal, setShowConfirmEnrollmentModal] = React.useState(false);
@@ -285,7 +292,12 @@ export default function CourseDetails() {
 
     // Check if already enrolled
     try {
-      const existingEnrollments = await enrollmentService.getUserEnrollments();
+      const existingEnrollmentsResponse = await enrollmentService.getUserEnrollments();
+      // Handle both array and object response types
+      const existingEnrollments = Array.isArray(existingEnrollmentsResponse) 
+        ? existingEnrollmentsResponse 
+        : (existingEnrollmentsResponse.enrollments || []);
+      
       const isAlreadyEnrolled = existingEnrollments.some(
         enrollment => enrollment.course_id === courseId
       );
@@ -304,12 +316,18 @@ export default function CourseDetails() {
     // Proceed with enrollment
     setLoading(true);
     try {
+      // console.log('Starting enrollment with fee:', ENROLLMENT_FEE);
       const response: EnrollmentResponse = await enrollmentService.enrollInCourse(courseId!);
 
       if (response.success) {
-        // Deduct enrollment fee from wallet
-        const { deductBalance } = useWalletStore.getState();
-        deductBalance(user.id, ENROLLMENT_FEE);
+        // Refresh user data to get updated wallet balance from database
+        const { refreshToken } = useAuthStore.getState();
+        await refreshToken();
+
+        // Invalidate course details query to refetch with updated data
+        queryClient.invalidateQueries({ queryKey: ['courseDetails', courseId, user?.currency_code] });
+        // Also invalidate any course-related queries to ensure fresh data
+        queryClient.invalidateQueries({ queryKey: ['courseDetails', courseId] });
 
         toast.success('Course Enrollment Successful!', {
           description: `You are now enrolled in ${course.title}`
@@ -343,10 +361,13 @@ export default function CourseDetails() {
     //   currentBalance,
     //   requiredAmount,
     //   walletBalance,
-    //   ENROLLMENT_FEE
+    //   ENROLLMENT_FEE,
+    //   courseEnrollmentFee: course?.enrollment_fee,
+    //   userCurrency: user?.currency_code
     // });
 
-    if (currentBalance < requiredAmount) {
+    // Add a small tolerance for floating point precision issues
+    if (currentBalance < (requiredAmount - 0.01)) {
       setShowInsufficientFundsModal(true);
       return;
     }
@@ -511,16 +532,20 @@ export default function CourseDetails() {
                           </h2>
                           <p className="text-xs text-muted-foreground">Tuition Fee</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground mb-1">Enrollment Fee</p>
-                          <p className="text-sm font-medium">
-                            <CurrencyDisplay 
-                              amount={ENROLLMENT_FEE} 
-                              userCurrencyCode={user?.currency_code}
-                              currencySymbol={currencySymbol}
-                            />
-                          </p>
-                        </div>
+                                                 <div className="text-right">
+                           <p className="text-xs text-muted-foreground mb-1">Enrollment Fee</p>
+                           <p className="text-sm font-medium">
+                             {ENROLLMENT_FEE === 0 ? (
+                               <span className="text-green-600 font-semibold">Free</span>
+                             ) : (
+                               <CurrencyDisplay 
+                                 amount={ENROLLMENT_FEE} 
+                                 userCurrencyCode={user?.currency_code}
+                                 currencySymbol={currencySymbol}
+                               />
+                             )}
+                           </p>
+                         </div>
                       </div>
                       <Button 
                         className="w-full text-white font-medium rounded-xl h-11"
@@ -655,16 +680,20 @@ export default function CourseDetails() {
                   <p className="text-sm text-muted-foreground">Tuition Fee</p>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Enrollment Fee:</span>
-                    <span className="font-medium">
-                      <CurrencyDisplay 
-                        amount={ENROLLMENT_FEE} 
-                        userCurrencyCode={user?.currency_code}
-                        currencySymbol={currencySymbol}
-                      />
-                    </span>
-                  </div>
+                                     <div className="flex justify-between text-sm">
+                     <span className="text-muted-foreground">Enrollment Fee:</span>
+                     <span className="font-medium">
+                       {ENROLLMENT_FEE === 0 ? (
+                         <span className="text-green-600 font-semibold">Free</span>
+                       ) : (
+                         <CurrencyDisplay 
+                           amount={ENROLLMENT_FEE} 
+                           userCurrencyCode={user?.currency_code}
+                           currencySymbol={currencySymbol}
+                         />
+                       )}
+                     </span>
+                   </div>
                   <Button 
                     size="lg" 
                     className="w-full h-12 rounded-xl font-medium"
@@ -711,16 +740,20 @@ export default function CourseDetails() {
               <p>
                 Are you sure you want to enroll in <span className="font-medium text-foreground">{course.title}</span>?
               </p>
-              <div className="p-3 rounded-lg bg-muted/50 flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Enrollment Fee:</span>
-                <span className="font-medium">
-                  <CurrencyDisplay 
-                    amount={ENROLLMENT_FEE} 
-                    userCurrencyCode={user?.currency_code}
-                    currencySymbol={currencySymbol}
-                  />
-                </span>
-              </div>
+                             <div className="p-3 rounded-lg bg-muted/50 flex justify-between items-center">
+                 <span className="text-sm text-muted-foreground">Enrollment Fee:</span>
+                 <span className="font-medium">
+                   {ENROLLMENT_FEE === 0 ? (
+                     <span className="text-green-600 font-semibold">Free</span>
+                   ) : (
+                     <CurrencyDisplay 
+                       amount={ENROLLMENT_FEE} 
+                       userCurrencyCode={user?.currency_code}
+                       currencySymbol={currencySymbol}
+                     />
+                   )}
+                 </span>
+               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-3 sm:gap-0">
@@ -757,6 +790,8 @@ export default function CourseDetails() {
         requiredAmount={ENROLLMENT_FEE}
         currentBalance={walletBalance}
         type="enrollment"
+        userCurrencyCode={user?.currency_code}
+        currencySymbol={currencySymbol}
       />
     </div>
   );

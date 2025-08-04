@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatAmountInUserCurrencySync } from "@/lib/currency";
 import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "@/services/settingsService";
 
@@ -18,6 +18,8 @@ interface InsufficientFundsModalProps {
   requiredAmount: number;
   currentBalance: number;
   type?: 'enrollment' | 'tuition';
+  userCurrencyCode?: string;
+  currencySymbol?: string;
 }
 
 export const InsufficientFundsModal = ({
@@ -26,7 +28,9 @@ export const InsufficientFundsModal = ({
   onFundWallet,
   requiredAmount,
   currentBalance,
-  type = 'enrollment'
+  type = 'enrollment',
+  userCurrencyCode,
+  currencySymbol
 }: InsufficientFundsModalProps) => {
   const { data: settings } = useQuery({
     queryKey: ['settings'],
@@ -48,16 +52,20 @@ export const InsufficientFundsModal = ({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Required Amount:</span>
-              <span className="font-medium">{formatCurrency(requiredAmount, settings?.default_currency)}</span>
+              <span className="font-medium">
+                {formatAmountInUserCurrencySync(requiredAmount, userCurrencyCode, currencySymbol)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Current Balance:</span>
-              <span className="font-medium">{formatCurrency(currentBalance, settings?.default_currency)}</span>
+              <span className="font-medium">
+                {formatAmountInUserCurrencySync(currentBalance, userCurrencyCode, currencySymbol)}
+              </span>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-sm text-muted-foreground">Shortfall:</span>
               <span className="font-medium text-destructive">
-                {formatCurrency(shortfall, settings?.default_currency)}
+                {formatAmountInUserCurrencySync(shortfall, userCurrencyCode, currencySymbol)}
               </span>
             </div>
           </div>
