@@ -31,6 +31,8 @@ interface Lesson {
   resource_url?: string;
   is_preview: boolean;
   order: number;
+  moduleTitle?: string;
+  moduleId?: string;
 }
 
 interface Module {
@@ -80,8 +82,14 @@ export default function LessonPlayer() {
 
   // Find all lessons in the course
   const allLessons = course?.modules?.flatMap(module => 
-    module.lessons.map(lesson => ({ ...lesson, moduleTitle: module.title }))
+    module.lessons.map(lesson => ({ ...lesson, moduleTitle: module.title, moduleId: module.id }))
   ) || [];
+
+  // Find current module lessons (for sidebar)
+  const currentModule = course?.modules?.find(module => 
+    module.lessons.some(lesson => lesson.id === currentLesson?.id)
+  );
+  const currentModuleLessons = currentModule?.lessons || [];
 
   // Find current lesson index
   useEffect(() => {
@@ -249,14 +257,6 @@ export default function LessonPlayer() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate(`/dashboard/academy/course/${courseId}`)}
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Back to Course
-            </Button>
             <div className="flex-1">
               <h1 className="text-2xl font-bold">{course.title}</h1>
               <p className="text-muted-foreground">
@@ -316,36 +316,38 @@ export default function LessonPlayer() {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-6 border-t">
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t">
                   <Button
                     variant="outline"
                     onClick={goToPreviousLesson}
                     disabled={currentLessonIndex === 0}
+                    className="w-full sm:w-auto"
                   >
                     <ChevronLeft className="h-4 w-4 mr-2" />
                     Previous
                   </Button>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     {!isCompleted && (
                       <Button
                         onClick={markLessonComplete}
                         disabled={isMarkingComplete}
-                        className="text-white"
+                        className="text-white flex-1 sm:flex-none"
                       >
                         {isMarkingComplete ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : (
                           <CheckCircle className="h-4 w-4 mr-2" />
                         )}
-                        Mark Complete
+                        <span className="hidden sm:inline">Mark Complete</span>
+                        <span className="sm:hidden">Complete</span>
                       </Button>
                     )}
 
                     <Button
                       onClick={goToNextLesson}
                       disabled={currentLessonIndex === allLessons.length - 1}
-                      className="text-white"
+                      className="text-white flex-1 sm:flex-none"
                     >
                       Next
                       <ChevronRight className="h-4 w-4 ml-2" />
@@ -360,15 +362,18 @@ export default function LessonPlayer() {
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Course Lessons</CardTitle>
+                <CardTitle className="text-lg">Module Lessons</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {currentLesson?.moduleTitle || 'Current Module'}
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {allLessons.map((lesson, index) => (
+                  {currentModuleLessons.map((lesson, index) => (
                     <div
                       key={lesson.id}
                       className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        lesson.id === currentLesson.id
+                        lesson.id === currentLesson?.id
                           ? 'bg-primary/10 border border-primary/20'
                           : 'hover:bg-muted/50'
                       }`}
@@ -384,7 +389,7 @@ export default function LessonPlayer() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-medium truncate ${
-                            lesson.id === currentLesson.id ? 'text-primary' : ''
+                            lesson.id === currentLesson?.id ? 'text-primary' : ''
                           }`}>
                             {index + 1}. {lesson.title}
                           </p>
