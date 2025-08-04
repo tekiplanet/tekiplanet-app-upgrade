@@ -151,6 +151,15 @@ export default function MyCourses() {
   const [processingCourse, setProcessingCourse] = useState<EnrolledCourse | null>(null);
   const [showFullPaymentConfirmModal, setShowFullPaymentConfirmModal] = useState(false);
   const [fullPaymentCourse, setFullPaymentCourse] = useState<EnrolledCourse | null>(null);
+  const [showInstallmentPaymentConfirmModal, setShowInstallmentPaymentConfirmModal] = useState(false);
+  const [selectedInstallment, setSelectedInstallment] = useState<{
+    id: string;
+    amount: number;
+    due_date: string;
+    status: string;
+    paid_at: string | null;
+    order: number;
+  } | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Currency symbol cache
@@ -448,20 +457,10 @@ export default function MyCourses() {
       return;
     }
 
-    // Set the selected course and installment amount
+    // Set the selected course and installment for confirmation modal
     setSelectedCourse(enrollment);
-    setSelectedPaymentPlan('installment');
-
-    // Check if balance is sufficient
-    const currentBalance = user?.wallet_balance || 0;
-
-    if (currentBalance < selectedInstallment.amount) {
-      // Show insufficient funds modal
-      setShowInsufficientFundsModal(true);
-    } else {
-      // Show confirmation modal for sufficient balance
-      setShowInsufficientFundsModal(true);
-    }
+    setSelectedInstallment(selectedInstallment);
+    setShowInstallmentPaymentConfirmModal(true);
   };
 
   const handleFundWallet = () => {
@@ -469,24 +468,63 @@ export default function MyCourses() {
     navigate("/dashboard/wallet");
   };
 
+  const handleInstallmentPaymentConfirm = async () => {
+    if (!selectedCourse || !selectedInstallment || !user) return;
+
+    // Set processing state
+    setIsProcessingPayment(true);
+
+    try {
+      // Process installment payment via backend
+      const response = await enrollmentService.processInstallmentPayment(
+        selectedCourse.course_id, 
+        selectedInstallment.id, 
+        selectedInstallment.amount
+      );
+
+      // Immediately update the UI to reflect the paid status
+      const updatedEnrollments = enrolledCourses.map(course => 
+        course.enrollment_id === selectedCourse.enrollment_id
+          ? { 
+              ...course, 
+              installments: course.installments?.map(inst => 
+                inst.id === selectedInstallment.id 
+                  ? { 
+                      ...inst,
+                      status: 'paid',
+                      paid_at: new Date().toISOString()
+                    } 
+                  : inst
+              ),
+              // Update payment status to fully_paid if all installments are paid
+              payment_status: course.installments?.every(inst => 
+                inst.id === selectedInstallment.id || inst.status === 'paid'
+              ) 
+                ? 'fully_paid' as const
+                : 'partially_paid' as const
+            }
+          : course
+      );
+
+      setEnrolledCourses(updatedEnrollments);
+      setShowInstallmentPaymentConfirmModal(false);
+      setSelectedCourse(null);
+      setSelectedInstallment(null);
+      
+      toast.success("Installment paid successfully!");
+    } catch (error) {
+      console.error('Installment payment processing error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to process payment');
+    } finally {
+      // Reset processing state
+      setIsProcessingPayment(false);
+    }
+  };
+
   const handleFullPaymentConfirm = async () => {
     if (!fullPaymentCourse || !user) return;
 
     const fullAmount = fullPaymentCourse.total_tuition;
-
-    // Check if balance is sufficient
-    if (balance < fullAmount) {
-      // Set the selected course for insufficient funds modal
-      setSelectedCourse({
-        ...fullPaymentCourse,
-        total_tuition: fullAmount
-      });
-      
-      // Show insufficient funds modal
-      setShowInsufficientFundsModal(true);
-      setShowFullPaymentConfirmModal(false);
-      return;
-    }
 
     // Set processing state
     setIsProcessingPayment(true);
@@ -588,6 +626,111 @@ export default function MyCourses() {
           </div>
           <DialogFooter className="flex justify-between">
             {numBalance < numTotalTuition ? (
+              <div className="flex space-x-2">
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate('/dashboard/wallet');
+                  }}
+                >
+                  Fund Wallet
+                </Button>
+                <Button 
+                  disabled
+                  className="text-white hover:text-white/80"
+                >
+                  Insufficient Balance
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={onConfirm} 
+                className="text-white"
+                disabled={isProcessingPayment}
+              >
+                {isProcessingPayment ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Confirm Payment'
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  const InstallmentPaymentConfirmModal = ({ 
+    open, 
+    onOpenChange, 
+    course, 
+    installment,
+    onConfirm 
+  }: { 
+    open: boolean; 
+    onOpenChange: (open: boolean) => void;
+    course: EnrolledCourse | null;
+    installment: {
+      id: string;
+      amount: number;
+      due_date: string;
+      status: string;
+      paid_at: string | null;
+      order: number;
+    } | null;
+    onConfirm: () => void;
+  }) => {
+    if (!course || !installment) return null;
+
+    // Ensure balance is converted to a number
+    const numBalance = Number(balance || 0);
+    const numInstallmentAmount = Number(installment.amount || 0);
+
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[425px] md:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Installment Payment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to pay installment {installment.order} for {course.course_title}?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <div className="flex justify-between">
+              <span>Installment Amount:</span>
+              <span className="font-bold text-primary">
+                <CurrencyDisplay 
+                  amount={numInstallmentAmount} 
+                  userCurrencyCode={user?.currency_code}
+                  currencySymbol={currencySymbol}
+                />
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Due Date:</span>
+              <span className="font-medium">
+                {new Date(installment.due_date).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Current Wallet Balance:</span>
+              <span className={`font-bold ${numBalance < numInstallmentAmount ? 'text-destructive' : 'text-primary'}`}>
+                <CurrencyDisplay 
+                  amount={numBalance} 
+                  userCurrencyCode={user?.currency_code}
+                  currencySymbol={currencySymbol}
+                />
+              </span>
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between">
+            {numBalance < numInstallmentAmount ? (
               <div className="flex space-x-2">
                 <Button 
                   variant="secondary"
@@ -1077,12 +1220,20 @@ export default function MyCourses() {
         isProcessingPayment={isProcessingPayment}
       />
 
-      <FullPaymentConfirmModal 
-        open={showFullPaymentConfirmModal}
-        onOpenChange={setShowFullPaymentConfirmModal}
-        course={fullPaymentCourse}
-        onConfirm={handleFullPaymentConfirm}
-      />
+             <FullPaymentConfirmModal 
+         open={showFullPaymentConfirmModal}
+         onOpenChange={setShowFullPaymentConfirmModal}
+         course={fullPaymentCourse}
+         onConfirm={handleFullPaymentConfirm}
+       />
+
+       <InstallmentPaymentConfirmModal 
+         open={showInstallmentPaymentConfirmModal}
+         onOpenChange={setShowInstallmentPaymentConfirmModal}
+         course={selectedCourse}
+         installment={selectedInstallment}
+         onConfirm={handleInstallmentPaymentConfirm}
+       />
     </div>
   );
 } 
