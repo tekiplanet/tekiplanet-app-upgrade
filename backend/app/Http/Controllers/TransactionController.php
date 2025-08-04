@@ -18,16 +18,69 @@ class TransactionController extends Controller
         // Get the logged-in user
         $user = Auth::user();
 
+        // Get page from request, default to 1 if not provided
+        $page = $request->input('page', 1);
+        
         // Get limit from request, default to 20 if not provided
         $limit = $request->input('limit', 20);
 
-        // Retrieve transactions for the logged-in user
-        $transactions = Transaction::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate($limit); // Use the limit parameter
+        // Get search and filter parameters
+        $search = $request->input('search', '');
+        $type = $request->input('type', '');
+        $status = $request->input('status', '');
+        $startDate = $request->input('start_date', '');
+        $endDate = $request->input('end_date', '');
+
+        // Build the query
+        $query = Transaction::where('user_id', $user->id);
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('description', 'LIKE', "%{$search}%")
+                  ->orWhere('id', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Apply type filter
+        if (!empty($type) && in_array($type, ['credit', 'debit'])) {
+            $query->where('type', $type);
+        }
+
+        // Apply status filter
+        if (!empty($status) && in_array($status, ['completed', 'pending', 'cancelled'])) {
+            $query->where('status', $status);
+        }
+
+        // Apply date range filter
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        // Retrieve transactions for the logged-in user with pagination
+        $transactions = $query->orderBy('created_at', 'desc')
+            ->paginate($limit, ['*'], 'page', $page);
 
         return response()->json([
-            'transactions' => $transactions,
+            'transactions' => $transactions->items(),
+            'pagination' => [
+                'current_page' => $transactions->currentPage(),
+                'last_page' => $transactions->lastPage(),
+                'per_page' => $transactions->perPage(),
+                'total' => $transactions->total(),
+                'from' => $transactions->firstItem(),
+                'to' => $transactions->lastItem(),
+                'has_more_pages' => $transactions->hasMorePages(),
+                'has_previous_page' => $transactions->previousPageUrl() !== null,
+                'has_next_page' => $transactions->nextPageUrl() !== null,
+            ],
+            'filters' => [
+                'search' => $search,
+                'type' => $type,
+                'status' => $status,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
             'stats' => [
                 'total_spent' => $transactions->where('type', 'debit')->sum('amount'),
                 'total_funded' => $transactions->where('type', 'credit')->sum('amount'),

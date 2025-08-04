@@ -62,13 +62,26 @@ const CurrencyDisplay = ({
 
 // Transaction service
 const transactionService = {
-  async getUserTransactions() {
+  async getUserTransactions(page: number = 1, limit: number = 20, filters: any = {}) {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('No authentication token');
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/transactions`, {
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+
+    // Add filter parameters
+    if (filters.search) params.append('search', filters.search);
+    if (filters.type && filters.type !== 'all') params.append('type', filters.type);
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.startDate) params.append('start_date', filters.startDate);
+    if (filters.endDate) params.append('end_date', filters.endDate);
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/transactions?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -82,27 +95,36 @@ const transactionService = {
     }
 
     const data = await response.json();
-    return data.transactions?.data || [];
+    return {
+      transactions: data.transactions || [],
+      pagination: data.pagination || {},
+      filters: data.filters || {},
+      stats: data.stats || {}
+    };
   }
 };
 
 interface TransactionHistoryProps {
   showHeader?: boolean;
-  maxTransactions?: number;
   showFilters?: boolean;
   className?: string;
 }
 
 export default function TransactionHistory({ 
   showHeader = true, 
-  maxTransactions = 50,
   showFilters = true,
   className = ""
 }: TransactionHistoryProps) {
   const user = useAuthStore(state => state.user);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMorePages, setHasMorePages] = useState(true);
+  const [paginationInfo, setPaginationInfo] = useState<any>({});
   
   // Currency symbol cache
   const [currencySymbol, setCurrencySymbol] = useState<string>('$');
@@ -148,11 +170,21 @@ export default function TransactionHistory({
   
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [visibleTransactions, setVisibleTransactions] = useState(10);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   const navigate = useNavigate();
 
-  // Fetch transactions on component mount
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch transactions on component mount and when filters change
   useEffect(() => {
     const fetchTransactions = async () => {
       if (!user) {
@@ -161,13 +193,18 @@ export default function TransactionHistory({
 
       try {
         setIsLoading(true);
-        const fetchedTransactions = await transactionService.getUserTransactions();
+        const filters = {
+          search: debouncedSearchQuery,
+          type: typeFilter,
+          status: statusFilter
+        };
         
-        const transactionArray = Array.isArray(fetchedTransactions) 
-          ? fetchedTransactions 
-          : fetchedTransactions.data || [];
+        const result = await transactionService.getUserTransactions(1, 20, filters);
         
-        setTransactions(transactionArray);
+        setTransactions(result.transactions);
+        setPaginationInfo(result.pagination);
+        setHasMorePages(result.pagination.has_more_pages || false);
+        setCurrentPage(1); // Reset to first page when filters change
         setError(null);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);
@@ -182,33 +219,50 @@ export default function TransactionHistory({
     };
 
     fetchTransactions();
-  }, [user]);
+  }, [user, debouncedSearchQuery, typeFilter, statusFilter]);
 
-  // Filter transactions
-  const filteredTransactions = transactions
-    .map(t => ({
-      ...t,
-      amount: parseFloat(t.amount),
-      date: t.created_at || new Date().toISOString(),
-      type: t.type === 'credit' || t.type === 'debit' ? t.type : 'debit'
-    }))
-    .filter(t => {
-      const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === "all" || t.type === typeFilter;
-      return matchesSearch && matchesType;
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, maxTransactions);
+  // Load more transactions function
+  const loadMoreTransactions = async () => {
+    if (!user || isLoadingMore || !hasMorePages) return;
 
-  // Pagination logic
-  const displayedTransactions = filteredTransactions.slice(0, visibleTransactions);
-
-  // Toggle transactions visibility
-  const toggleTransactionsVisibility = () => {
-    setVisibleTransactions(prev => 
-      prev === 10 ? filteredTransactions.length : 10
-    );
+    try {
+      setIsLoadingMore(true);
+      const nextPage = currentPage + 1;
+      const filters = {
+        search: debouncedSearchQuery,
+        type: typeFilter,
+        status: statusFilter
+      };
+      
+      const result = await transactionService.getUserTransactions(nextPage, 20, filters);
+      
+      setTransactions(prev => [...prev, ...result.transactions]);
+      setPaginationInfo(result.pagination);
+      setHasMorePages(result.pagination.has_more_pages || false);
+      setCurrentPage(nextPage);
+    } catch (err) {
+      console.error('Failed to load more transactions:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      toast.error('Failed to load more transactions', {
+        description: errorMessage
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery("");
+    setTypeFilter("all");
+    setStatusFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery || typeFilter !== 'all' || statusFilter !== 'all';
+
+  // Use transactions directly since we're now using server-side filtering
+  const displayedTransactions = transactions;
 
   // Status label component
   const StatusLabel = ({ status }: { status: string }) => {
@@ -271,38 +325,173 @@ export default function TransactionHistory({
               <CardTitle className="text-lg md:text-2xl font-bold text-foreground">
                 Transaction History
               </CardTitle>
-              {showFilters && (
-                <div className="flex items-center space-x-2 w-full md:w-auto">
-                  <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input 
-                      placeholder="Search transactions" 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-full bg-secondary/50 border-none rounded-full"
-                    />
-                  </div>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-[120px] bg-secondary/50 border-none rounded-full">
-                      <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <SelectValue placeholder="Filter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Transactions</SelectItem>
-                      <SelectItem value="credit">Credits</SelectItem>
-                      <SelectItem value="debit">Debits</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
           </CardHeader>
         </Card>
       )}
 
+      {/* Search and Filter Section */}
+      {showFilters && (
+        <Card className="border-none shadow-lg rounded-2xl mb-6 bg-gradient-to-r from-primary/5 to-primary/10">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* Section Title */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Search className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Search & Filter</h3>
+              </div>
+              
+              {/* Search and Filters Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Search Input */}
+                <div className="lg:col-span-2">
+                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Search Transactions
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input 
+                      placeholder="Search by description or transaction ID..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 w-full bg-background/50 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                
+                {/* Type Filter */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Transaction Type
+                  </label>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className={`w-full bg-background/50 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all duration-200 ${typeFilter !== 'all' ? 'ring-2 ring-primary/20 border-primary/30' : ''}`}>
+                      <div className="flex items-center gap-2">
+                        {typeFilter === 'credit' && <ArrowDownRight className="w-4 h-4 text-green-500" />}
+                        {typeFilter === 'debit' && <ArrowUpRight className="w-4 h-4 text-red-500" />}
+                        {typeFilter === 'all' && <Filter className="w-4 h-4 text-muted-foreground" />}
+                        <span className="text-sm">
+                          {typeFilter === 'all' ? 'All Types' : 
+                           typeFilter === 'credit' ? 'Credits' : 
+                           typeFilter === 'debit' ? 'Debits' : 'Select type'}
+                        </span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        <div className="flex items-center gap-2">
+                          <Filter className="w-4 h-4" />
+                          All Types
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="credit">
+                        <div className="flex items-center gap-2">
+                          <ArrowDownRight className="w-4 h-4 text-green-500" />
+                          Credits
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="debit">
+                        <div className="flex items-center gap-2">
+                          <ArrowUpRight className="w-4 h-4 text-red-500" />
+                          Debits
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Status Filter */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Status
+                  </label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className={`w-full bg-background/50 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all duration-200 ${statusFilter !== 'all' ? 'ring-2 ring-primary/20 border-primary/30' : ''}`}>
+                      <div className="flex items-center gap-2">
+                        {statusFilter === 'completed' && <div className="w-2 h-2 bg-green-500 rounded-full" />}
+                        {statusFilter === 'pending' && <div className="w-2 h-2 bg-yellow-500 rounded-full" />}
+                        {statusFilter === 'cancelled' && <div className="w-2 h-2 bg-red-500 rounded-full" />}
+                        {statusFilter === 'all' && <Filter className="w-4 h-4 text-muted-foreground" />}
+                        <span className="text-sm">
+                          {statusFilter === 'all' ? 'All Status' : 
+                           statusFilter === 'completed' ? 'Completed' : 
+                           statusFilter === 'pending' ? 'Pending' : 
+                           statusFilter === 'cancelled' ? 'Cancelled' : 'Select status'}
+                        </span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">
+                        <div className="flex items-center gap-2">
+                          <Filter className="w-4 h-4" />
+                          All Status
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="completed">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          Completed
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="pending">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                          Pending
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full" />
+                          Cancelled
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Active Filters and Clear Button */}
+              {hasActiveFilters && (
+                <div className="flex items-center justify-between pt-4 border-t border-border/30">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Active filters:</span>
+                    {searchQuery && (
+                      <Badge variant="secondary" className="text-xs">
+                        Search: "{searchQuery}"
+                      </Badge>
+                    )}
+                    {typeFilter !== 'all' && (
+                      <Badge variant="secondary" className="text-xs">
+                        Type: {typeFilter === 'credit' ? 'Credits' : 'Debits'}
+                      </Badge>
+                    )}
+                    {statusFilter !== 'all' && (
+                      <Badge variant="secondary" className="text-xs">
+                        Status: {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                      </Badge>
+                    )}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={clearFilters}
+                    className="h-8 px-3 bg-background/50 border border-border/50 rounded-lg hover:bg-background/70 transition-all duration-200"
+                  >
+                    <Filter className="w-3 h-3 mr-1" />
+                    Clear All
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-none shadow-lg rounded-2xl">
         <CardContent className="p-0">
-          {filteredTransactions.length > 0 ? (
+          {displayedTransactions.length > 0 ? (
             <div className="space-y-0">
               {displayedTransactions.map((transaction) => (
                 <div 
@@ -354,7 +543,7 @@ export default function TransactionHistory({
                         `}>
                           {transaction.type === 'credit' ? '+' : '-'}
                           <CurrencyDisplay 
-                            amount={parseFloat(transaction.amount)} 
+                            amount={typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount} 
                             userCurrencyCode={user?.currency_code}
                             currencySymbol={currencySymbol}
                           />
@@ -391,7 +580,7 @@ export default function TransactionHistory({
                       
                       {/* Transaction ID (truncated) */}
                       <div className="text-xs text-muted-foreground font-mono">
-                        #{transaction.id.slice(-8)}
+                        #{String(transaction.id).slice(-8)}
                       </div>
                     </div>
                   </div>
@@ -409,25 +598,34 @@ export default function TransactionHistory({
                 </div>
               </div>
               <p className="text-base font-medium text-muted-foreground">
-                No transactions found
+                {isLoading ? 'Loading transactions...' : 'No transactions found'}
               </p>
               <p className="text-sm text-muted-foreground">
-                Your recent transactions will appear here
+                {searchQuery || typeFilter !== 'all' || statusFilter !== 'all' 
+                  ? 'Try adjusting your search or filter criteria'
+                  : 'Your transactions will appear here'
+                }
               </p>
             </div>
           )}
           
-          {/* Load More/View Less Button */}
-          {filteredTransactions.length > 10 && (
+          {/* Load More Button */}
+          {hasMorePages && (
             <div className="p-4 border-t border-border/50">
               <Button 
                 variant="outline" 
-                onClick={toggleTransactionsVisibility}
+                onClick={loadMoreTransactions}
+                disabled={isLoadingMore}
                 className="w-full rounded-full text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
               >
-                {visibleTransactions === 10 
-                  ? `View All (${filteredTransactions.length})` 
-                  : 'View Less'}
+                {isLoadingMore ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-primary"></div>
+                    Loading...
+                  </div>
+                ) : (
+                  `Load More (${paginationInfo.total - transactions.length} more)`
+                )}
               </Button>
             </div>
           )}

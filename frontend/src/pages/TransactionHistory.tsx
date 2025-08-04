@@ -210,7 +210,6 @@ export default function TransactionHistoryPage() {
         {/* Transaction History Component */}
         <TransactionHistoryComponent 
           showHeader={false}
-          maxTransactions={100}
           showFilters={true}
           className=""
         />
