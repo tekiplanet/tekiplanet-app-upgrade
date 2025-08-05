@@ -13,7 +13,7 @@ return new class extends Migration
             $table->uuid('module_id');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('content_type', ['video', 'text', 'quiz', 'assignment']);
+            $table->enum('content_type', ['video', 'text', 'quiz', 'assignment', 'pdf']);
             $table->integer('duration_minutes')->nullable();
             $table->integer('order')->default(0);
             $table->string('resource_url')->nullable();

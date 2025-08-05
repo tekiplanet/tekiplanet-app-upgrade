@@ -335,7 +335,9 @@ const CourseManagement: React.FC = () => {
                          {/* Lessons */}
              {module.lessons && module.lessons.length > 0 && (
                <div className="ml-4 pl-8 border-l border-border/50 space-y-2">
-                 {module.lessons.map((lesson, lessonIndex) => (
+                 {[...module.lessons]
+                   .sort((a, b) => a.order - b.order)
+                   .map((lesson, lessonIndex) => (
                    <div 
                      key={lesson.id || lessonIndex}
                      className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors cursor-pointer"

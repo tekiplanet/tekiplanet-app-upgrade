@@ -452,6 +452,7 @@ function loadLesson(lessonId) {
                 form.description.value = data.lesson.description;
                 form.content_type.value = data.lesson.content_type;
                 form.duration_minutes.value = data.lesson.duration_minutes;
+                form.order.value = data.lesson.order;
                 form.resource_url.value = data.lesson.resource_url || '';
                 form.is_preview.checked = data.lesson.is_preview;
             }
@@ -488,6 +489,7 @@ function handleLessonSubmit(event) {
         description: formData.get('description'),
         content_type: formData.get('content_type'),
         duration_minutes: formData.get('duration_minutes'),
+        order: formData.get('order'),
         resource_url: formData.get('resource_url'),
         is_preview: formData.get('is_preview') === 'on'
     };

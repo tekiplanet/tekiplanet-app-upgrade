@@ -26,7 +26,7 @@ interface Lesson {
   id: string;
   title: string;
   description: string;
-  content_type: 'video' | 'text' | 'quiz' | 'assignment';
+  content_type: 'video' | 'text' | 'quiz' | 'assignment' | 'pdf';
   duration_minutes: number;
   resource_url?: string;
   is_preview: boolean;
@@ -82,14 +82,18 @@ export default function LessonPlayer() {
 
   // Find all lessons in the course
   const allLessons = course?.modules?.flatMap(module => 
-    module.lessons.map(lesson => ({ ...lesson, moduleTitle: module.title, moduleId: module.id }))
+    [...module.lessons]
+      .sort((a, b) => a.order - b.order)
+      .map(lesson => ({ ...lesson, moduleTitle: module.title, moduleId: module.id }))
   ) || [];
 
   // Find current module lessons (for sidebar)
   const currentModule = course?.modules?.find(module => 
     module.lessons.some(lesson => lesson.id === currentLesson?.id)
   );
-  const currentModuleLessons = currentModule?.lessons || [];
+  const currentModuleLessons = currentModule
+    ? [...currentModule.lessons].sort((a, b) => a.order - b.order)
+    : [];
 
   // Find current lesson index
   useEffect(() => {
@@ -138,11 +142,34 @@ export default function LessonPlayer() {
 
     switch (currentLesson.content_type) {
       case 'video':
+        // Check if it's a YouTube link
+        const youtubeMatch = currentLesson.resource_url?.match(
+          /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([A-Za-z0-9_-]{11})/
+        );
+        if (youtubeMatch) {
+          const videoId = youtubeMatch[1];
+          // Use minimal branding parameters
+          const embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&autoplay=1`;
+          return (
+            <div className="aspect-video bg-black rounded-lg overflow-hidden">
+              <iframe
+                src={embedUrl}
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="YouTube Video"
+              />
+            </div>
+          );
+        }
+        // Fallback to HTML5 video for direct links (e.g., .mp4)
         return (
           <div className="aspect-video bg-black rounded-lg overflow-hidden">
             {currentLesson.resource_url ? (
-              <video 
-                controls 
+              <video
+                controls
+                autoPlay
                 className="w-full h-full"
                 src={currentLesson.resource_url}
               >
@@ -194,6 +221,25 @@ export default function LessonPlayer() {
             <Button variant="outline" disabled>
               View Assignment
             </Button>
+          </div>
+        );
+
+      case 'pdf':
+        return (
+          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+            {currentLesson.resource_url ? (
+              <iframe
+                src={currentLesson.resource_url}
+                className="w-full h-[80vh] min-h-[400px] rounded"
+                title="PDF Viewer"
+                frameBorder="0"
+              />
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p>PDF not available</p>
+              </div>
+            )}
           </div>
         );
 

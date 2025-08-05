@@ -25,21 +25,18 @@ class CourseLessonController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'content_type' => 'required|in:video,text,quiz,assignment',
+                'content_type' => 'required|in:video,text,quiz,assignment,pdf',
                 'duration_minutes' => 'required|integer|min:1',
+                'order' => 'required|integer|min:1',
                 'resource_url' => 'nullable|url',
                 'is_preview' => 'boolean'
             ]);
 
             \Log::debug('Validation passed', ['validated_data' => $validated]);
 
-            // Get the highest order number and add 1
-            $maxOrder = $module->lessons()->max('order') ?? 0;
-
             $lesson = CourseLesson::create([
                 'id' => Str::uuid(),
                 'module_id' => $module->id,
-                'order' => $maxOrder + 1,
                 ...$validated
             ]);
 
@@ -72,8 +69,9 @@ class CourseLessonController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'content_type' => 'required|in:video,text,quiz,assignment',
+                'content_type' => 'required|in:video,text,quiz,assignment,pdf',
                 'duration_minutes' => 'required|integer|min:1',
+                'order' => 'required|integer|min:1',
                 'resource_url' => 'nullable|url',
                 'is_preview' => 'boolean'
             ]);

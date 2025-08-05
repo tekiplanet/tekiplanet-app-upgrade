@@ -45,6 +45,7 @@
                         <option value="text">Text</option>
                         <option value="quiz">Quiz</option>
                         <option value="assignment">Assignment</option>
+                        <option value="pdf">PDF</option>
                     </select>
                 </div>
 
@@ -53,6 +54,15 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (minutes)</label>
                     <input type="number" name="duration_minutes" min="1" required
                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <!-- Order -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Order</label>
+                    <input type="number" name="order" min="1" required
+                           placeholder="1, 2, 3..."
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Set the order in which this lesson appears (1 = first, 2 = second, etc.)</p>
                 </div>
 
                 <!-- Resource URL -->
