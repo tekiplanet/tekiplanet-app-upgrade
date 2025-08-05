@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\WorkstationPlanController;
 use App\Http\Controllers\Admin\WorkstationSubscriptionController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\QuizController;
 
 /*
 |--------------------------------------------------------------------------
@@ -88,6 +89,28 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:admin']], function () 
         Route::delete('lessons/{lesson}', [CourseLessonController::class, 'destroy'])
             ->name('lessons.destroy')
             ->where('course', '[0-9a-f-]+')
+            ->where('lesson', '[0-9a-f-]+');
+
+        // Quiz Management Routes
+        Route::get('lessons/{lesson}/quiz/questions', [QuizController::class, 'getQuestions'])
+            ->name('lessons.quiz.questions')
+            ->where('lesson', '[0-9a-f-]+');
+
+        Route::post('lessons/{lesson}/quiz/questions', [QuizController::class, 'storeQuestion'])
+            ->name('lessons.quiz.questions.store')
+            ->where('lesson', '[0-9a-f-]+');
+
+        Route::get('quiz/questions/{question}/edit', [QuizController::class, 'edit'])
+            ->name('lessons.quiz.questions.edit');
+
+        Route::put('quiz/questions/{question}', [QuizController::class, 'updateQuestion'])
+            ->name('lessons.quiz.questions.update');
+
+        Route::delete('quiz/questions/{question}', [QuizController::class, 'destroyQuestion'])
+            ->name('lessons.quiz.questions.destroy');
+
+        Route::post('lessons/{lesson}/quiz/reorder', [QuizController::class, 'reorderQuestions'])
+            ->name('lessons.quiz.reorder')
             ->where('lesson', '[0-9a-f-]+');
 
         // Course Topics Routes

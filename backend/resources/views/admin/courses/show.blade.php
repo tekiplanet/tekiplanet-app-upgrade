@@ -180,7 +180,7 @@
                 <div x-show="activeTab === 'modules'">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Course Modules</h3>
-                        <button onclick="openModuleModal()" 
+                        <button onclick="openModuleModal()"
                                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                             Add Module
                         </button>
@@ -213,10 +213,10 @@
                                     <p class="text-sm text-gray-600 mb-4">{{ $module->description }}</p>
                                     <div class="flex justify-between items-center mb-4">
                                         <span class="text-sm text-gray-500">{{ $module->duration_hours }} hours</span>
-                                        <button onclick="openLessonModal('{{ $module->id }}')"
-                                                class="text-sm text-blue-600 hover:text-blue-800">
-                                            + Add Lesson
-                                        </button>
+                                                                <button onclick="openLessonModal('{{ $module->id }}')"
+                                class="text-sm text-blue-600 hover:text-blue-800">
+                            + Add Lesson
+                        </button>
                                     </div>
 
                                     @if($module->lessons->isEmpty())
@@ -252,10 +252,10 @@
                                     <div class="mt-6 border-t pt-4">
                                         <div class="flex justify-between items-center mb-4">
                                             <h4 class="font-semibold">Topics</h4>
-                                            <button onclick="openTopicModal('{{ $module->id }}')"
-                                                    class="text-sm text-blue-600 hover:text-blue-800">
-                                                + Add Topic
-                                            </button>
+                                                                                    <button onclick="openTopicModal('{{ $module->id }}')"
+                                                class="text-sm text-blue-600 hover:text-blue-800">
+                                            + Add Topic
+                                        </button>
                                         </div>
 
                                         @if($module->topics->isEmpty())
@@ -404,44 +404,116 @@
     @include('admin.courses.partials.lesson-modal')
     @include('admin.courses.partials.topic-modal')
     @include('admin.courses.partials.schedule-modal')
+    @include('admin.courses.partials.quiz-modal')
 </div>
 
 @push('scripts')
 <script>
-let currentLessonId = null;
-let isEditingLesson = false;
+// MODULE MODAL FUNCTIONS
+function openModuleModal(moduleId = null) {
+    const modal = document.getElementById('moduleModal');
+    const form = document.getElementById('moduleForm');
+    const modalTitle = document.getElementById('modalTitle');
+    window.currentModuleId = moduleId;
+    window.isEditMode = !!moduleId;
+    modalTitle.textContent = window.isEditMode ? 'Edit Module' : 'Add New Module';
+    form.reset();
+    if (moduleId) {
+        loadModule(moduleId);
+    }
+    modal.classList.remove('hidden');
+}
+function closeModuleModal() {
+    const modal = document.getElementById('moduleModal');
+    modal.classList.add('hidden');
+}
+function loadModule(moduleId) {
+    fetch(`/admin/courses/{{ $course->id }}/modules/${moduleId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const form = document.getElementById('moduleForm');
+                form.title.value = data.module.title;
+                form.description.value = data.module.description;
+                form.duration_hours.value = data.module.duration_hours;
+                form.order.value = data.module.order;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading module:', error);
+            showNotification('Error', 'Failed to load module data', 'error');
+        });
+}
+function handleModuleSubmit(event) {
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    const loadingSpinner = submitButton.querySelector('.loading-spinner');
+    submitButton.disabled = true;
+    loadingSpinner.classList.remove('hidden');
+    const formData = new FormData(event.target);
+    const data = {
+        course_id: '{{ $course->id }}',
+        title: formData.get('title'),
+        description: formData.get('description'),
+        duration_hours: formData.get('duration_hours'),
+        order: formData.get('order')
+    };
+    const url = window.isEditMode 
+        ? `/admin/courses/{{ $course->id }}/modules/${window.currentModuleId}`
+        : '/admin/courses/{{ $course->id }}/modules';
+    const method = window.isEditMode ? 'PUT' : 'POST';
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification('Success', `Module ${window.isEditMode ? 'updated' : 'created'} successfully`);
+            closeModuleModal();
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error', `Failed to ${window.isEditMode ? 'update' : 'create'} module`, 'error');
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        loadingSpinner.classList.add('hidden');
+    });
+}
 
+// LESSON MODAL FUNCTIONS
 function openLessonModal(moduleId, lessonId = null) {
     const modal = document.getElementById('lessonModal');
     const form = document.getElementById('lessonForm');
     const modalTitle = document.getElementById('lessonModalTitle');
     const modalAction = document.getElementById('lessonModalAction');
-    
-    currentLessonId = lessonId;
-    isEditingLesson = !!lessonId;
-    
-    // Set module ID
+    window.currentLessonId = lessonId;
+    window.isEditingLesson = !!lessonId;
     document.getElementById('lessonModuleId').value = moduleId;
-    
-    // Update modal title and action button
-    modalTitle.textContent = isEditingLesson ? 'Edit Lesson' : 'Add New Lesson';
-    modalAction.textContent = isEditingLesson ? 'Update Lesson' : 'Create Lesson';
-    
-    // Reset form
+    modalTitle.textContent = window.isEditingLesson ? 'Edit Lesson' : 'Add New Lesson';
+    modalAction.textContent = window.isEditingLesson ? 'Update Lesson' : 'Create Lesson';
     form.reset();
-    
     if (lessonId) {
         loadLesson(lessonId);
     }
-    
     modal.classList.remove('hidden');
 }
-
 function closeLessonModal() {
     const modal = document.getElementById('lessonModal');
     modal.classList.add('hidden');
 }
-
 function loadLesson(lessonId) {
     fetch(`/admin/courses/{{ $course->id }}/lessons/${lessonId}/edit`)
         .then(response => response.json())
@@ -455,6 +527,9 @@ function loadLesson(lessonId) {
                 form.order.value = data.lesson.order;
                 form.resource_url.value = data.lesson.resource_url || '';
                 form.is_preview.checked = data.lesson.is_preview;
+                
+                // Trigger content type change to show/hide quiz management section
+                handleContentTypeChange();
             }
         })
         .catch(error => {
@@ -462,26 +537,17 @@ function loadLesson(lessonId) {
             showNotification('Error', 'Failed to load lesson data', 'error');
         });
 }
-
 function handleLessonSubmit(event) {
     const form = event.target;
     const moduleId = document.getElementById('lessonModuleId').value;
-    // console.log('Module ID:', moduleId);
-
-    const url = isEditingLesson
-        ? `/admin/courses/{{ $course->id }}/lessons/${currentLessonId}`
+    const url = window.isEditingLesson
+        ? `/admin/courses/{{ $course->id }}/lessons/${window.currentLessonId}`
         : `/admin/courses/{{ $course->id }}/modules/${moduleId}/lessons`;
-    // console.log('Request URL:', url);
-
-    const method = isEditingLesson ? 'PUT' : 'POST';
-    // console.log('Request Method:', method);
-
+    const method = window.isEditingLesson ? 'PUT' : 'POST';
     const submitButton = form.querySelector('button[type="submit"]');
     const loadingSpinner = submitButton.querySelector('.loading-spinner');
-    
     submitButton.disabled = true;
     loadingSpinner.classList.remove('hidden');
-
     const formData = new FormData(form);
     const data = {
         module_id: moduleId,
@@ -493,7 +559,6 @@ function handleLessonSubmit(event) {
         resource_url: formData.get('resource_url'),
         is_preview: formData.get('is_preview') === 'on'
     };
-
     fetch(url, {
         method: method,
         headers: {
@@ -519,14 +584,14 @@ function handleLessonSubmit(event) {
     })
     .then(data => {
         if (data.success) {
-            showNotification('Success', `Lesson ${isEditingLesson ? 'updated' : 'created'} successfully`);
+            showNotification('Success', `Lesson ${window.isEditingLesson ? 'updated' : 'created'} successfully`);
             closeLessonModal();
             window.location.reload();
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error', `Failed to ${isEditingLesson ? 'update' : 'create'} lesson`, 'error');
+        showNotification('Error', `Failed to ${window.isEditingLesson ? 'update' : 'create'} lesson`, 'error');
     })
     .finally(() => {
         submitButton.disabled = false;
@@ -534,92 +599,184 @@ function handleLessonSubmit(event) {
     });
 }
 
-function loadCourse(courseId) {
-    fetch(`/admin/courses/${courseId}/edit`)
+// TOPIC MODAL FUNCTIONS
+function openTopicModal(moduleId, topicId = null) {
+    const modal = document.getElementById('topicModal');
+    const form = document.getElementById('topicForm');
+    const modalTitle = document.getElementById('topicModalTitle');
+    const modalAction = document.getElementById('topicModalAction');
+    window.currentTopicId = topicId;
+    window.isEditingTopic = !!topicId;
+    document.getElementById('topicModuleId').value = moduleId;
+    modalTitle.textContent = window.isEditingTopic ? 'Edit Topic' : 'Add New Topic';
+    modalAction.textContent = window.isEditingTopic ? 'Update Topic' : 'Create Topic';
+    form.reset();
+    if (topicId) {
+        loadTopic(topicId);
+    }
+    modal.classList.remove('hidden');
+}
+function closeTopicModal() {
+    const modal = document.getElementById('topicModal');
+    modal.classList.add('hidden');
+}
+function loadTopic(topicId) {
+    fetch(`/admin/courses/{{ $course->id }}/topics/${topicId}/edit`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Populate form fields
-                const form = document.getElementById('editCourseForm');
-                form.action = `/admin/courses/${courseId}`;
-
-                // Set basic fields
-                ['title', 'description', 'category_id', 'instructor_id', 'level', 
-                 'price', 'duration_hours', 'image_url', 'status'].forEach(field => {
-                    const input = form.querySelector(`[name="${field}"]`);
-                    if (input) input.value = data.course[field];
-                });
-
-                // Handle arrays (prerequisites and learning outcomes)
-                const prerequisites = data.course.prerequisites;
-                const learningOutcomes = data.course.learning_outcomes;
-
-                form.querySelector('[name="prerequisites"]').value = 
-                    Array.isArray(prerequisites) 
-                        ? prerequisites.join('\n')
-                        : JSON.parse(prerequisites).join('\n');
-
-                form.querySelector('[name="learning_outcomes"]').value = 
-                    Array.isArray(learningOutcomes)
-                        ? learningOutcomes.join('\n')
-                        : JSON.parse(learningOutcomes).join('\n');
+                const form = document.getElementById('topicForm');
+                form.title.value = data.topic.title;
+                form.description.value = data.topic.description;
+                form.order.value = data.topic.order;
+                const learningOutcomes = JSON.parse(data.topic.learning_outcomes);
+                form.learning_outcomes.value = learningOutcomes.join('\n');
             }
         })
         .catch(error => {
-            console.error('Error loading course:', error);
-            showNotification('Error', 'Failed to load course data', 'error');
+            console.error('Error loading topic:', error);
+            showNotification('Error', 'Failed to load topic data', 'error');
         });
 }
-
-function updateCourse(e) {
-    const form = e.target;
+function handleTopicSubmit(event) {
+    const form = event.target;
+    const moduleId = document.getElementById('topicModuleId').value;
     const submitButton = form.querySelector('button[type="submit"]');
     const loadingSpinner = submitButton.querySelector('.loading-spinner');
-    
-    // Disable button and show spinner
     submitButton.disabled = true;
     loadingSpinner.classList.remove('hidden');
-    
-    // Prepare form data
+    const url = window.isEditingTopic
+        ? `/admin/courses/{{ $course->id }}/topics/${window.currentTopicId}`
+        : `/admin/courses/{{ $course->id }}/modules/${moduleId}/topics`;
+    const method = window.isEditingTopic ? 'PUT' : 'POST';
     const formData = new FormData(form);
-    const jsonData = {};
-    
-    // Convert prerequisites and learning outcomes to arrays
-    for (const [key, value] of formData.entries()) {
-        if (key === '_method' || key === '_token') continue;
-        if (key === 'prerequisites' || key === 'learning_outcomes') {
-            jsonData[key] = value.split('\n')
-                .map(item => item.trim())
-                .filter(item => item.length > 0);
-        } else {
-            jsonData[key] = value;
-        }
-    }
-
-    fetch(form.action, {
-        method: 'PUT',
+    const data = {
+        module_id: moduleId,
+        title: formData.get('title'),
+        description: formData.get('description'),
+        order: parseInt(formData.get('order')),
+        learning_outcomes: formData.get('learning_outcomes')
+    };
+    fetch(url, {
+        method: method,
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json',
-            'X-HTTP-Method-Override': 'PUT'
+            'Accept': 'application/json'
         },
-        body: JSON.stringify(jsonData)
+        body: JSON.stringify(data)
     })
     .then(response => {
         if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.message || 'Failed to update course');
+            return response.text().then(text => {
+                console.error('Response:', text);
+                try {
+                    const json = JSON.parse(text);
+                    throw new Error(json.message || 'Network response was not ok');
+                } catch (e) {
+                    throw new Error(`HTTP ${response.status}: ${text || 'Network response was not ok'}`);
+                }
             });
         }
         return response.json();
     })
     .then(data => {
         if (data.success) {
-            showNotification('Success', 'Course updated successfully');
-            setTimeout(() => window.location.reload(), 1500);
+            showNotification('Success', `Topic ${window.isEditingTopic ? 'updated' : 'created'} successfully`);
+            closeTopicModal();
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error', `Failed to ${window.isEditingTopic ? 'update' : 'create'} topic`, 'error');
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        loadingSpinner.classList.add('hidden');
+    });
+}
+
+// SCHEDULE MODAL FUNCTIONS
+function openScheduleModal(scheduleId = null) {
+    const modal = document.getElementById('scheduleModal');
+    const form = document.getElementById('scheduleForm');
+    const modalTitle = document.getElementById('scheduleModalTitle');
+    const modalAction = document.getElementById('scheduleModalAction');
+    window.currentScheduleId = scheduleId;
+    window.isEditingSchedule = !!scheduleId;
+    modalTitle.textContent = window.isEditingSchedule ? 'Edit Schedule' : 'Add New Schedule';
+    modalAction.textContent = window.isEditingSchedule ? 'Update Schedule' : 'Create Schedule';
+    form.reset();
+    if (scheduleId) {
+        loadSchedule(scheduleId);
+    }
+    modal.classList.remove('hidden');
+}
+function closeScheduleModal() {
+    const modal = document.getElementById('scheduleModal');
+    modal.classList.add('hidden');
+}
+function loadSchedule(scheduleId) {
+    fetch(`/admin/courses/{{ $course->id }}/schedules/${scheduleId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const form = document.getElementById('scheduleForm');
+                form.start_date.value = data.schedule.start_date;
+                form.end_date.value = data.schedule.end_date;
+                form.start_time.value = data.schedule.start_time;
+                form.end_time.value = data.schedule.end_time;
+                form.location.value = data.schedule.location || '';
+                const days = data.schedule.days_of_week.split(',');
+                form.querySelectorAll('input[name="days[]"]').forEach(checkbox => {
+                    checkbox.checked = days.includes(checkbox.value);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading schedule:', error);
+            showNotification('Error', 'Failed to load schedule data', 'error');
+        });
+}
+function handleScheduleSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const loadingSpinner = submitButton.querySelector('.loading-spinner');
+    submitButton.disabled = true;
+    loadingSpinner.classList.remove('hidden');
+    const selectedDays = Array.from(form.querySelectorAll('input[name="days[]"]:checked'))
+        .map(checkbox => checkbox.value)
+        .join(',');
+    const formData = {
+        start_date: form.start_date.value,
+        end_date: form.end_date.value,
+        start_time: form.start_time.value,
+        end_time: form.end_time.value,
+        days_of_week: selectedDays,
+        location: form.location.value
+    };
+    const url = window.isEditingSchedule
+        ? `/admin/courses/{{ $course->id }}/schedules/${window.currentScheduleId}`
+        : `/admin/courses/{{ $course->id }}/schedules`;
+    fetch(url, {
+        method: window.isEditingSchedule ? 'PUT' : 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Success', `Schedule ${window.isEditingSchedule ? 'updated' : 'created'} successfully`);
+            closeScheduleModal();
+            window.location.reload();
         } else {
-            throw new Error(data.message || 'Failed to update course');
+            throw new Error(data.message || `Failed to ${window.isEditingSchedule ? 'update' : 'create'} schedule`);
         }
     })
     .catch(error => {
@@ -632,11 +789,11 @@ function updateCourse(e) {
     });
 }
 
+// DELETE FUNCTIONS
 function deleteModule(moduleId) {
     if (!confirm('Are you sure you want to delete this module? This will also delete all lessons within this module.')) {
         return;
     }
-
     fetch(`/admin/courses/{{ $course->id }}/modules/${moduleId}`, {
         method: 'DELETE',
         headers: {
@@ -667,7 +824,6 @@ function deleteLesson(lessonId) {
     if (!confirm('Are you sure you want to delete this lesson?')) {
         return;
     }
-
     fetch(`/admin/courses/{{ $course->id }}/lessons/${lessonId}`, {
         method: 'DELETE',
         headers: {
@@ -694,131 +850,10 @@ function deleteLesson(lessonId) {
     });
 }
 
-// Topic Management Variables
-let currentTopicId = null;
-let isEditingTopic = false;
-
-function openTopicModal(moduleId, topicId = null) {
-    const modal = document.getElementById('topicModal');
-    const form = document.getElementById('topicForm');
-    const modalTitle = document.getElementById('topicModalTitle');
-    const modalAction = document.getElementById('topicModalAction');
-    
-    currentTopicId = topicId;
-    isEditingTopic = !!topicId;
-    
-    // Set module ID
-    document.getElementById('topicModuleId').value = moduleId;
-    
-    // Update modal title and action button
-    modalTitle.textContent = isEditingTopic ? 'Edit Topic' : 'Add New Topic';
-    modalAction.textContent = isEditingTopic ? 'Update Topic' : 'Create Topic';
-    
-    // Reset form
-    form.reset();
-    
-    if (topicId) {
-        loadTopic(topicId);
-    }
-    
-    modal.classList.remove('hidden');
-}
-
-function closeTopicModal() {
-    const modal = document.getElementById('topicModal');
-    modal.classList.add('hidden');
-}
-
-function loadTopic(topicId) {
-    fetch(`/admin/courses/{{ $course->id }}/topics/${topicId}/edit`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const form = document.getElementById('topicForm');
-                form.title.value = data.topic.title;
-                form.description.value = data.topic.description;
-                form.order.value = data.topic.order;
-                
-                // Handle learning outcomes (convert JSON array to newline-separated string)
-                const learningOutcomes = JSON.parse(data.topic.learning_outcomes);
-                form.learning_outcomes.value = learningOutcomes.join('\n');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading topic:', error);
-            showNotification('Error', 'Failed to load topic data', 'error');
-        });
-}
-
-function handleTopicSubmit(event) {
-    const form = event.target;
-    const moduleId = document.getElementById('topicModuleId').value;
-    const submitButton = form.querySelector('button[type="submit"]');
-    const loadingSpinner = submitButton.querySelector('.loading-spinner');
-    
-    submitButton.disabled = true;
-    loadingSpinner.classList.remove('hidden');
-
-    const url = isEditingTopic
-        ? `/admin/courses/{{ $course->id }}/topics/${currentTopicId}`
-        : `/admin/courses/{{ $course->id }}/modules/${moduleId}/topics`;
-
-    const method = isEditingTopic ? 'PUT' : 'POST';
-
-    const formData = new FormData(form);
-    const data = {
-        module_id: moduleId,
-        title: formData.get('title'),
-        description: formData.get('description'),
-        order: parseInt(formData.get('order')),
-        learning_outcomes: formData.get('learning_outcomes')
-    };
-
-    fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                console.error('Response:', text);
-                try {
-                    const json = JSON.parse(text);
-                    throw new Error(json.message || 'Network response was not ok');
-                } catch (e) {
-                    throw new Error(`HTTP ${response.status}: ${text || 'Network response was not ok'}`);
-                }
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showNotification('Success', `Topic ${isEditingTopic ? 'updated' : 'created'} successfully`);
-            closeTopicModal();
-            window.location.reload();
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error', `Failed to ${isEditingTopic ? 'update' : 'create'} topic`, 'error');
-    })
-    .finally(() => {
-        submitButton.disabled = false;
-        loadingSpinner.classList.add('hidden');
-    });
-}
-
 function deleteTopic(topicId) {
     if (!confirm('Are you sure you want to delete this topic?')) {
         return;
     }
-
     fetch(`/admin/courses/{{ $course->id }}/topics/${topicId}`, {
         method: 'DELETE',
         headers: {
@@ -845,120 +880,10 @@ function deleteTopic(topicId) {
     });
 }
 
-let currentScheduleId = null;
-let isEditingSchedule = false;
-
-function openScheduleModal(scheduleId = null) {
-    const modal = document.getElementById('scheduleModal');
-    const form = document.getElementById('scheduleForm');
-    const modalTitle = document.getElementById('scheduleModalTitle');
-    const modalAction = document.getElementById('scheduleModalAction');
-    
-    currentScheduleId = scheduleId;
-    isEditingSchedule = !!scheduleId;
-    
-    modalTitle.textContent = isEditingSchedule ? 'Edit Schedule' : 'Add New Schedule';
-    modalAction.textContent = isEditingSchedule ? 'Update Schedule' : 'Create Schedule';
-    
-    form.reset();
-    
-    if (scheduleId) {
-        loadSchedule(scheduleId);
-    }
-    
-    modal.classList.remove('hidden');
-}
-
-function closeScheduleModal() {
-    const modal = document.getElementById('scheduleModal');
-    modal.classList.add('hidden');
-}
-
-function loadSchedule(scheduleId) {
-    fetch(`/admin/courses/{{ $course->id }}/schedules/${scheduleId}/edit`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const form = document.getElementById('scheduleForm');
-                form.start_date.value = data.schedule.start_date;
-                form.end_date.value = data.schedule.end_date;
-                form.start_time.value = data.schedule.start_time;
-                form.end_time.value = data.schedule.end_time;
-                form.location.value = data.schedule.location || '';
-                
-                // Handle days of week
-                const days = data.schedule.days_of_week.split(',');
-                form.querySelectorAll('input[name="days[]"]').forEach(checkbox => {
-                    checkbox.checked = days.includes(checkbox.value);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error loading schedule:', error);
-            showNotification('Error', 'Failed to load schedule data', 'error');
-        });
-}
-
-function handleScheduleSubmit(event) {
-    event.preventDefault();
-    const form = event.target;
-    const submitButton = form.querySelector('button[type="submit"]');
-    const loadingSpinner = submitButton.querySelector('.loading-spinner');
-    
-    submitButton.disabled = true;
-    loadingSpinner.classList.remove('hidden');
-
-    const selectedDays = Array.from(form.querySelectorAll('input[name="days[]"]:checked'))
-        .map(checkbox => checkbox.value)
-        .join(',');
-
-    const formData = {
-        start_date: form.start_date.value,
-        end_date: form.end_date.value,
-        start_time: form.start_time.value,
-        end_time: form.end_time.value,
-        days_of_week: selectedDays,
-        location: form.location.value
-    };
-
-    const url = isEditingSchedule
-        ? `/admin/courses/{{ $course->id }}/schedules/${currentScheduleId}`
-        : `/admin/courses/{{ $course->id }}/schedules`;
-
-    fetch(url, {
-        method: isEditingSchedule ? 'PUT' : 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification('Success', `Schedule ${isEditingSchedule ? 'updated' : 'created'} successfully`);
-            closeScheduleModal();
-            window.location.reload();
-        } else {
-            throw new Error(data.message || `Failed to ${isEditingSchedule ? 'update' : 'create'} schedule`);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error', error.message, 'error');
-    })
-    .finally(() => {
-        submitButton.disabled = false;
-        loadingSpinner.classList.add('hidden');
-    });
-}
-
 function deleteSchedule(scheduleId) {
     if (!confirm('Are you sure you want to delete this schedule?')) {
         return;
     }
-
     fetch(`/admin/courses/{{ $course->id }}/schedules/${scheduleId}`, {
         method: 'DELETE',
         headers: {
@@ -974,6 +899,340 @@ function deleteSchedule(scheduleId) {
             window.location.reload();
         } else {
             throw new Error(data.message || 'Failed to delete schedule');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error', error.message, 'error');
+    });
+}
+
+// Quiz Management Functions
+let currentLessonId = null;
+let currentQuestionId = null;
+let isEditingQuestion = false;
+
+// Show/hide quiz management section based on content type
+function handleContentTypeChange() {
+    const contentType = document.querySelector('select[name="content_type"]').value;
+    const quizSection = document.getElementById('quizManagementSection');
+    
+    if (contentType === 'quiz') {
+        quizSection.classList.remove('hidden');
+    } else {
+        quizSection.classList.add('hidden');
+    }
+}
+
+// Open quiz modal
+function openQuizModal() {
+    const modal = document.getElementById('quizModal');
+    // Get the current lesson ID from the lesson modal
+    currentLessonId = window.currentLessonId;
+    modal.classList.remove('hidden');
+    loadQuizQuestions();
+}
+
+// Close quiz modal
+function closeQuizModal() {
+    const modal = document.getElementById('quizModal');
+    modal.classList.add('hidden');
+    currentLessonId = null;
+}
+
+// Load quiz questions
+function loadQuizQuestions() {
+    if (!currentLessonId) return;
+    
+    fetch(`/admin/courses/{{ $course->id }}/lessons/${currentLessonId}/quiz/questions`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderQuestionsList(data.questions);
+            } else {
+                throw new Error(data.message || 'Failed to load questions');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading questions:', error);
+            showNotification('Error', 'Failed to load quiz questions', 'error');
+        });
+}
+
+// Render questions list
+function renderQuestionsList(questions) {
+    const questionsList = document.getElementById('questionsList');
+    
+    if (questions.length === 0) {
+        questionsList.innerHTML = '<p class="text-gray-500 text-center py-8">No questions added yet. Click "Add New Question" to get started.</p>';
+        return;
+    }
+    
+    questionsList.innerHTML = questions.map((question, index) => `
+        <div class="border rounded-lg p-4 bg-gray-50">
+            <div class="flex justify-between items-start mb-2">
+                <h4 class="font-medium">Question ${index + 1}</h4>
+                <div class="flex gap-2">
+                    <button onclick="editQuestion('${question.id}')" 
+                            class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Edit
+                    </button>
+                    <button onclick="deleteQuestion('${question.id}')" 
+                            class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                        Delete
+                    </button>
+                </div>
+            </div>
+            <p class="text-sm mb-2">${question.question}</p>
+            <div class="text-xs text-gray-600">
+                <span class="mr-4">Type: ${question.question_type.replace('_', ' ')}</span>
+                <span>Points: ${question.points}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Open add question modal
+function openAddQuestionModal() {
+    const modal = document.getElementById('questionModal');
+    const form = document.getElementById('questionForm');
+    const modalTitle = document.getElementById('questionModalTitle');
+    const modalAction = document.getElementById('questionModalAction');
+    
+    window.currentQuestionId = null;
+    window.isEditingQuestion = false;
+    
+    // Set lesson ID
+    document.getElementById('questionLessonId').value = currentLessonId;
+    document.getElementById('questionId').value = '';
+    
+    // Update modal title and action button
+    modalTitle.textContent = 'Add Question';
+    modalAction.textContent = 'Add Question';
+    
+    // Reset form
+    form.reset();
+    
+    // Add default answers
+    document.getElementById('answersList').innerHTML = '';
+    addAnswer();
+    addAnswer();
+    
+    // Show the modal with proper positioning
+    modal.classList.remove('hidden');
+    
+    // Ensure it's on top by setting focus
+    setTimeout(() => {
+        modal.querySelector('textarea[name="question"]').focus();
+    }, 100);
+}
+
+// Close question modal
+function closeQuestionModal() {
+    const modal = document.getElementById('questionModal');
+    modal.classList.add('hidden');
+    window.currentQuestionId = null;
+    window.isEditingQuestion = false;
+}
+
+// Add answer field
+function addAnswer() {
+    const answersList = document.getElementById('answersList');
+    const answerIndex = answersList.children.length;
+    
+    const answerDiv = document.createElement('div');
+    answerDiv.className = 'flex items-center gap-2';
+    answerDiv.innerHTML = `
+        <input type="text" name="answers[${answerIndex}][answer_text]" required
+               placeholder="Answer text"
+               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+        <input type="checkbox" name="answers[${answerIndex}][is_correct]" 
+               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <label class="text-xs text-gray-600">Correct</label>
+        <button type="button" onclick="removeAnswer(this)" 
+                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+            Remove
+        </button>
+    `;
+    
+    answersList.appendChild(answerDiv);
+}
+
+// Remove answer field
+function removeAnswer(button) {
+    button.parentElement.remove();
+}
+
+// Handle question type change
+function handleQuestionTypeChange() {
+    const questionType = document.querySelector('select[name="question_type"]').value;
+    const answersSection = document.getElementById('answersSection');
+    
+    if (questionType === 'short_answer') {
+        answersSection.classList.add('hidden');
+    } else {
+        answersSection.classList.remove('hidden');
+    }
+}
+
+// Handle question form submission
+function handleQuestionSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const loadingSpinner = submitButton.querySelector('.loading-spinner');
+    
+    submitButton.disabled = true;
+    loadingSpinner.classList.remove('hidden');
+
+    const formData = new FormData(form);
+    const data = {
+        question: formData.get('question'),
+        question_type: formData.get('question_type'),
+        points: parseInt(formData.get('points')),
+        answers: []
+    };
+
+    // Collect answers manually from the form
+    const answersList = document.getElementById('answersList');
+    const answerDivs = answersList.querySelectorAll('div');
+    
+    answerDivs.forEach((div, index) => {
+        const answerText = div.querySelector('input[name^="answers"][name$="[answer_text]"]').value;
+        const isCorrect = div.querySelector('input[name^="answers"][name$="[is_correct]"]').checked;
+        
+        if (answerText.trim()) {
+            data.answers.push({
+                answer_text: answerText,
+                is_correct: isCorrect
+            });
+        }
+    });
+
+    const url = window.isEditingQuestion
+        ? `/admin/courses/{{ $course->id }}/quiz/questions/${window.currentQuestionId}`
+        : `/admin/courses/{{ $course->id }}/lessons/${window.currentLessonId}/quiz/questions`;
+
+    fetch(url, {
+        method: window.isEditingQuestion ? 'PUT' : 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Success', `Question ${window.isEditingQuestion ? 'updated' : 'created'} successfully`);
+            closeQuestionModal();
+            loadQuizQuestions();
+        } else {
+            throw new Error(data.message || `Failed to ${window.isEditingQuestion ? 'update' : 'create'} question`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error', error.message, 'error');
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        loadingSpinner.classList.add('hidden');
+    });
+}
+
+// Edit question
+function editQuestion(questionId) {
+    // Load question data
+    fetch(`/admin/courses/{{ $course->id }}/quiz/questions/${questionId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Open the question modal in edit mode
+                const modal = document.getElementById('questionModal');
+                const form = document.getElementById('questionForm');
+                const modalTitle = document.getElementById('questionModalTitle');
+                const modalAction = document.getElementById('questionModalAction');
+                
+                window.currentQuestionId = questionId;
+                window.isEditingQuestion = true;
+                
+                // Update modal title and action button
+                modalTitle.textContent = 'Edit Question';
+                modalAction.textContent = 'Update Question';
+                
+                // Populate form fields
+                form.querySelector('textarea[name="question"]').value = data.question.question;
+                form.querySelector('select[name="question_type"]').value = data.question.question_type;
+                form.querySelector('input[name="points"]').value = data.question.points;
+                
+                // Handle question type change
+                handleQuestionTypeChange();
+                
+                // Populate answers
+                const answersList = document.getElementById('answersList');
+                answersList.innerHTML = '';
+                
+                data.question.answers.forEach((answer, index) => {
+                    const answerDiv = document.createElement('div');
+                    answerDiv.className = 'flex items-center gap-2';
+                    answerDiv.innerHTML = `
+                        <input type="text" name="answers[${index}][answer_text]" required
+                               placeholder="Answer text"
+                               value="${answer.answer_text}"
+                               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                        <input type="checkbox" name="answers[${index}][is_correct]" 
+                               ${answer.is_correct ? 'checked' : ''}
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="text-xs text-gray-600">Correct</label>
+                        <button type="button" onclick="removeAnswer(this)" 
+                                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                            Remove
+                        </button>
+                    `;
+                    answersList.appendChild(answerDiv);
+                });
+                
+                // Show the modal
+                modal.classList.remove('hidden');
+                
+                // Focus on the question field
+                setTimeout(() => {
+                    form.querySelector('textarea[name="question"]').focus();
+                }, 100);
+                
+            } else {
+                throw new Error(data.message || 'Failed to load question data');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading question:', error);
+            showNotification('Error', 'Failed to load question data', 'error');
+        });
+}
+
+// Delete question
+function deleteQuestion(questionId) {
+    if (!confirm('Are you sure you want to delete this question?')) {
+        return;
+    }
+
+    fetch(`/admin/courses/{{ $course->id }}/quiz/questions/${questionId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Success', 'Question deleted successfully');
+            loadQuizQuestions();
+        } else {
+            throw new Error(data.message || 'Failed to delete question');
         }
     })
     .catch(error => {

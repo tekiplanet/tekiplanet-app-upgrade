@@ -39,7 +39,7 @@
                 <!-- Content Type -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content Type</label>
-                    <select name="content_type" required
+                    <select name="content_type" required onchange="handleContentTypeChange()"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="video">Video</option>
                         <option value="text">Text</option>
@@ -80,6 +80,17 @@
                     <label for="is_preview" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                         Make this lesson available for preview
                     </label>
+                </div>
+
+                <!-- Quiz Management Button (only for quiz lessons) -->
+                <div id="quizManagementSection" class="hidden">
+                    <div class="border-t pt-4">
+                        <p class="text-sm text-gray-600 mb-2">Quiz Content Management</p>
+                        <button type="button" onclick="openQuizModal()" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                            Manage Quiz Questions
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Submit Button -->

@@ -89,25 +89,10 @@
 
 @push('scripts')
 <script>
-let currentModuleId = null;
-let isEditMode = false;
-
-function openModuleModal(moduleId = null) {
+// Module modal functions - using global variables from main page
+function closeModuleModal() {
     const modal = document.getElementById('moduleModal');
-    const form = document.getElementById('moduleForm');
-    const modalTitle = document.getElementById('modalTitle');
-    
-    currentModuleId = moduleId;
-    isEditMode = !!moduleId;
-    
-    modalTitle.textContent = isEditMode ? 'Edit Module' : 'Add New Module';
-    form.reset();
-    
-    if (moduleId) {
-        loadModule(moduleId);
-    }
-    
-    modal.classList.remove('hidden');
+    modal.classList.add('hidden');
 }
 
 function closeModuleModal() {
@@ -115,23 +100,7 @@ function closeModuleModal() {
     modal.classList.add('hidden');
 }
 
-function loadModule(moduleId) {
-    fetch(`/admin/courses/{{ $course->id }}/modules/${moduleId}/edit`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const form = document.getElementById('moduleForm');
-                form.title.value = data.module.title;
-                form.description.value = data.module.description;
-                form.duration_hours.value = data.module.duration_hours;
-                form.order.value = data.module.order;
-            }
-        })
-        .catch(error => {
-            console.error('Error loading module:', error);
-            showNotification('Error', 'Failed to load module data', 'error');
-        });
-}
+
 
 function handleModuleSubmit(event) {
     const submitButton = event.target.querySelector('button[type="submit"]');
@@ -149,11 +118,11 @@ function handleModuleSubmit(event) {
         order: formData.get('order')
     };
 
-    const url = isEditMode 
-        ? `/admin/courses/{{ $course->id }}/modules/${currentModuleId}`
+    const url = window.isEditMode 
+        ? `/admin/courses/{{ $course->id }}/modules/${window.currentModuleId}`
         : '/admin/courses/{{ $course->id }}/modules';
 
-    const method = isEditMode ? 'PUT' : 'POST';
+    const method = window.isEditMode ? 'PUT' : 'POST';
 
     fetch(url, {
         method: method,
@@ -172,14 +141,14 @@ function handleModuleSubmit(event) {
     })
     .then(data => {
         if (data.success) {
-            showNotification('Success', `Module ${isEditMode ? 'updated' : 'created'} successfully`);
+            showNotification('Success', `Module ${window.isEditMode ? 'updated' : 'created'} successfully`);
             closeModuleModal();
             window.location.reload();
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error', `Failed to ${isEditMode ? 'update' : 'create'} module`, 'error');
+        showNotification('Error', `Failed to ${window.isEditMode ? 'update' : 'create'} module`, 'error');
     })
     .finally(() => {
         submitButton.disabled = false;

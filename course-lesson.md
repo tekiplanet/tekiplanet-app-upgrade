@@ -22,11 +22,12 @@ protected $fillable = [
 ```
 
 ### **Lesson Content Types**
-The system supports 4 types of lesson content:
-- **Video** - For video lessons
-- **Text** - For text-based content
-- **Quiz** - For interactive quizzes
-- **Assignment** - For homework assignments
+The system supports 5 types of lesson content:
+- **Video** - For video lessons ✅ **IMPLEMENTED**
+- **Text** - For text-based content ✅ **IMPLEMENTED**
+- **PDF** - For PDF documents ✅ **IMPLEMENTED**
+- **Quiz** - For interactive quizzes ❌ **NEEDS IMPLEMENTATION**
+- **Assignment** - For homework assignments ❌ **NEEDS IMPLEMENTATION**
 
 ### **Admin Interface**
 The admin can manage lessons through:
@@ -36,7 +37,7 @@ The admin can manage lessons through:
 
 ### **Admin Features**
 - ✅ Create lessons with title, description, content type, duration
-- ✅ Set resource URLs for video/text content
+- ✅ Set resource URLs for video/text/PDF content
 - ✅ Mark lessons as preview (free access)
 - ✅ Order lessons within modules
 - ✅ Edit and delete lessons
@@ -74,7 +75,9 @@ The user side has a **fully functional lesson system** with:
 
 #### **Lesson Player Component** (`frontend/src/components/lesson/LessonPlayer.tsx`)
 - ✅ **Complete Lesson Viewer** - Full-featured lesson player
-- ✅ **Content Type Rendering** - Video, text, quiz, assignment support
+- ✅ **Content Type Rendering** - Video, text, PDF support
+- 🔄 **Quiz Interface** - Placeholder UI exists, needs backend logic
+- 🔄 **Assignment Interface** - Placeholder UI exists, needs backend logic
 - ✅ **Navigation Controls** - Previous/Next lesson buttons
 - ✅ **Progress Tracking** - Mark lessons as complete
 - ✅ **Lesson Sidebar** - Interactive lesson list with completion indicators
@@ -83,7 +86,9 @@ The user side has a **fully functional lesson system** with:
 ### **User Interface Features**
 - ✅ **Interactive Curriculum** - Clickable lessons that navigate to player
 - ✅ **Lesson Player** - Complete lesson viewing experience
-- ✅ **Content Rendering** - Video player, text renderer, quiz/assignment placeholders
+- ✅ **Content Rendering** - Video player, text renderer, PDF viewer
+- 🔄 **Quiz Taking** - Placeholder UI, needs actual quiz functionality
+- 🔄 **Assignment Submission** - Placeholder UI, needs submission system
 - ✅ **Progress Tracking** - Visual completion indicators and progress percentage
 - ✅ **Navigation** - Seamless lesson-to-lesson navigation
 - ✅ **Access Control** - Preview lessons vs enrolled-only lessons
@@ -134,6 +139,8 @@ case 'video':
       {currentLesson.resource_url ? (
         <video 
           controls 
+          autoPlay
+          muted
           className="w-full h-full"
           src={currentLesson.resource_url}
         >
@@ -164,9 +171,31 @@ case 'text':
   );
 ```
 
+### **PDF Lessons**
+```tsx
+case 'pdf':
+  return (
+    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+      {currentLesson.resource_url ? (
+        <iframe
+          src={currentLesson.resource_url}
+          className="w-full h-[80vh] min-h-[400px] rounded"
+          title="PDF Viewer"
+          frameBorder="0"
+        />
+      ) : (
+        <div className="text-center text-muted-foreground">
+          <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+          <p>PDF not available</p>
+        </div>
+      )}
+    </div>
+  );
+```
+
 ### **Quiz & Assignment Placeholders**
-- ✅ **Quiz UI** - Placeholder with "Quiz functionality coming soon!"
-- ✅ **Assignment UI** - Placeholder with "Assignment functionality coming soon!"
+- 🔄 **Quiz UI** - Placeholder with "Quiz functionality coming soon!"
+- 🔄 **Assignment UI** - Placeholder with "Assignment functionality coming soon!"
 - ✅ **Consistent Design** - Matches overall lesson player design
 
 ## **Progress Tracking System**
@@ -195,6 +224,86 @@ case 'text':
 - ✅ **Curriculum View** - Return to lesson list
 - ✅ **Breadcrumb Navigation** - Clear navigation hierarchy
 
+## **QUIZ & ASSIGNMENT IMPLEMENTATION PLAN**
+
+### **QUIZ SYSTEM - IMPLEMENTATION CHECKLIST**
+
+**Step 1: Database Migration**
+- [x] Create new migration file: `create_quiz_tables.php`
+- [x] Add quiz_questions table (id, lesson_id, question, question_type, points, order)
+- [x] Add quiz_answers table (id, question_id, answer_text, is_correct, order)
+- [x] Add quiz_attempts table (id, user_id, lesson_id, score, total_points, percentage, passed, started_at, completed_at)
+- [x] Add quiz_responses table (id, attempt_id, question_id, user_answer, is_correct, points_earned)
+- [ ] Run migration
+
+**Step 2: Models**
+- [x] Create QuizQuestion model with relationships
+- [x] Create QuizAnswer model with relationships
+- [x] Create QuizAttempt model with relationships
+- [x] Create QuizResponse model with relationships
+- [x] Update CourseLesson model to include quiz relationship
+
+**Step 3: Admin Quiz Interface**
+- [x] Create QuizController with CRUD operations
+- [x] Add quiz management routes to admin routes
+- [x] Create quiz creation modal component
+- [x] Add quiz fields to lesson modal (when content_type is 'quiz')
+- [ ] Add question management interface
+- [ ] Add answer management interface
+
+**Step 4: User Quiz Interface**
+- [ ] Create QuizTaking component
+- [ ] Add quiz API endpoints for starting, submitting, and retrieving quizzes
+- [ ] Update LessonPlayer to render QuizTaking component for quiz lessons
+- [ ] Add quiz completion tracking
+- [ ] Add quiz results display
+
+**Step 5: Integration & Testing**
+- [ ] Test quiz creation from admin
+- [ ] Test quiz taking from user side
+- [ ] Test quiz scoring and results
+- [ ] Test quiz completion tracking
+- [ ] Update lesson completion logic to include quiz completion
+
+### **ASSIGNMENT SYSTEM - IMPLEMENTATION CHECKLIST**
+
+**Step 1: Database Migration**
+- [ ] Create new migration file: `create_assignment_tables.php`
+- [ ] Add assignments table (id, lesson_id, title, instructions, due_date, max_attempts, file_requirements)
+- [ ] Add assignment_submissions table (id, assignment_id, user_id, submission_text, file_urls, submitted_at, status, grade, feedback)
+- [ ] Run migration
+
+**Step 2: Models**
+- [ ] Create Assignment model with relationships
+- [ ] Create AssignmentSubmission model with relationships
+- [ ] Update CourseLesson model to include assignment relationship
+
+**Step 3: Admin Assignment Interface**
+- [ ] Create AssignmentController with CRUD operations
+- [ ] Add assignment management routes to admin routes
+- [ ] Create assignment creation modal component
+- [ ] Add assignment fields to lesson modal (when content_type is 'assignment')
+- [ ] Add assignment grading interface
+
+**Step 4: User Assignment Interface**
+- [ ] Create AssignmentViewing component
+- [ ] Add assignment API endpoints for viewing and submitting
+- [ ] Update LessonPlayer to render AssignmentViewing component for assignment lessons
+- [ ] Add file upload functionality
+- [ ] Add submission status tracking
+
+**Step 5: Integration & Testing**
+- [ ] Test assignment creation from admin
+- [ ] Test assignment viewing and submission from user side
+- [ ] Test file upload functionality
+- [ ] Test assignment grading from admin
+- [ ] Update lesson completion logic to include assignment submission
+
+### **IMPLEMENTATION ORDER:**
+1. **Start with Quiz System** (more commonly used)
+2. **Then Assignment System** (more complex with file uploads)
+3. **Test both thoroughly** before moving to next features
+
 ## **Current Status Summary**
 
 ### **✅ Fully Implemented**
@@ -202,7 +311,7 @@ case 'text':
 2. **Lesson Navigation Routes** - Full routing system for lessons
 3. **Interactive Curriculum** - Clickable lessons with navigation
 4. **Progress Tracking** - Complete lesson completion system
-5. **Content Rendering** - Video and text content support
+5. **Content Rendering** - Video, text, and PDF content support
 6. **Backend APIs** - All lesson-related endpoints implemented
 7. **Frontend Services** - Complete lesson service layer
 8. **Access Control** - Preview vs enrolled lesson access
@@ -210,8 +319,8 @@ case 'text':
 10. **Responsive Design** - Works on all device sizes
 
 ### **🔄 Partially Implemented**
-1. **Quiz Functionality** - UI exists, needs actual quiz logic
-2. **Assignment Functionality** - UI exists, needs submission logic
+1. **Quiz Functionality** - UI exists, needs actual quiz logic and database
+2. **Assignment Functionality** - UI exists, needs submission logic and database
 3. **Progress Data Loading** - Need to fetch completed lessons on mount
 
 ### **❌ Not Yet Implemented**
@@ -233,14 +342,17 @@ case 'text':
 ### **Phase 2 - Content Rendering** ✅ **MOSTLY COMPLETED**
 1. ✅ Video Player Integration
 2. ✅ Text Content Renderer
-3. 🔄 Quiz Interface (UI ready, needs logic)
-4. 🔄 Assignment Interface (UI ready, needs logic)
+3. ✅ PDF Viewer Integration
+4. 🔄 Quiz Interface (UI ready, needs logic)
+5. 🔄 Assignment Interface (UI ready, needs logic)
 
 ### **Phase 3 - Enhanced Features** 🔄 **IN PROGRESS**
 1. ✅ Advanced Progress Tracking
 2. ✅ Navigation Controls
-3. ❌ Search and Filter
-4. ❌ Offline Support
+3. ❌ Quiz System Implementation
+4. ❌ Assignment System Implementation
+5. ❌ Search and Filter
+6. ❌ Offline Support
 
 ### **Phase 4 - Polish & Analytics** ❌ **NOT STARTED**
 1. ✅ Error Handling
@@ -251,8 +363,8 @@ case 'text':
 ## **Next Steps**
 
 ### **Immediate Priorities**
-1. **Complete Quiz Implementation** - Add actual quiz functionality
-2. **Complete Assignment Implementation** - Add assignment submission
+1. **Complete Quiz Implementation** - Add actual quiz functionality with database
+2. **Complete Assignment Implementation** - Add assignment submission with database
 3. **Load Progress Data** - Fetch completed lessons on component mount
 4. **Add Search/Filter** - Allow users to search within course lessons
 

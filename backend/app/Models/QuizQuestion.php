@@ -5,21 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class CourseLesson extends Model
+class QuizQuestion extends Model
 {
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
         'id',
-        'module_id',
-        'title',
-        'description',
-        'content_type',
-        'duration_minutes',
-        'order',
-        'resource_url',
-        'is_preview'
+        'lesson_id',
+        'question',
+        'question_type',
+        'points',
+        'order'
     ];
 
     protected static function boot()
@@ -32,18 +29,18 @@ class CourseLesson extends Model
         });
     }
 
-    public function module()
+    public function lesson()
     {
-        return $this->belongsTo(CourseModule::class, 'module_id');
+        return $this->belongsTo(CourseLesson::class, 'lesson_id');
     }
 
-    public function questions()
+    public function answers()
     {
-        return $this->hasMany(QuizQuestion::class, 'lesson_id')->orderBy('order');
+        return $this->hasMany(QuizAnswer::class, 'question_id')->orderBy('order');
     }
 
-    public function attempts()
+    public function responses()
     {
-        return $this->hasMany(QuizAttempt::class, 'lesson_id');
+        return $this->hasMany(QuizResponse::class, 'question_id');
     }
-}
+} 
