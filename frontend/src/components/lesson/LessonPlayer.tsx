@@ -17,20 +17,13 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { courseService } from '@/services/courseService';
-import { lessonService } from '@/services/lessonService';
+import { lessonService, Lesson as BaseLesson } from '@/services/lessonService';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from "sonner";
 import PagePreloader from "@/components/ui/PagePreloader";
+import QuizPlayer from "./QuizPlayer";
 
-interface Lesson {
-  id: string;
-  title: string;
-  description: string;
-  content_type: 'video' | 'text' | 'quiz' | 'assignment' | 'pdf';
-  duration_minutes: number;
-  resource_url?: string;
-  is_preview: boolean;
-  order: number;
+interface Lesson extends BaseLesson {
   moduleTitle?: string;
   moduleId?: string;
 }
@@ -78,7 +71,7 @@ export default function LessonPlayer() {
   });
 
   const course = courseData?.course;
-  const currentLesson = lessonData?.lesson;
+  const currentLesson = lessonData?.lesson as Lesson;
 
   // Find all lessons in the course
   const allLessons = course?.modules?.flatMap(module => 
@@ -199,16 +192,13 @@ export default function LessonPlayer() {
 
       case 'quiz':
         return (
-          <div className="text-center py-12">
-            <HelpCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Quiz Content</h3>
-            <p className="text-muted-foreground mb-4">
-              Quiz functionality coming soon!
-            </p>
-            <Button variant="outline" disabled>
-              Start Quiz
-            </Button>
-          </div>
+          <QuizPlayer 
+            lessonId={currentLesson.id} 
+            onComplete={() => {
+              // Mark lesson as complete when quiz is completed
+              markLessonComplete();
+            }}
+          />
         );
 
       case 'assignment':
@@ -300,121 +290,160 @@ export default function LessonPlayer() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 md:p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">{course.title}</h1>
-              <p className="text-muted-foreground">
-                {currentLesson.moduleTitle} • Lesson {currentLessonIndex + 1} of {allLessons.length}
+      {/* Mobile-optimized header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold truncate">{course.title}</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                {currentLesson.moduleTitle || 'Module'} • Lesson {currentLessonIndex + 1} of {allLessons.length}
               </p>
             </div>
+            {isCompleted && (
+              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 ml-2" />
+            )}
           </div>
-
+          
           {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+          <div className="mt-3 space-y-1">
+            <div className="flex justify-between text-xs">
               <span>Course Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1.5" />
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+          {/* Main Content - Mobile optimized */}
           <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl mb-2">{currentLesson.title}</CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {currentLesson.duration_minutes} minutes
-                      </div>
-                      <Badge variant="secondary">
-                        {currentLesson.content_type}
-                      </Badge>
-                      {currentLesson.is_preview && (
-                        <Badge variant="outline">Preview</Badge>
-                      )}
-                    </div>
-                  </div>
-                  {isCompleted && (
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                  )}
+            {/* Lesson Header - Simplified for mobile */}
+            <div className="mb-4 lg:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{currentLesson.title}</h2>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {currentLesson.duration_minutes} min
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Lesson Content */}
-                {renderLessonContent()}
-
-                {/* Lesson Description */}
-                {currentLesson.description && (
-                  <div className="border-t pt-6">
-                    <h3 className="font-semibold mb-3">About this lesson</h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {currentLesson.description}
-                    </p>
-                  </div>
+                <Badge variant="secondary" className="text-xs">
+                  {currentLesson.content_type}
+                </Badge>
+                {currentLesson.is_preview && (
+                  <Badge variant="outline" className="text-xs">Preview</Badge>
                 )}
+              </div>
+            </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={goToPreviousLesson}
-                    disabled={currentLessonIndex === 0}
-                    className="w-full sm:w-auto"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
+            {/* Lesson Content - Full width on mobile */}
+            <div className="space-y-6">
+              {renderLessonContent()}
 
-                  <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                    {!isCompleted && (
-                      <Button
-                        onClick={markLessonComplete}
-                        disabled={isMarkingComplete}
-                        className="text-white flex-1 sm:flex-none"
-                      >
-                        {isMarkingComplete ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        ) : (
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                        )}
-                        <span className="hidden sm:inline">Mark Complete</span>
-                        <span className="sm:hidden">Complete</span>
-                      </Button>
-                    )}
-
-                    <Button
-                      onClick={goToNextLesson}
-                      disabled={currentLessonIndex === allLessons.length - 1}
-                      className="text-white flex-1 sm:flex-none"
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
+              {/* Lesson Description */}
+              {currentLesson.description && (
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold mb-2 text-sm">About this lesson</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {currentLesson.description}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+
+              {/* Action Buttons - Mobile optimized */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={goToPreviousLesson}
+                  disabled={currentLessonIndex === 0}
+                  className="w-full sm:w-auto"
+                  size="sm"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Previous
+                </Button>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                  {!isCompleted && (
+                    <Button
+                      onClick={markLessonComplete}
+                      disabled={isMarkingComplete}
+                      className="flex-1 sm:flex-none"
+                      size="sm"
+                    >
+                      {isMarkingComplete ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      <span className="hidden sm:inline">Mark Complete</span>
+                      <span className="sm:hidden">Complete</span>
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={goToNextLesson}
+                    disabled={currentLessonIndex === allLessons.length - 1}
+                    className="flex-1 sm:flex-none"
+                    size="sm"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar - Lesson List */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Module Lessons</CardTitle>
-                <p className="text-sm text-muted-foreground">
+          {/* Mobile Lesson Navigation - Bottom sheet style */}
+          <div className="lg:hidden mt-6">
+            <div className="bg-card border rounded-lg p-4">
+              <h3 className="font-semibold mb-3 text-sm">Module Lessons</h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {currentModuleLessons.map((lesson, index) => (
+                  <div
+                    key={lesson.id}
+                    className={`p-2 rounded cursor-pointer transition-colors ${
+                      lesson.id === currentLesson?.id
+                        ? 'bg-primary/10 border border-primary/20'
+                        : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => navigate(`/dashboard/academy/course/${courseId}/lesson/${lesson.id}`)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="flex-shrink-0">
+                        {completedLessons.has(lesson.id) ? (
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full border-2 border-muted-foreground/30" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-medium truncate ${
+                          lesson.id === currentLesson?.id ? 'text-primary' : ''
+                        }`}>
+                          {index + 1}. {lesson.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {lesson.duration_minutes} min • {lesson.content_type}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar - Hidden on mobile, shown on desktop */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-24">
+              <div className="bg-card border rounded-lg p-4">
+                <h3 className="font-semibold mb-3">Module Lessons</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   {currentLesson?.moduleTitle || 'Current Module'}
                 </p>
-              </CardHeader>
-              <CardContent>
                 <div className="space-y-2">
                   {currentModuleLessons.map((lesson, index) => (
                     <div
@@ -448,8 +477,8 @@ export default function LessonPlayer() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>

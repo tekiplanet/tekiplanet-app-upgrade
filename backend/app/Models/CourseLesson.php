@@ -19,7 +19,8 @@ class CourseLesson extends Model
         'duration_minutes',
         'order',
         'resource_url',
-        'is_preview'
+        'is_preview',
+        'pass_percentage'
     ];
 
     protected static function boot()

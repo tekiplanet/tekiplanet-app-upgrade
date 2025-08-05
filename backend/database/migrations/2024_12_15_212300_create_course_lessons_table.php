@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->string('resource_url')->nullable();
             $table->boolean('is_preview')->default(false);
+            $table->integer('pass_percentage')->default(70)->comment('Pass percentage for quiz lessons');
             
             $table->foreign('module_id')
                   ->references('id')

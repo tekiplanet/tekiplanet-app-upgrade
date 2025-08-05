@@ -135,6 +135,120 @@ class LessonService {
       throw new Error('Failed to check lesson access');
     }
   }
+
+  /**
+   * Get quiz questions for a lesson
+   */
+  async getQuizQuestions(lessonId: string): Promise<{
+    success: boolean;
+    questions: Array<{
+      id: string;
+      question: string;
+      question_type: 'multiple_choice' | 'true_false' | 'short_answer';
+      points: number;
+      order: number;
+      answers: Array<{
+        id: string;
+        answer_text: string;
+        is_correct: boolean;
+        order: number;
+      }>;
+    }>;
+  }> {
+    try {
+      const response = await apiClient.get(`/lessons/${lessonId}/quiz/questions`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching quiz questions:', error);
+      throw new Error('Failed to fetch quiz questions');
+    }
+  }
+
+  /**
+   * Start a quiz attempt
+   */
+  async startQuizAttempt(lessonId: string): Promise<{
+    success: boolean;
+    attempt: {
+      id: string;
+      user_id: string;
+      lesson_id: string;
+      score: number;
+      total_points: number;
+      percentage: number;
+      passed: boolean;
+      started_at: string;
+      completed_at?: string;
+    };
+  }> {
+    try {
+      const response = await apiClient.post(`/lessons/${lessonId}/quiz/start`);
+      return response.data;
+    } catch (error) {
+      console.error('Error starting quiz attempt:', error);
+      throw new Error('Failed to start quiz attempt');
+    }
+  }
+
+  /**
+   * Submit quiz answers
+   */
+  async submitQuizAnswers(lessonId: string, data: {
+    attempt_id: string;
+    answers: Array<{
+      question_id: string;
+      user_answer: string;
+    }>;
+  }): Promise<{
+    success: boolean;
+    attempt: any;
+    responses: any[];
+    score: number;
+    total_points: number;
+    percentage: number;
+    passed: boolean;
+  }> {
+    try {
+      const response = await apiClient.post(`/lessons/${lessonId}/quiz/submit`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting quiz answers:', error);
+      throw new Error('Failed to submit quiz answers');
+    }
+  }
+
+  /**
+   * Get quiz results
+   */
+  async getQuizResults(lessonId: string): Promise<{
+    success: boolean;
+    attempt: any;
+    responses: any[];
+  }> {
+    try {
+      const response = await apiClient.get(`/lessons/${lessonId}/quiz/results`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching quiz results:', error);
+      throw new Error('Failed to fetch quiz results');
+    }
+  }
+
+  /**
+   * Get quiz attempts for a lesson
+   */
+  async getQuizAttempts(lessonId: string): Promise<{
+    success: boolean;
+    attempts: any[];
+  }> {
+    try {
+      const response = await apiClient.get(`/lessons/${lessonId}/quiz/attempts`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching quiz attempts:', error);
+      throw new Error('Failed to fetch quiz attempts');
+    }
+  }
 }
 
 export const lessonService = new LessonService(); 

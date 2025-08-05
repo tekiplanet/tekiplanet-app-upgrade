@@ -100,6 +100,19 @@
                     </button>
                 </div>
 
+                <!-- Short Answer Correct Answer Section -->
+                <div id="shortAnswerSection" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correct Answers</label>
+                    <div id="shortAnswerList" class="space-y-2">
+                        <!-- Correct answers will be added here -->
+                    </div>
+                    <button type="button" onclick="addShortAnswer()" 
+                            class="mt-2 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                        + Add Another Correct Answer
+                    </button>
+                    <p class="mt-1 text-xs text-gray-500">Students can match any of these answers to get points. Useful for abbreviations, variations, or alternative spellings.</p>
+                </div>
+
                 <!-- Submit Button -->
                 <div class="flex justify-end gap-2 pt-4">
                     <button type="button" onclick="closeQuestionModal()"

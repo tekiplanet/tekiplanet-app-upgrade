@@ -217,6 +217,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{lessonId}/next', [LessonController::class, 'getNextLesson']);
         Route::get('/{lessonId}/previous', [LessonController::class, 'getPreviousLesson']);
         Route::get('/{lessonId}/access', [LessonController::class, 'checkAccess']);
+        
+        // Quiz Routes
+        Route::prefix('{lessonId}/quiz')->group(function () {
+            Route::get('/questions', [LessonController::class, 'getQuizQuestions']);
+            Route::post('/start', [LessonController::class, 'startQuizAttempt']);
+            Route::post('/submit', [LessonController::class, 'submitQuizAnswers']);
+            Route::get('/results', [LessonController::class, 'getQuizResults']);
+            Route::get('/attempts', [LessonController::class, 'getQuizAttempts']);
+        });
     });
 });
 

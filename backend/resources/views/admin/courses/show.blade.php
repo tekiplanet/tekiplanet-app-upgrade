@@ -180,7 +180,7 @@
                 <div x-show="activeTab === 'modules'">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Course Modules</h3>
-                        <button onclick="openModuleModal()"
+                        <button onclick="openModuleModal()" 
                                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                             Add Module
                         </button>
@@ -213,10 +213,10 @@
                                     <p class="text-sm text-gray-600 mb-4">{{ $module->description }}</p>
                                     <div class="flex justify-between items-center mb-4">
                                         <span class="text-sm text-gray-500">{{ $module->duration_hours }} hours</span>
-                                                                <button onclick="openLessonModal('{{ $module->id }}')"
-                                class="text-sm text-blue-600 hover:text-blue-800">
-                            + Add Lesson
-                        </button>
+                                        <button onclick="openLessonModal('{{ $module->id }}')"
+                                                class="text-sm text-blue-600 hover:text-blue-800">
+                                            + Add Lesson
+                                        </button>
                                     </div>
 
                                     @if($module->lessons->isEmpty())
@@ -252,10 +252,10 @@
                                     <div class="mt-6 border-t pt-4">
                                         <div class="flex justify-between items-center mb-4">
                                             <h4 class="font-semibold">Topics</h4>
-                                                                                    <button onclick="openTopicModal('{{ $module->id }}')"
-                                                class="text-sm text-blue-600 hover:text-blue-800">
-                                            + Add Topic
-                                        </button>
+                                            <button onclick="openTopicModal('{{ $module->id }}')"
+                                                    class="text-sm text-blue-600 hover:text-blue-800">
+                                                + Add Topic
+                                            </button>
                                         </div>
 
                                         @if($module->topics->isEmpty())
@@ -1013,10 +1013,8 @@ function openAddQuestionModal() {
     // Reset form
     form.reset();
     
-    // Add default answers
-    document.getElementById('answersList').innerHTML = '';
-    addAnswer();
-    addAnswer();
+    // Handle question type change to set up proper answer fields
+    handleQuestionTypeChange();
     
     // Show the modal with proper positioning
     modal.classList.remove('hidden');
@@ -1063,15 +1061,89 @@ function removeAnswer(button) {
     button.parentElement.remove();
 }
 
+// Add short answer field
+function addShortAnswer() {
+    const shortAnswerList = document.getElementById('shortAnswerList');
+    const answerIndex = shortAnswerList.children.length;
+    
+    const answerDiv = document.createElement('div');
+    answerDiv.className = 'flex items-center gap-2';
+    answerDiv.innerHTML = `
+        <input type="text" name="short_answers[${answerIndex}][answer_text]" required
+               placeholder="Enter a correct answer"
+               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+        <button type="button" onclick="removeShortAnswer(this)" 
+                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+            Remove
+        </button>
+    `;
+    
+    shortAnswerList.appendChild(answerDiv);
+}
+
+// Remove short answer field
+function removeShortAnswer(button) {
+    button.parentElement.remove();
+}
+
 // Handle question type change
 function handleQuestionTypeChange() {
     const questionType = document.querySelector('select[name="question_type"]').value;
     const answersSection = document.getElementById('answersSection');
+    const answersList = document.getElementById('answersList');
+    const addAnswerBtn = document.querySelector('button[onclick="addAnswer()"]');
+    
+    // Clear existing answers
+    answersList.innerHTML = '';
     
     if (questionType === 'short_answer') {
+        // Hide answers section for short answer
         answersSection.classList.add('hidden');
-    } else {
+        // Show short answer correct answer section
+        document.getElementById('shortAnswerSection').classList.remove('hidden');
+        // Add initial short answer field
+        const shortAnswerList = document.getElementById('shortAnswerList');
+        shortAnswerList.innerHTML = '';
+        addShortAnswer();
+    } else if (questionType === 'true_false') {
+        // Show answers section for true/false
         answersSection.classList.remove('hidden');
+        addAnswerBtn.classList.add('hidden'); // Hide add answer button for true/false
+        
+        // Add True and False options
+        const trueDiv = document.createElement('div');
+        trueDiv.className = 'flex items-center gap-2';
+        trueDiv.innerHTML = `
+            <input type="text" name="answers[0][answer_text]" required
+                   placeholder="Answer text" value="True"
+                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" readonly>
+            <input type="checkbox" name="answers[0][is_correct]" 
+                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <label class="text-xs text-gray-600">Correct</label>
+        `;
+        answersList.appendChild(trueDiv);
+        
+        const falseDiv = document.createElement('div');
+        falseDiv.className = 'flex items-center gap-2';
+        falseDiv.innerHTML = `
+            <input type="text" name="answers[1][answer_text]" required
+                   placeholder="Answer text" value="False"
+                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" readonly>
+            <input type="checkbox" name="answers[1][is_correct]" 
+                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <label class="text-xs text-gray-600">Correct</label>
+        `;
+        answersList.appendChild(falseDiv);
+    } else {
+        // Multiple choice - show answers section and add answer button
+        answersSection.classList.remove('hidden');
+        addAnswerBtn.classList.remove('hidden');
+        // Hide short answer section for multiple choice
+        document.getElementById('shortAnswerSection').classList.add('hidden');
+        
+        // Add initial answer fields for multiple choice
+        addAnswer();
+        addAnswer();
     }
 }
 
@@ -1093,21 +1165,49 @@ function handleQuestionSubmit(event) {
         answers: []
     };
 
-    // Collect answers manually from the form
-    const answersList = document.getElementById('answersList');
-    const answerDivs = answersList.querySelectorAll('div');
+    // Collect answers based on question type
+    const questionType = formData.get('question_type');
     
-    answerDivs.forEach((div, index) => {
-        const answerText = div.querySelector('input[name^="answers"][name$="[answer_text]"]').value;
-        const isCorrect = div.querySelector('input[name^="answers"][name$="[is_correct]"]').checked;
+    if (questionType === 'short_answer') {
+        // For short answer, collect all correct answers
+        const shortAnswerList = document.getElementById('shortAnswerList');
+        const shortAnswerDivs = shortAnswerList.querySelectorAll('div');
         
-        if (answerText.trim()) {
+        let hasValidAnswer = false;
+        shortAnswerDivs.forEach((div) => {
+            const answerText = div.querySelector('input[name^="short_answers"][name$="[answer_text]"]').value.trim();
+            if (answerText) {
             data.answers.push({
-                answer_text: answerText,
-                is_correct: isCorrect
-            });
+                    answer_text: answerText,
+                    is_correct: true
+                });
+                hasValidAnswer = true;
+            }
+        });
+        
+        if (!hasValidAnswer) {
+            showNotification('Error', 'Please provide at least one correct answer for the short answer question', 'error');
+            submitButton.disabled = false;
+            loadingSpinner.classList.add('hidden');
+            return;
         }
-    });
+    } else {
+        // For multiple choice and true/false, collect from form
+        const answersList = document.getElementById('answersList');
+        const answerDivs = answersList.querySelectorAll('div');
+        
+        answerDivs.forEach((div, index) => {
+            const answerText = div.querySelector('input[name^="answers"][name$="[answer_text]"]').value;
+            const isCorrect = div.querySelector('input[name^="answers"][name$="[is_correct]"]').checked;
+            
+            if (answerText.trim()) {
+                data.answers.push({
+                    answer_text: answerText,
+                    is_correct: isCorrect
+                });
+            }
+        });
+    }
 
     const url = window.isEditingQuestion
         ? `/admin/courses/{{ $course->id }}/quiz/questions/${window.currentQuestionId}`
@@ -1167,32 +1267,72 @@ function editQuestion(questionId) {
                 form.querySelector('select[name="question_type"]').value = data.question.question_type;
                 form.querySelector('input[name="points"]').value = data.question.points;
                 
-                // Handle question type change
+                // Handle question type change first
                 handleQuestionTypeChange();
                 
-                // Populate answers
+                // Populate answers based on question type
                 const answersList = document.getElementById('answersList');
                 answersList.innerHTML = '';
                 
-                data.question.answers.forEach((answer, index) => {
-                    const answerDiv = document.createElement('div');
-                    answerDiv.className = 'flex items-center gap-2';
-                    answerDiv.innerHTML = `
-                        <input type="text" name="answers[${index}][answer_text]" required
-                               placeholder="Answer text"
-                               value="${answer.answer_text}"
-                               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                        <input type="checkbox" name="answers[${index}][is_correct]" 
-                               ${answer.is_correct ? 'checked' : ''}
-                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <label class="text-xs text-gray-600">Correct</label>
-                        <button type="button" onclick="removeAnswer(this)" 
-                                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
-                            Remove
-                        </button>
-                    `;
-                    answersList.appendChild(answerDiv);
-                });
+                if (data.question.question_type === 'short_answer') {
+                    // For short answer, populate all correct answers
+                    const shortAnswerList = document.getElementById('shortAnswerList');
+                    shortAnswerList.innerHTML = '';
+                    
+                    data.question.answers.forEach((answer, index) => {
+                        const answerDiv = document.createElement('div');
+                        answerDiv.className = 'flex items-center gap-2';
+                        answerDiv.innerHTML = `
+                            <input type="text" name="short_answers[${index}][answer_text]" required
+                                   placeholder="Enter a correct answer"
+                                   value="${answer.answer_text}"
+                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <button type="button" onclick="removeShortAnswer(this)" 
+                                    class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                Remove
+                            </button>
+                        `;
+                        shortAnswerList.appendChild(answerDiv);
+                    });
+                } else if (data.question.question_type === 'true_false') {
+                    // For true/false, populate the True/False options
+                    data.question.answers.forEach((answer, index) => {
+                        const answerDiv = document.createElement('div');
+                        answerDiv.className = 'flex items-center gap-2';
+                        answerDiv.innerHTML = `
+                            <input type="text" name="answers[${index}][answer_text]" required
+                                   placeholder="Answer text"
+                                   value="${answer.answer_text}"
+                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" readonly>
+                            <input type="checkbox" name="answers[${index}][is_correct]" 
+                                   ${answer.is_correct ? 'checked' : ''}
+                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <label class="text-xs text-gray-600">Correct</label>
+                        `;
+                        answersList.appendChild(answerDiv);
+                    });
+                } else {
+                    // For multiple choice, populate all answers with remove buttons
+                    data.question.answers.forEach((answer, index) => {
+                        const answerDiv = document.createElement('div');
+                        answerDiv.className = 'flex items-center gap-2';
+                        answerDiv.innerHTML = `
+                            <input type="text" name="answers[${index}][answer_text]" required
+                                   placeholder="Answer text"
+                                   value="${answer.answer_text}"
+                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <input type="checkbox" name="answers[${index}][is_correct]" 
+                                   ${answer.is_correct ? 'checked' : ''}
+                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <label class="text-xs text-gray-600">Correct</label>
+                            <button type="button" onclick="removeAnswer(this)" 
+                                    class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                Remove
+                            </button>
+                        `;
+                        answersList.appendChild(answerDiv);
+                    });
+                }
                 
                 // Show the modal
                 modal.classList.remove('hidden');
