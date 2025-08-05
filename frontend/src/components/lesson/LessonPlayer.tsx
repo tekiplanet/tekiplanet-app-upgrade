@@ -170,6 +170,7 @@ export default function LessonPlayer() {
               <video
                 controls
                 autoPlay
+                muted
                 className="w-full h-full"
                 src={currentLesson.resource_url}
               >
