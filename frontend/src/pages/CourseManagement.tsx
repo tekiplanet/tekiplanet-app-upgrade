@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Bell, GraduationCap, FileText, BookOpen, Wallet, PlayCircle } from "lucide-react";
+import { Calendar, Clock, Bell, GraduationCap, FileText, BookOpen, Wallet, PlayCircle, Lock } from "lucide-react";
 import PagePreloader from '@/components/ui/PagePreloader';
 
 // Components for each tab
@@ -285,6 +285,48 @@ const CourseManagement: React.FC = () => {
       : [];
   }, [courseDetails]);
 
+  // Get completed lessons from backend data
+  const completedLessons = new Set([]); // For now, use empty array since enrollment doesn't have completed_lessons
+
+  // Get all lessons in the course for access checking
+  const allLessons = React.useMemo(() => {
+    return sortedModules?.flatMap(module => 
+      [...module.lessons]
+        .sort((a, b) => a.order - b.order)
+        .map(lesson => ({
+          ...lesson,
+          moduleTitle: module.title,
+          moduleId: module.id
+        }))
+    ).sort((a, b) => {
+      // Sort by module order first, then by lesson order
+      const moduleA = sortedModules?.find(m => m.id === a.moduleId);
+      const moduleB = sortedModules?.find(m => m.id === b.moduleId);
+      
+      if (moduleA?.order !== moduleB?.order) {
+        return (moduleA?.order || 0) - (moduleB?.order || 0);
+      }
+      
+      return a.order - b.order;
+    }) || [];
+  }, [sortedModules]);
+
+  // Check which lessons are accessible (same logic as LessonPlayer)
+  const isLessonAccessible = (lesson: any, lessonIndex: number) => {
+    // Preview lessons are always accessible
+    if (lesson.is_preview) {
+      return true;
+    }
+    // For all lessons, check if all previous non-preview lessons in the course are completed
+    for (let i = 0; i < lessonIndex; i++) {
+      const prevLesson = allLessons[i];
+      if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   // Debug curriculum
   React.useEffect(() => {
     // console.log('Course Object:', course);
@@ -349,33 +391,66 @@ const CourseManagement: React.FC = () => {
                <div className="ml-4 pl-8 border-l border-border/50 space-y-2">
                  {[...module.lessons]
                    .sort((a, b) => a.order - b.order)
-                   .map((lesson, lessonIndex) => (
-                   <div 
-                     key={lesson.id || lessonIndex}
-                     className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors cursor-pointer"
-                                           onClick={() => {
-                        console.log('Lesson clicked!', {
-                          courseIdState,
-                          lessonId: lesson.id,
-                          lessonTitle: lesson.title,
-                          lessonData: lesson,
-                          navigateUrl: `/dashboard/academy/course/${courseIdState}/lesson/${lesson.id}`
-                        });
-                        navigate(`/dashboard/academy/course/${courseIdState}/lesson/${lesson.id}`);
-                      }}
+                   .map((lesson, lessonIndex) => {
+                     // Find the global index of this lesson in allLessons
+                     const globalIndex = allLessons.findIndex(l => l.id === lesson.id);
+                     const isAccessible = isLessonAccessible(lesson, globalIndex);
                      
-                   >
-                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                       <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                       <span className="text-xs truncate">{lesson.title}</span>
-                     </div>
-                     {lesson.duration_minutes && (
-                       <Badge variant="secondary" className="text-[10px] h-5">
-                         {lesson.duration_minutes} mins
-                       </Badge>
-                     )}
-                   </div>
-                 ))}
+                     return (
+                       <div 
+                         key={lesson.id || lessonIndex}
+                         className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                           isAccessible 
+                             ? 'bg-background/50 hover:bg-background cursor-pointer' 
+                             : 'bg-background/30 opacity-50 cursor-not-allowed'
+                         }`}
+                         onClick={() => {
+                           if (isAccessible) {
+                             console.log('Lesson clicked!', {
+                               courseIdState,
+                               lessonId: lesson.id,
+                               lessonTitle: lesson.title,
+                               lessonData: lesson,
+                               navigateUrl: `/dashboard/academy/course/${courseIdState}/lesson/${lesson.id}`
+                             });
+                             navigate(`/dashboard/academy/course/${courseIdState}/lesson/${lesson.id}`);
+                           } else {
+                             // Find the first incomplete lesson that's blocking access
+                             let blockingLesson = null;
+                             for (let i = 0; i < globalIndex; i++) {
+                               const prevLesson = allLessons[i];
+                               if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
+                                 blockingLesson = prevLesson;
+                                 break;
+                               }
+                             }
+                             
+                             if (blockingLesson) {
+                               toast.error(`You must complete "${blockingLesson.title}" first`);
+                             } else {
+                               toast.error('You must complete previous lessons first');
+                             }
+                           }
+                         }}
+                       >
+                         <div className="flex items-center gap-2 flex-1 min-w-0">
+                           {isAccessible ? (
+                             <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                           ) : (
+                             <Lock className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
+                           )}
+                           <span className={`text-xs truncate ${!isAccessible ? 'text-muted-foreground/50' : ''}`}>
+                             {lesson.title}
+                           </span>
+                         </div>
+                         {lesson.duration_minutes && (
+                           <Badge variant="secondary" className="text-[10px] h-5">
+                             {lesson.duration_minutes} mins
+                           </Badge>
+                         )}
+                       </div>
+                     );
+                   })}
                </div>
              )}
           </div>

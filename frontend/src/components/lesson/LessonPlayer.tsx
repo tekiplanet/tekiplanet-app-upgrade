@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,8 @@ export default function LessonPlayer() {
   
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const hasRedirected = useRef(false);
 
   // Fetch course and lesson data
   const { 
@@ -338,11 +340,24 @@ export default function LessonPlayer() {
     }
   }, [accessError]);
 
+  // Add useEffect to redirect on access denied
   useEffect(() => {
-    if (!isAccessLoading && !hasAccess && reason) {
-      toast.error(reason);
+    if (!isAccessLoading && !hasAccess && requiredLesson && !hasRedirected.current) {
+      hasRedirected.current = true;
+      toast.error(reason || "You must complete previous lessons first");
+      navigate(`/dashboard/academy/course/${courseId}/lesson/${requiredLesson.id}`);
     }
-  }, [hasAccess, reason, isAccessLoading]);
+  }, [hasAccess, isAccessLoading, requiredLesson, reason, courseId, navigate]);
+
+  // Reset redirect flag when lessonId changes
+  useEffect(() => {
+    hasRedirected.current = false;
+  }, [lessonId]);
+
+  // Prevent error page from showing during redirect
+  if (redirecting) {
+    return null;
+  }
 
   // Check which lessons are accessible
   const isLessonAccessible = (lesson: any, lessonIndex: number) => {
@@ -351,48 +366,13 @@ export default function LessonPlayer() {
       console.log('[LessonPlayer] isLessonAccessible: preview lesson', { lesson, lessonIndex });
       return true;
     }
-    // First lesson of the entire course is always accessible
-    if (lessonIndex === 0) {
-      console.log('[LessonPlayer] isLessonAccessible: first lesson of course', { lesson, lessonIndex });
-      return true;
-    }
-    // Check if it's the first lesson of its module
-    const currentModule = course?.modules?.find(module => 
-      module.lessons.some(l => l.id === lesson.id)
-    );
-    if (currentModule) {
-      const moduleLessons = [...currentModule.lessons].sort((a, b) => a.order - b.order);
-      const isFirstLessonOfModule = moduleLessons[0]?.id === lesson.id;
-      if (isFirstLessonOfModule) {
-        console.log('[LessonPlayer] isLessonAccessible: first lesson of module', { lesson, lessonIndex, module: currentModule });
-        return true;
+    // For all lessons, check if all previous non-preview lessons in the course are completed
+    for (let i = 0; i < lessonIndex; i++) {
+      const prevLesson = allLessons[i];
+      if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
+        return false;
       }
     }
-    // For other lessons, check if all previous lessons in the same module are completed
-    if (currentModule) {
-      const moduleLessons = [...currentModule.lessons].sort((a, b) => a.order - b.order);
-      const lessonIndexInModule = moduleLessons.findIndex(l => l.id === lesson.id);
-      if (lessonIndexInModule > 0) {
-        for (let i = 0; i < lessonIndexInModule; i++) {
-          const previousLesson = moduleLessons[i];
-          // Skip preview lessons - they don't block progression
-          if (previousLesson.is_preview) {
-            continue;
-          }
-          // If any previous lesson in the module is not completed, deny access
-          if (!completedLessons.has(previousLesson.id)) {
-            console.log('[LessonPlayer] isLessonAccessible: blocked by previous lesson', {
-              lesson,
-              lessonIndex,
-              previousLesson,
-              completedLessons: Array.from(completedLessons),
-            });
-            return false;
-          }
-        }
-      }
-    }
-    console.log('[LessonPlayer] isLessonAccessible: accessible', { lesson, lessonIndex });
     return true;
   };
 

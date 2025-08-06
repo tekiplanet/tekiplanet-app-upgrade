@@ -35,26 +35,7 @@ class LessonController extends Controller
                 ]);
             }
             
-            // Check if it's the first lesson - allow access even if not enrolled
-            $isFirstLesson = $this->isFirstLesson($course->id, $lesson->id);
-            $isFirstLessonOfModule = $this->isFirstLessonOfModule($course->id, $lesson->id);
-            
-            if ($isFirstLesson || $isFirstLessonOfModule) {
-                return response()->json([
-                    'success' => true,
-                    'lesson' => $lesson
-                ]);
-            }
-            
-            // If not enrolled and not first lesson, deny access
-            if (!$enrollment) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You must be enrolled in this course to access this lesson'
-                ], 403);
-            }
-            
-            // Check lesson progression - user can only access lessons in sequence
+            // Check lesson progression first - user can only access lessons in sequence
             $hasAccess = $this->checkLessonAccess($user->id, $course->id, $lesson);
             
             if (!$hasAccess['allowed']) {
@@ -62,6 +43,14 @@ class LessonController extends Controller
                     'success' => false,
                     'message' => $hasAccess['message'],
                     'required_lesson' => $hasAccess['required_lesson'] ?? null
+                ], 403);
+            }
+            
+            // Check if user is enrolled in the course (only after progression check)
+            if (!$enrollment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must be enrolled in this course to access this lesson'
                 ], 403);
             }
             
@@ -344,16 +333,15 @@ class LessonController extends Controller
                 ]);
             }
             
-            // Check if it's the first lesson of the course or module
+            // Check if it's the first lesson of the course
             $isFirstLesson = $this->isFirstLesson($course->id, $lesson->id);
-            $isFirstLessonOfModule = $this->isFirstLessonOfModule($course->id, $lesson->id);
             
-            if ($isFirstLesson || $isFirstLessonOfModule) {
+            if ($isFirstLesson) {
                 return response()->json([
                     'success' => true,
                     'has_access' => true,
                     'reason' => null,
-                    'access_type' => $isFirstLesson ? 'first_lesson' : 'first_module_lesson'
+                    'access_type' => 'first_lesson'
                 ]);
             }
             
@@ -438,64 +426,26 @@ class LessonController extends Controller
         if ($currentLessonIndex === 0) {
             return ['allowed' => true];
         }
-
-        // Check if it's the first lesson of its module
-        $moduleLessons = CourseLesson::where('module_id', $lesson->module_id)
-            ->whereHas('module', function ($query) use ($courseId) {
-                $query->where('course_id', $courseId);
-            })
-            ->with(['module'])
-            ->get()
-            ->sortBy(function ($lesson) {
-                return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
-            })
-            ->values();
-
-        $isFirstLessonOfModule = $moduleLessons->count() > 0 && $moduleLessons->first()->id === $lesson->id;
-        
-        if ($isFirstLessonOfModule) {
-            return ['allowed' => true];
-        }
-
-        // Get completed lessons
+        // Remove: If it's the first lesson of its module, allow access
+        // Now, check if all previous non-preview lessons in the course are completed
         $completedLessonIds = LessonProgress::where('user_id', $userId)
             ->where('course_id', $courseId)
             ->pluck('lesson_id')
             ->toArray();
-
-        // Check if all previous lessons in the same module are completed
-        $lessonIndexInModule = -1;
-        foreach ($moduleLessons as $index => $l) {
-            if ($l->id === $lesson->id) {
-                $lessonIndexInModule = $index;
-                break;
+        for ($i = 0; $i < $currentLessonIndex; $i++) {
+            $prevLesson = $allLessons[$i];
+            if (!$prevLesson->is_preview && !in_array($prevLesson->id, $completedLessonIds)) {
+                return [
+                    'allowed' => false,
+                    'message' => 'You must complete the previous lesson before accessing this one.',
+                    'required_lesson' => [
+                        'id' => $prevLesson->id,
+                        'title' => $prevLesson->title,
+                        'module_title' => $prevLesson->module->title
+                    ]
+                ];
             }
         }
-
-        if ($lessonIndexInModule > 0) {
-            for ($i = 0; $i < $lessonIndexInModule; $i++) {
-                $previousLesson = $moduleLessons[$i];
-                
-                // Skip preview lessons - they don't block progression
-                if ($previousLesson->is_preview) {
-                    continue;
-                }
-                
-                // If any previous lesson in the module is not completed, deny access
-                if (!in_array($previousLesson->id, $completedLessonIds)) {
-                    return [
-                        'allowed' => false,
-                        'message' => 'You must complete the previous lesson before accessing this one.',
-                        'required_lesson' => [
-                            'id' => $previousLesson->id,
-                            'title' => $previousLesson->title,
-                            'module_title' => $previousLesson->module->title
-                        ]
-                    ];
-                }
-            }
-        }
-
         return ['allowed' => true];
     }
 
