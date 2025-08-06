@@ -53,6 +53,8 @@ export default function LessonPlayer() {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [showRewardDialog, setShowRewardDialog] = useState(false);
+  const [rewardData, setRewardData] = useState<{ earned: number; total: number } | null>(null);
   const hasRedirected = useRef(false);
 
   // Fetch course and lesson data
@@ -144,12 +146,6 @@ export default function LessonPlayer() {
     if (currentLessonIndex > 0) {
       const prevLesson = allLessons[currentLessonIndex - 1];
       const isAccessible = isLessonAccessible(prevLesson, currentLessonIndex - 1);
-      console.log('[LessonPlayer] goToPreviousLesson:', {
-        currentLessonIndex,
-        prevLesson,
-        isAccessible,
-        completedLessons: Array.from(completedLessons),
-      });
       if (isAccessible) {
         navigate(`/dashboard/academy/course/${courseId}/lesson/${prevLesson.id}`);
       } else {
@@ -175,12 +171,6 @@ export default function LessonPlayer() {
     if (currentLessonIndex < allLessons.length - 1) {
       const nextLesson = allLessons[currentLessonIndex + 1];
       const isAccessible = isLessonAccessible(nextLesson, currentLessonIndex + 1);
-      console.log('[LessonPlayer] goToNextLesson:', {
-        currentLessonIndex,
-        nextLesson,
-        isAccessible,
-        completedLessons: Array.from(completedLessons),
-      });
       if (isAccessible) {
         navigate(`/dashboard/academy/course/${courseId}/lesson/${nextLesson.id}`);
       } else {
@@ -208,10 +198,24 @@ export default function LessonPlayer() {
 
     setIsMarkingComplete(true);
     try {
-      await lessonService.markLessonComplete(currentLesson.id);
+      const response = await lessonService.markLessonComplete(currentLesson.id);
       // Invalidate and refetch progress data
       queryClient.invalidateQueries({ queryKey: ['lesson-progress', courseId] });
-      toast.success('Lesson marked as complete!');
+      
+      // Check if learn rewards were earned
+      if (response.data?.learn_rewards_earned > 0) {
+        setRewardData({
+          earned: response.data.learn_rewards_earned,
+          total: response.data.total_learn_rewards
+        });
+        setShowRewardDialog(true);
+        // Invalidate lesson progress to update it
+        queryClient.invalidateQueries({ queryKey: ['lesson-progress'] });
+      } else {
+        toast.success('Lesson marked as complete!');
+        // Invalidate lesson progress to update it
+        queryClient.invalidateQueries({ queryKey: ['lesson-progress'] });
+      }
     } catch (error) {
       toast.error('Failed to mark lesson as complete');
     } finally {
@@ -284,10 +288,6 @@ export default function LessonPlayer() {
         return (
           <QuizPlayer 
             lessonId={currentLesson.id} 
-            onComplete={() => {
-              // Mark lesson as complete when quiz is completed
-              markLessonComplete();
-            }}
           />
         );
 
@@ -363,7 +363,6 @@ export default function LessonPlayer() {
   const isLessonAccessible = (lesson: any, lessonIndex: number) => {
     // Preview lessons are always accessible
     if (lesson.is_preview) {
-      console.log('[LessonPlayer] isLessonAccessible: preview lesson', { lesson, lessonIndex });
       return true;
     }
     // For all lessons, check if all previous non-preview lessons in the course are completed
@@ -381,7 +380,6 @@ export default function LessonPlayer() {
     if (!course?.modules) return null;
     const sortedModules = [...course.modules].sort((a, b) => (a.order || 0) - (b.order || 0));
     const idx = sortedModules.findIndex(m => m.id === moduleId);
-    console.log('[LessonPlayer] getModuleNumber', { moduleId, sortedModules, idx });
     return idx !== -1 ? idx + 1 : null;
   };
 
@@ -597,7 +595,7 @@ export default function LessonPlayer() {
                   </Button>
 
                   <div className="flex gap-2 w-full sm:w-auto">
-                    {!isCompleted && (
+                    {!isCompleted && currentLesson?.content_type !== 'quiz' && (
                       <Button
                         onClick={markLessonComplete}
                         disabled={isMarkingComplete}
@@ -641,7 +639,6 @@ export default function LessonPlayer() {
                    const globalIndex = allLessons.findIndex(l => l.id === lesson.id);
                    const isAccessible = isLessonAccessible(lesson, globalIndex);
                    const moduleNumber = getModuleNumber(lesson.moduleId);
-                   console.log('[LessonPlayer] MobileNav', { lesson, moduleIndex, moduleNumber, globalIndex });
                    return (
                      <div
                        key={lesson.id}
@@ -717,7 +714,6 @@ export default function LessonPlayer() {
                      const globalIndex = allLessons.findIndex(l => l.id === lesson.id);
                      const isAccessible = isLessonAccessible(lesson, globalIndex);
                      const moduleNumber = getModuleNumber(lesson.moduleId);
-                     console.log('[LessonPlayer] SidebarNav', { lesson, moduleIndex, moduleNumber, globalIndex });
                      return (
                     <div
                       key={lesson.id}
@@ -781,6 +777,52 @@ export default function LessonPlayer() {
           </div>
         </div>
       </div>
+      
+      {/* Reward Dialog */}
+      {showRewardDialog && rewardData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+            <div className="text-center">
+              {/* Success Icon */}
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Congratulations! 🎉
+              </h3>
+              
+              {/* Message */}
+              <p className="text-gray-600 mb-6">
+                You completed the lesson and earned rewards!
+              </p>
+              
+              {/* Rewards Display */}
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white mb-1">
+                    +{rewardData.earned} Learn Rewards
+                  </div>
+                  <div className="text-yellow-100 text-sm">
+                    Total: {rewardData.total} Learn Rewards
+                  </div>
+                </div>
+              </div>
+              
+              {/* Action Button */}
+              <Button 
+                onClick={() => setShowRewardDialog(false)}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

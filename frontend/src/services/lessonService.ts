@@ -27,6 +27,8 @@ export interface LessonCompletionResponse {
     lesson_id: string;
     completed_at: string;
     progress_percentage: number;
+    learn_rewards_earned?: number;
+    total_learn_rewards?: number;
   };
 }
 

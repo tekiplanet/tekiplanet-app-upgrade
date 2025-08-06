@@ -1,3 +1,93 @@
-[2025-08-06 16:21:37] production.INFO: Quiz submission debug {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","lesson_id":"d9a00617-1e81-47c8-84d7-8f213b6aa856","passed":true,"lesson_rewards":45,"existing_progress":false,"should_award_rewards":true} 
-[2025-08-06 16:21:38] production.INFO: Rewards awarded {"rewards_earned":45,"total_rewards":45} 
-[2025-08-06 16:21:38] production.INFO: Response data {"success":true,"attempt":{"App\\Models\\QuizAttempt":{"id":"8526f549-46de-438e-85e4-075209a2083b","user_id":"d25d7013-277a-4699-9292-aed6896b7590","lesson_id":"d9a00617-1e81-47c8-84d7-8f213b6aa856","score":30,"total_points":30,"percentage":100,"passed":true,"started_at":"2025-08-06T16:15:38.000000Z","completed_at":"2025-08-06T16:21:37.000000Z","created_at":"2025-08-06T16:15:38.000000Z","updated_at":"2025-08-06T16:21:37.000000Z"}},"responses":[{"App\\Models\\QuizResponse":{"id":"bbf8c521-44a5-4aa2-99ea-960cc8da9ba4","attempt_id":"8526f549-46de-438e-85e4-075209a2083b","question_id":"ee54762c-a2e3-4f24-824e-cff63ba5422b","user_answer":"BTC","is_correct":true,"points_earned":10,"updated_at":"2025-08-06T16:21:36.000000Z","created_at":"2025-08-06T16:21:36.000000Z"}},{"App\\Models\\QuizResponse":{"id":"2d80883a-c4de-4831-8e88-fbb6fe092d06","attempt_id":"8526f549-46de-438e-85e4-075209a2083b","question_id":"3db06659-0552-485b-84e8-812e77aaccf7","user_answer":"False","is_correct":true,"points_earned":10,"updated_at":"2025-08-06T16:21:37.000000Z","created_at":"2025-08-06T16:21:37.000000Z"}},{"App\\Models\\QuizResponse":{"id":"e434bed2-8f80-4d28-a522-42fb621223d9","attempt_id":"8526f549-46de-438e-85e4-075209a2083b","question_id":"2cb33a59-f0c3-4da0-bfe3-33dee0e12555","user_answer":"Ethereum","is_correct":true,"points_earned":10,"updated_at":"2025-08-06T16:21:37.000000Z","created_at":"2025-08-06T16:21:37.000000Z"}}],"score":30,"total_points":30,"percentage":100,"passed":true,"learn_rewards_earned":45,"total_learn_rewards":45} 
+QuizPlayer.tsx:111 Quiz submission success: {success: true, attempt: {…}, responses: Array(3), score: 30, total_points: 30, …}
+QuizPlayer.tsx:118 Quiz passed, learn rewards earned: 45
+QuizPlayer.tsx:120 Setting reward dialog data: {earned: 45, total: 45}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:214 Lesson completion response: {success: true, message: 'Lesson already marked as complete', data: {…}}
+LessonPlayer.tsx:219 Learn rewards earned: 0
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:659 [LessonPlayer] MobileNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 0, moduleNumber: 1, globalIndex: 0}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 1, moduleNumber: 1, globalIndex: 1}
+LessonPlayer.tsx:399 [LessonPlayer] getModuleNumber {moduleId: 'badba17e-1e34-4441-b6f8-6e9746857753', sortedModules: Array(4), idx: 0}
+LessonPlayer.tsx:735 [LessonPlayer] SidebarNav {lesson: {…}, moduleIndex: 2, moduleNumber: 1, globalIndex: 2}
+[2025-08-06 17:31:27] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 17:31:27] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 17:31:27] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 17:31:27] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 

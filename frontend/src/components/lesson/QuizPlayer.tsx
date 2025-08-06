@@ -62,10 +62,9 @@ interface QuizResponse {
 
 interface QuizPlayerProps {
   lessonId: string;
-  onComplete?: () => void;
 }
 
-export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
+export default function QuizPlayer({ lessonId }: QuizPlayerProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,6 +73,8 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
   const [results, setResults] = useState<any>(null);
   const [showDetailedResults, setShowDetailedResults] = useState(false);
   const [isRetaking, setIsRetaking] = useState(false);
+  const [showRewardDialog, setShowRewardDialog] = useState(false);
+  const [rewardData, setRewardData] = useState<{ earned: number; total: number } | null>(null);
   
   const queryClient = useQueryClient();
 
@@ -112,12 +113,19 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
         setIsSubmitting(false);
         
         if (data.passed) {
-          let message = 'Congratulations! You passed the quiz!';
           if (data.learn_rewards_earned > 0) {
-            message += ` You earned ${data.learn_rewards_earned} learn rewards!`;
+            setRewardData({
+              earned: data.learn_rewards_earned,
+              total: data.total_learn_rewards
+            });
+            setShowRewardDialog(true);
+            // Invalidate lesson progress to update it
+            queryClient.invalidateQueries({ queryKey: ['lesson-progress'] });
+          } else {
+            toast.success('Congratulations! You passed the quiz!');
+            // Invalidate lesson progress to update it
+            queryClient.invalidateQueries({ queryKey: ['lesson-progress'] });
           }
-          toast.success(message);
-          if (onComplete) onComplete();
         } else {
           toast.error('You did not pass the quiz. You can retake it to improve your score.');
         }
@@ -129,7 +137,18 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
     }
   });
 
-  // Get quiz results
+  // Get existing quiz results (to check if user has already passed)
+  const { 
+    data: existingResultsData, 
+    isLoading: isLoadingExistingResults 
+  } = useQuery({
+    queryKey: ['existing-quiz-results', lessonId],
+    queryFn: () => lessonService.getQuizResults(lessonId),
+    enabled: !!lessonId && !showResults,
+    retry: false
+  });
+
+  // Get quiz results for current attempt
   const { 
     data: resultsData, 
     isLoading: isLoadingResults 
@@ -142,12 +161,21 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
   const questions = questionsData?.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
 
-  // Start quiz when questions are loaded
+  // Check for existing quiz results when component loads
   useEffect(() => {
-    if (questions.length > 0 && !attempt) {
+    if (existingResultsData?.success && existingResultsData.attempt?.passed) {
+      // User has already passed the quiz, show results
+      setResults(existingResultsData.attempt);
+      setShowResults(true);
+    }
+  }, [existingResultsData]);
+
+  // Start quiz when questions are loaded (only if no existing passed results)
+  useEffect(() => {
+    if (questions.length > 0 && !attempt && !existingResultsData?.attempt?.passed) {
       startAttemptMutation.mutate();
     }
-  }, [questions, attempt]);
+  }, [questions, attempt, existingResultsData]);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers(prev => ({
@@ -405,7 +433,7 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
     );
   };
 
-  if (isLoadingQuestions) {
+  if (isLoadingQuestions || isLoadingExistingResults) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -440,14 +468,62 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
 
   if (showResults) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Quiz Results</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {renderResults()}
-        </CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardHeader>
+            <CardTitle>Quiz Results</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {renderResults()}
+          </CardContent>
+        </Card>
+        
+        {/* Reward Dialog */}
+        {showRewardDialog && rewardData && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+              <div className="text-center">
+                {/* Success Icon */}
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                  <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Congratulations! 🎉
+                </h3>
+                
+                {/* Message */}
+                <p className="text-gray-600 mb-6">
+                  You passed the quiz and earned rewards!
+                </p>
+                
+                {/* Rewards Display */}
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-4 mb-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white mb-1">
+                      +{rewardData.earned} Learn Rewards
+                    </div>
+                    <div className="text-yellow-100 text-sm">
+                      Total: {rewardData.total} Learn Rewards
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action Button */}
+                <Button 
+                  onClick={() => setShowRewardDialog(false)}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
