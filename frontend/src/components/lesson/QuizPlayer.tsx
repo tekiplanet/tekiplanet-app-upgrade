@@ -138,10 +138,10 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
 
   // Start quiz when questions are loaded
   useEffect(() => {
-    if (questions.length > 0 && !attempt && !isRetaking) {
+    if (questions.length > 0 && !attempt) {
       startAttemptMutation.mutate();
     }
-  }, [questions, attempt, isRetaking]);
+  }, [questions, attempt]);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers(prev => ({
@@ -328,15 +328,6 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
                         <div className="break-words">
                           <span className="font-medium">Your answer:</span> {response.user_answer}
                         </div>
-                        {!response.is_correct && (
-                          <div className="break-words">
-                            <span className="font-medium text-green-600">Correct answer(s):</span>
-                            {response.question.answers
-                              .filter(a => a.is_correct)
-                              .map(a => a.answer_text)
-                              .join(', ')}
-                          </div>
-                        )}
                         <div>
                           <span className="font-medium">Points:</span> {response.points_earned}/{response.question.points}
                         </div>
@@ -392,15 +383,6 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
                           <div className="break-words">
                             <span className="font-medium">Your answer:</span> {response.user_answer}
                           </div>
-                          {!response.is_correct && (
-                            <div className="break-words">
-                              <span className="font-medium text-green-600">Correct answer(s):</span>
-                              {response.question.answers
-                                .filter(a => a.is_correct)
-                                .map(a => a.answer_text)
-                                .join(', ')}
-                            </div>
-                          )}
                           <div>
                             <span className="font-medium">Points:</span> {response.points_earned}/{response.question.points}
                           </div>

@@ -40,3 +40,7 @@
 [2025-08-06 14:43:03] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
 [2025-08-06 14:43:03] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
 [2025-08-06 14:43:03] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 14:53:08] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 14:53:08] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 14:53:08] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 14:53:08] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
