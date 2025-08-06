@@ -101,7 +101,9 @@ class LessonController extends Controller
                     'data' => [
                         'lesson_id' => $lessonId,
                         'completed_at' => $existingProgress->completed_at,
-                        'progress_percentage' => $this->calculateCourseProgress($user->id, $course->id)
+                        'progress_percentage' => $this->calculateCourseProgress($user->id, $course->id),
+                        'learn_rewards_earned' => 0,
+                        'total_learn_rewards' => $user->learn_rewards
                     ]
                 ]);
             }
@@ -114,9 +116,9 @@ class LessonController extends Controller
                 'completed_at' => now()
             ]);
             
-            // Award learn rewards if the lesson has any
+            // Award learn rewards if the lesson has any (only for non-quiz lessons)
             $learnRewardsEarned = 0;
-            if ($lesson->learn_rewards > 0) {
+            if ($lesson->learn_rewards > 0 && $lesson->content_type !== 'quiz') {
                 $user->increment('learn_rewards', $lesson->learn_rewards);
                 $learnRewardsEarned = $lesson->learn_rewards;
             }
@@ -701,6 +703,23 @@ class LessonController extends Controller
             if ($passed && $lesson->learn_rewards > 0) {
                 $user->increment('learn_rewards', $lesson->learn_rewards);
                 $learnRewardsEarned = $lesson->learn_rewards;
+            }
+            
+            // If quiz was passed, automatically mark lesson as complete
+            if ($passed) {
+                // Check if lesson is already completed to avoid duplicates
+                $existingProgress = LessonProgress::where('user_id', $user->id)
+                    ->where('lesson_id', $lessonId)
+                    ->first();
+                
+                if (!$existingProgress) {
+                    LessonProgress::create([
+                        'user_id' => $user->id,
+                        'lesson_id' => $lessonId,
+                        'course_id' => $course->id,
+                        'completed_at' => now()
+                    ]);
+                }
             }
             
             return response()->json([
