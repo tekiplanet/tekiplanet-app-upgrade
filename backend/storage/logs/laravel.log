@@ -8,3 +8,71 @@
 [2025-08-06 09:40:15] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
 [2025-08-06 09:40:15] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
 [2025-08-06 09:40:15] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 09:45:17] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 09:45:17] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 09:45:17] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 09:45:17] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 09:45:17] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 09:45:17] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 09:45:24] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 09:45:24] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 09:45:24] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 09:45:24] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 09:46:13] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 09:46:13] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 09:46:13] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 09:46:13] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 09:46:13] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 09:46:13] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 09:46:18] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 09:46:18] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 09:46:18] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 09:46:18] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 09:49:38] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 09:49:38] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 09:49:38] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 09:49:38] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 09:49:38] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 09:49:38] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 09:49:46] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 09:49:46] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 09:49:46] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 09:49:46] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:02:49] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 10:02:50] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 10:02:50] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 10:02:50] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 10:02:50] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 10:02:50] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 10:03:40] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:03:40] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:03:40] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:03:40] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:08:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:08:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:08:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:08:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:08:53] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:08:53] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:08:53] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:08:53] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:08:55] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:08:55] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:08:55] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:08:55] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:09:17] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:09:17] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:09:17] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:09:17] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:12:51] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:12:51] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:12:51] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:12:51] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:12:54] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:12:54] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:12:54] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:12:54] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:12:59] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:12:59] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 10:12:59] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 10:12:59] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 

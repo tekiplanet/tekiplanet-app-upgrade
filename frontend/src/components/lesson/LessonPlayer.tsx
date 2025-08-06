@@ -97,7 +97,11 @@ export default function LessonPlayer() {
   const allLessons = course?.modules?.flatMap(module => 
     [...module.lessons]
       .sort((a, b) => a.order - b.order)
-      .map(lesson => ({ ...lesson, moduleTitle: module.title, moduleId: module.id }))
+      .map(lesson => ({
+        ...lesson,
+        moduleTitle: module.title,
+        moduleId: module.id // always use parent module's id
+      }))
   ).sort((a, b) => {
     // Sort by module order first, then by lesson order
     const moduleA = course?.modules?.find(m => m.id === a.moduleId);
@@ -115,8 +119,13 @@ export default function LessonPlayer() {
     module.lessons.some(lesson => lesson.id === currentLesson?.id)
   );
   const currentModuleLessons = currentModule
-    ? [...currentModule.lessons].sort((a, b) => a.order - b.order)
-    : [];
+    ? [...currentModule.lessons]
+      .sort((a, b) => a.order - b.order)
+      .map(lesson => ({
+        ...lesson,
+        moduleId: currentModule.id // always set moduleId for navigation
+      }))
+  : [];
 
   // Find current lesson index
   useEffect(() => {
@@ -132,16 +141,45 @@ export default function LessonPlayer() {
   const goToPreviousLesson = () => {
     if (currentLessonIndex > 0) {
       const prevLesson = allLessons[currentLessonIndex - 1];
-      // Previous lessons are always accessible
-      navigate(`/dashboard/academy/course/${courseId}/lesson/${prevLesson.id}`);
+      const isAccessible = isLessonAccessible(prevLesson, currentLessonIndex - 1);
+      console.log('[LessonPlayer] goToPreviousLesson:', {
+        currentLessonIndex,
+        prevLesson,
+        isAccessible,
+        completedLessons: Array.from(completedLessons),
+      });
+      if (isAccessible) {
+        navigate(`/dashboard/academy/course/${courseId}/lesson/${prevLesson.id}`);
+      } else {
+        // Find the first incomplete lesson that's blocking access
+        let blockingLesson = null;
+        for (let i = 0; i < currentLessonIndex; i++) {
+          const lesson = allLessons[i];
+          if (!lesson.is_preview && !completedLessons.has(lesson.id)) {
+            blockingLesson = lesson;
+            break;
+          }
+        }
+        if (blockingLesson) {
+          toast.error(`You must complete "${blockingLesson.title}" first`);
+        } else {
+          toast.error('You must complete previous lessons first');
+        }
+      }
     }
   };
 
   const goToNextLesson = () => {
     if (currentLessonIndex < allLessons.length - 1) {
       const nextLesson = allLessons[currentLessonIndex + 1];
-      // Check if next lesson is accessible
-      if (isLessonAccessible(nextLesson, currentLessonIndex + 1)) {
+      const isAccessible = isLessonAccessible(nextLesson, currentLessonIndex + 1);
+      console.log('[LessonPlayer] goToNextLesson:', {
+        currentLessonIndex,
+        nextLesson,
+        isAccessible,
+        completedLessons: Array.from(completedLessons),
+      });
+      if (isAccessible) {
         navigate(`/dashboard/academy/course/${courseId}/lesson/${nextLesson.id}`);
       } else {
         // Find the first incomplete lesson that's blocking access
@@ -153,7 +191,6 @@ export default function LessonPlayer() {
             break;
           }
         }
-        
         if (blockingLesson) {
           toast.error(`You must complete "${blockingLesson.title}" first`);
         } else {
@@ -310,30 +347,31 @@ export default function LessonPlayer() {
   // Check which lessons are accessible
   const isLessonAccessible = (lesson: any, lessonIndex: number) => {
     // Preview lessons are always accessible
-    if (lesson.is_preview) return true;
-    
+    if (lesson.is_preview) {
+      console.log('[LessonPlayer] isLessonAccessible: preview lesson', { lesson, lessonIndex });
+      return true;
+    }
     // First lesson of the entire course is always accessible
-    if (lessonIndex === 0) return true;
-    
+    if (lessonIndex === 0) {
+      console.log('[LessonPlayer] isLessonAccessible: first lesson of course', { lesson, lessonIndex });
+      return true;
+    }
     // Check if it's the first lesson of its module
     const currentModule = course?.modules?.find(module => 
       module.lessons.some(l => l.id === lesson.id)
     );
-    
     if (currentModule) {
       const moduleLessons = [...currentModule.lessons].sort((a, b) => a.order - b.order);
       const isFirstLessonOfModule = moduleLessons[0]?.id === lesson.id;
-      
       if (isFirstLessonOfModule) {
+        console.log('[LessonPlayer] isLessonAccessible: first lesson of module', { lesson, lessonIndex, module: currentModule });
         return true;
       }
     }
-    
     // For other lessons, check if all previous lessons in the same module are completed
     if (currentModule) {
       const moduleLessons = [...currentModule.lessons].sort((a, b) => a.order - b.order);
       const lessonIndexInModule = moduleLessons.findIndex(l => l.id === lesson.id);
-      
       if (lessonIndexInModule > 0) {
         for (let i = 0; i < lessonIndexInModule; i++) {
           const previousLesson = moduleLessons[i];
@@ -343,13 +381,28 @@ export default function LessonPlayer() {
           }
           // If any previous lesson in the module is not completed, deny access
           if (!completedLessons.has(previousLesson.id)) {
+            console.log('[LessonPlayer] isLessonAccessible: blocked by previous lesson', {
+              lesson,
+              lessonIndex,
+              previousLesson,
+              completedLessons: Array.from(completedLessons),
+            });
             return false;
           }
         }
       }
     }
-    
+    console.log('[LessonPlayer] isLessonAccessible: accessible', { lesson, lessonIndex });
     return true;
+  };
+
+  // Helper: get module number by id
+  const getModuleNumber = (moduleId: string) => {
+    if (!course?.modules) return null;
+    const sortedModules = [...course.modules].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const idx = sortedModules.findIndex(m => m.id === moduleId);
+    console.log('[LessonPlayer] getModuleNumber', { moduleId, sortedModules, idx });
+    return idx !== -1 ? idx + 1 : null;
   };
 
   // After all hooks, do conditional returns
@@ -607,6 +660,8 @@ export default function LessonPlayer() {
                    // Find the global index of this lesson in allLessons
                    const globalIndex = allLessons.findIndex(l => l.id === lesson.id);
                    const isAccessible = isLessonAccessible(lesson, globalIndex);
+                   const moduleNumber = getModuleNumber(lesson.moduleId);
+                   console.log('[LessonPlayer] MobileNav', { lesson, moduleIndex, moduleNumber, globalIndex });
                    return (
                      <div
                        key={lesson.id}
@@ -651,7 +706,7 @@ export default function LessonPlayer() {
                            <p className={`text-xs font-medium truncate ${
                              lesson.id === currentLesson?.id ? 'text-primary' : ''
                            }`}>
-                             {moduleIndex + 1}. {lesson.title}
+                             Module {moduleNumber} • {moduleIndex + 1}. {lesson.title}
                            </p>
                            <p className="text-xs text-muted-foreground">
                              {lesson.duration_minutes} min • {lesson.content_type}
@@ -681,6 +736,8 @@ export default function LessonPlayer() {
                      // Find the global index of this lesson in allLessons
                      const globalIndex = allLessons.findIndex(l => l.id === lesson.id);
                      const isAccessible = isLessonAccessible(lesson, globalIndex);
+                     const moduleNumber = getModuleNumber(lesson.moduleId);
+                     console.log('[LessonPlayer] SidebarNav', { lesson, moduleIndex, moduleNumber, globalIndex });
                      return (
                     <div
                       key={lesson.id}
@@ -725,7 +782,7 @@ export default function LessonPlayer() {
                           <p className={`text-sm font-medium truncate ${
                             lesson.id === currentLesson?.id ? 'text-primary' : ''
                           }`}>
-                            {moduleIndex + 1}. {lesson.title}
+                            Module {moduleNumber} • {moduleIndex + 1}. {lesson.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {lesson.duration_minutes} min • {lesson.content_type}

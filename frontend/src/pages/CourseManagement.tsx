@@ -192,6 +192,10 @@ const CourseManagement: React.FC = () => {
   
         const courseDetails = await courseManagementService.getCourseDetails(courseIdState, user?.currency_code);
         setCourseDetails(courseDetails);
+        // Log modules array for debugging order
+        if (courseDetails && courseDetails.course && courseDetails.course.modules) {
+          console.log('Modules from backend:', courseDetails.course.modules.map(m => ({id: m.id, title: m.title, order: m.order})));
+        }
         
         // Calculate and set upcoming exams count from the fetched data
         if (courseDetails.exams) {
@@ -273,6 +277,14 @@ const CourseManagement: React.FC = () => {
     return courseDetails?.enrollment || null;
   }, [courseDetails]);
 
+  // After fetching courseDetails and setting courseDetails
+  // Add this helper to always get sorted modules
+  const sortedModules = React.useMemo(() => {
+    return courseDetails?.course?.modules
+      ? [...courseDetails.course.modules].sort((a, b) => (a.order || 0) - (b.order || 0))
+      : [];
+  }, [courseDetails]);
+
   // Debug curriculum
   React.useEffect(() => {
     // console.log('Course Object:', course);
@@ -284,7 +296,7 @@ const CourseManagement: React.FC = () => {
     
     const curriculumData = 
       course?.curriculum || 
-      course?.modules || 
+      sortedModules || 
       course?.content || 
       course?.courseContent;
 
