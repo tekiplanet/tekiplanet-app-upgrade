@@ -141,18 +141,18 @@ const CourseManagement: React.FC = () => {
   // Calculate progress percentage from lesson progress data
   const progressPercentage = progressData?.progress_percentage || 0;
 
-  // Function to calculate upcoming exams
-  const calculateUpcomingExams = React.useCallback((exams: any[] = []) => {
-    const now = new Date();
-    const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const upcomingExams = exams.filter(exam => {
-      const examDate = new Date(exam.date);
-      return examDate >= nowDate;
-    });
-
-    return upcomingExams.length;
-  }, []);
+    // Function to calculate upcoming exams
+    const calculateUpcomingExams = React.useCallback((exams: any[] = []) => {
+      const now = new Date();
+      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      const upcomingExams = exams.filter(exam => {
+        const examDate = new Date(exam.date);
+        return examDate >= nowDate;
+      });
+  
+      return upcomingExams.length;
+    }, []);
 
   // Move the state update to useEffect
   React.useEffect(() => {

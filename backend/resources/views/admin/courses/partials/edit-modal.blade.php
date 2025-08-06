@@ -34,6 +34,7 @@
                   class="p-4 space-y-6">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="_course_id" id="_course_id">
 
                 <!-- Basic Information -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -168,3 +169,102 @@
         </div>
     </div>
 </div> 
+@push('scripts')
+<script>
+function loadCourse(courseId) {
+    if (!courseId) return;
+    const form = document.getElementById('editCourseForm');
+    form.reset();
+    document.getElementById('_course_id').value = courseId;
+    fetch(`/admin/courses/${courseId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) throw new Error(data.message || 'Failed to load course');
+            const course = data.course;
+            form.elements['title'].value = course.title || '';
+            form.elements['image_url'].value = course.image_url || '';
+            form.elements['category_id'].value = course.category_id || '';
+            form.elements['instructor_id'].value = course.instructor_id || '';
+            form.elements['level'].value = course.level || '';
+            form.elements['price'].value = course.price || '';
+            form.elements['enrollment_fee'].value = course.enrollment_fee || '';
+            form.elements['duration_hours'].value = course.duration_hours || '';
+            form.elements['status'].value = course.status || '';
+            form.elements['description'].value = course.description || '';
+            form.elements['prerequisites'].value = Array.isArray(course.prerequisites) ? course.prerequisites.join('\n') : (course.prerequisites || '');
+            form.elements['learning_outcomes'].value = Array.isArray(course.learning_outcomes) ? course.learning_outcomes.join('\n') : (course.learning_outcomes || '');
+            // Dispatch change events for select fields to trigger Alpine/JS reactivity
+            form.elements['category_id'].dispatchEvent(new Event('change'));
+            form.elements['instructor_id'].dispatchEvent(new Event('change'));
+            form.elements['level'].dispatchEvent(new Event('change'));
+            form.elements['status'].dispatchEvent(new Event('change'));
+        })
+        .catch(error => {
+            console.error('Error loading course:', error);
+        });
+}
+
+window.updateCourse = async function(event) {
+    event.preventDefault();
+    const form = document.getElementById('editCourseForm');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const loadingSpinner = form.querySelector('.loading-spinner');
+    submitButton.disabled = true;
+    loadingSpinner.classList.remove('hidden');
+    // Build JS object from form values
+    const formObject = {};
+    for (const el of form.elements) {
+        if (!el.name || el.type === 'button' || el.type === 'submit') continue;
+        if (el.type === 'checkbox') {
+            formObject[el.name] = el.checked;
+        } else {
+            formObject[el.name] = el.value;
+        }
+    }
+    // Convert prerequisites and learning_outcomes to arrays
+    formObject.prerequisites = formObject.prerequisites ? formObject.prerequisites.split('\n').filter(Boolean) : [];
+    formObject.learning_outcomes = formObject.learning_outcomes ? formObject.learning_outcomes.split('\n').filter(Boolean) : [];
+    // Remove _course_id from payload
+    const courseId = formObject._course_id;
+    delete formObject._course_id;
+    if (!courseId) {
+        alert('Course ID not found.');
+        submitButton.disabled = false;
+        loadingSpinner.classList.add('hidden');
+        return;
+    }
+    // Use server-rendered route with placeholder, replaced at runtime
+    let updateUrl = "{{ route('admin.courses.update', ['course' => 'COURSE_ID_PLACEHOLDER']) }}".replace('COURSE_ID_PLACEHOLDER', courseId);
+    // Force https if not already
+    if (updateUrl.startsWith('http://')) {
+        updateUrl = updateUrl.replace('http://', 'https://');
+    }
+    try {
+        const response = await fetch(updateUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(formObject)
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        }
+        if (data.success) {
+            window.location.reload();
+        } else {
+            throw new Error(data.message || 'Something went wrong');
+        }
+    } catch (error) {
+        console.error('Error updating course:', error);
+        alert(error.message);
+    } finally {
+        submitButton.disabled = false;
+        loadingSpinner.classList.add('hidden');
+    }
+}
+</script>
+@endpush 
