@@ -412,3 +412,136 @@
 [2025-08-06 11:45:29] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
 [2025-08-06 11:45:29] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
 [2025-08-06 11:45:29] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:47:53] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 11:47:53] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 11:47:53] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 11:47:53] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 11:47:53] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 11:47:53] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 11:53:21] production.INFO: Login successful {"ip":"127.0.0.1","login_field":"jamiejack","user_id":"d25d7013-277a-4699-9292-aed6896b7590","request_data":{"login":"jamiejack","password":"12345678"},"headers":{"host":["api.tekiplanet.org"],"user-agent":["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"],"content-length":["43"],"accept":["application/json"],"accept-encoding":["gzip, br"],"accept-language":["en-US,en;q=0.9"],"cdn-loop":["cloudflare; loops=1"],"cf-connecting-ip":["169.150.197.231"],"cf-ipcountry":["CH"],"cf-ray":["96ae554b9ef6bc48-ZRH"],"cf-visitor":["{\"scheme\":\"https\"}"],"cf-warp-tag-id":["d4ffa879-3bd5-4025-9364-1b8e21c01a58"],"connection":["keep-alive"],"content-type":["application/json"],"cookie":["XSRF-TOKEN=eyJpdiI6ImpHemNKbU5VdTI1b3BHNGZGZGwrM0E9PSIsInZhbHVlIjoiSGRoV3dzSEswMXdXM0RtZ01ZQWlsdDI0dUZCMnYvcS9TTEh1UzJGMG5JWGQzL2pDWWJaS212c1EvTU1qRkk3UU15SDZmcHBQbUJISlV4L3d2djlqSVBmY3VUaDhXUSttUlRoQW44M1BGWnE4VjZ3N1NPOVN6My9PYXdJcFZjNWEiLCJtYWMiOiIxOGUyNDUxZmQzYWNhYzA0MjQ4NmFjM2Q0OWNlNTkzYWYwOWNlMGUyOGEwOGQ0N2ExYWQ2YWM4MzFiMDAxMzNmIiwidGFnIjoiIn0%3D; tekiplanet_session=eyJpdiI6Ilk1N1V1NUQvRW43WXVSNjNrV2x5OUE9PSIsInZhbHVlIjoidE9BQU9NWlkrU2diZkg1bjA5NzhFM3gyK1pySmNZREt0ZzdrV3hnWDdtR0NJQTk3YU02TGdYU2E2bHgxaHcyTTZLQzhRWFQ3djV6aTU5Si9aS0UrdnJPT2JWZUlQUUZTditjNkwyLzdyT24rUFVmbzRNN1dSMXdSR1YweUtBMG8iLCJtYWMiOiJlMjRkODkwOWZmMjViMmNlOGEzM2U5YzYwNDBjZjAyN2Q2NGNhMzNkNzUyMjc5YTU1ZGE5NjQ4NDI3ZTE3YWE0IiwidGFnIjoiIn0%3D"],"origin":["https://app.tekiplanet.org"],"priority":["u=1, i"],"referer":["https://app.tekiplanet.org/"],"sec-ch-ua":["\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\""],"sec-ch-ua-mobile":["?0"],"sec-ch-ua-platform":["\"Windows\""],"sec-fetch-dest":["empty"],"sec-fetch-mode":["cors"],"sec-fetch-site":["same-site"],"x-forwarded-for":["169.150.197.231"],"x-forwarded-proto":["https"]}} 
+[2025-08-06 11:53:36] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 11:53:36] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 11:53:36] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 11:53:36] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 11:53:36] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 11:53:36] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 11:53:42] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:53:42] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:53:42] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:53:42] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:53:58] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:53:58] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:53:58] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:53:58] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:55:42] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:55:42] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:55:42] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:55:42] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:55:57] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:55:57] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:55:57] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:55:57] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:56:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:56:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:56:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:56:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:56:42] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:56:42] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:56:42] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:56:42] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:57:00] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:57:00] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 11:57:00] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 11:57:00] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:01:07] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 12:01:07] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 12:01:07] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 12:01:07] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 12:01:07] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 12:01:07] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 12:01:30] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:01:30] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:01:30] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:01:30] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:34] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:34] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:34] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:34] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:45] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:45] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:45] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:45] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:46] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:46] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:46] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:46] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:50] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:50] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:50] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:50] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:54] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:54] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:05:54] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:05:54] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:06:02] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:06:02] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:06:02] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:06:02] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:06:04] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:06:04] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:06:04] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:06:04] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:08:09] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:08:09] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:08:09] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:08:09] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:08:14] production.INFO: Login successful {"ip":"127.0.0.1","login_field":"jamiejack","user_id":"d25d7013-277a-4699-9292-aed6896b7590","request_data":{"login":"jamiejack","password":"12345678"},"headers":{"host":["api.tekiplanet.org"],"user-agent":["Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36"],"content-length":["43"],"accept":["application/json"],"accept-encoding":["gzip, br"],"accept-language":["en-US,en;q=0.9,es;q=0.8"],"cdn-loop":["cloudflare; loops=1"],"cf-connecting-ip":["102.90.101.160"],"cf-ipcountry":["NG"],"cf-ray":["96ae6b1d4b2ca8b9-LHR"],"cf-visitor":["{\"scheme\":\"https\"}"],"cf-warp-tag-id":["d4ffa879-3bd5-4025-9364-1b8e21c01a58"],"connection":["keep-alive"],"content-type":["application/json"],"cookie":["XSRF-TOKEN=eyJpdiI6Imk3Tm5XM3BoWk1vTVlsSmNrcUhrTXc9PSIsInZhbHVlIjoiVmI3U0MwRnRPVktNc2duclh5L0U4TFoyZlIvZys5SGF1YjBTcHZmdmFtM05iTGNLQ3VYdTlaU3I0VTRzUzRwRkRBM0JDYk44dGgwMjJiM0Z1RGw2VEsySkFLWnBBMUVMYnUybndvZjJyeXhWbWM4anZ4Q0tjUkt1NFJiWE1mMGMiLCJtYWMiOiJlNzQ2YWIzYWVkOTU3MDBiZTAzYmQyZmU0MWNhY2EyMWMyMmQyNTc1MTYxODRlYmQ4ZGIyNDdhOGRhMTFmYTdjIiwidGFnIjoiIn0%3D; tekiplanet_session=eyJpdiI6Im9wK3pna1ozUEs5MDZLeHh5S0FFYlE9PSIsInZhbHVlIjoiSUh1NG1qak9ZSzh2R2J4N0RkdnZqaUI0bFIyaWpzRGdyU29OY3c4eFpDcUwrSHdHcmxrNUUvclpVb2ZJTllkcnBGQzdmY0E3aURoQnp5NnJ6aEJDMmljNmZJL2lKTVZaRzVyYVBFY1ZOU29jeGxHajRCd3VKcE5EUUlaVjUxZHQiLCJtYWMiOiJkZTc5OTJlYTdjMDRkMWM1Yzc2OWE5ZTAzNDYyNWQ5OWNiYjE0MmM3NTlkMWExYjJmMGY0NWE0MDQ4OWYxMjZhIiwidGFnIjoiIn0%3D"],"origin":["https://app.tekiplanet.org"],"priority":["u=1, i"],"referer":["https://app.tekiplanet.org/"],"sec-ch-ua":["\"Google Chrome\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\""],"sec-ch-ua-mobile":["?1"],"sec-ch-ua-platform":["\"Android\""],"sec-fetch-dest":["empty"],"sec-fetch-mode":["cors"],"sec-fetch-site":["same-site"],"x-forwarded-for":["102.90.101.160"],"x-forwarded-proto":["https"]}} 
+[2025-08-06 12:08:36] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 12:08:36] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 12:08:36] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 12:08:36] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 12:08:36] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 12:08:36] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 12:08:43] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:08:43] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:08:43] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:08:43] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:10:07] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:10:07] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:10:07] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:10:07] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:10:12] production.INFO: Login successful {"ip":"127.0.0.1","login_field":"jamiejack","user_id":"d25d7013-277a-4699-9292-aed6896b7590","request_data":{"login":"jamiejack","password":"12345678"},"headers":{"host":["api.tekiplanet.org"],"user-agent":["Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36"],"content-length":["43"],"accept":["application/json"],"accept-encoding":["gzip, br"],"accept-language":["en-US,en;q=0.9,es;q=0.8"],"cdn-loop":["cloudflare; loops=1"],"cf-connecting-ip":["102.90.101.160"],"cf-ipcountry":["NG"],"cf-ray":["96ae6e010f289521-LHR"],"cf-visitor":["{\"scheme\":\"https\"}"],"cf-warp-tag-id":["d4ffa879-3bd5-4025-9364-1b8e21c01a58"],"connection":["keep-alive"],"content-type":["application/json"],"cookie":["XSRF-TOKEN=eyJpdiI6IjJOdDgrck1kZkJJKzNYM0JBWmI2Y2c9PSIsInZhbHVlIjoiUXNGaHpOVEhSemk5aURsZEcwRkxyamJLcklUelF3VHhjQjBFR0hwVkp0L25CMVBJd1MvV3I1RVd5WkQ2ZlRRRXpaR2xseldRLzVwbzJOaUFKeGxFT3IrYzlibUs2UDh6bG9zNUJweTlPSjdIMzJVY1cxd2dIb1NCL2JwM3V2THoiLCJtYWMiOiI0NWU0MTE1N2RkZDQzODhlM2Q5MDExYzY1NjY3ZGIzZjIyMTAzNTI5YTMxOGJiNzBjNjg5NTMwY2E4NmQxYTg2IiwidGFnIjoiIn0%3D; tekiplanet_session=eyJpdiI6IkZKV0FTQTBvVWl4Y1ArYm5RM2pLaGc9PSIsInZhbHVlIjoic3lwNUZZc3hxcjI2TlhBMmZOS0Flc2ZXV29yckdNL3pHRTlYKzQ5aDZqa2d4S1djeGdWRFlSakRFNlozWkc0ME5IU0VPdDY1MEhIcG9OMW9HeEZucFRNYVRVb3VMbG02bXJTTkpHd3dYUnFWb2N6M2tDSmlKZS9HVTIyVkhUNUEiLCJtYWMiOiJmMmE3MThlN2Y5NTlkZWM1NDZhMmY2NGJiNWIxZDdjYjVmNDlmZjYwOGI3NzM0YzA3ZGZjMGFmZTI3NTg5YmZhIiwidGFnIjoiIn0%3D"],"origin":["https://app.tekiplanet.org"],"priority":["u=1, i"],"referer":["https://app.tekiplanet.org/"],"sec-ch-ua":["\"Google Chrome\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\""],"sec-ch-ua-mobile":["?1"],"sec-ch-ua-platform":["\"Android\""],"sec-fetch-dest":["empty"],"sec-fetch-mode":["cors"],"sec-fetch-site":["same-site"],"x-forwarded-for":["102.90.101.160"],"x-forwarded-proto":["https"]}} 
+[2025-08-06 12:10:31] production.INFO: Fetching enrolled courses for user {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","username":"jamiejack"} 
+[2025-08-06 12:10:31] production.INFO: Course details for enrollment {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","course_title":"Full-Stack Web Development with React and Laravel","course_price":232.52,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 12:10:31] production.INFO: Next Course Schedule Determination {"course_id":"b4c752ec-0256-4946-8cf7-54814a93ce84","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 12:10:31] production.INFO: Course details for enrollment {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","course_title":"Blockchain and Cryptocurrency Basics","course_price":219.53,"course_exists":"Yes","user_currency":"GBP"} 
+[2025-08-06 12:10:31] production.INFO: Next Course Schedule Determination {"course_id":"10ed8979-dc33-4162-94a6-4b5cec9574a9","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-06"} 
+[2025-08-06 12:10:31] production.INFO: Enrollment query results {"total_enrollments":2} 
+[2025-08-06 12:10:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:10:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:10:37] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:10:37] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:27:52] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:27:52] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:27:52] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:27:52] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:32:22] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:32:22] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:32:22] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:32:22] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:37:47] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:37:47] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:37:47] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:37:47] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:41:38] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:41:38] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:41:38] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:41:38] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:42:23] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:42:23] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-06 12:42:23] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-06 12:42:23] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 

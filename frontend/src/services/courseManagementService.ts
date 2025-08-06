@@ -122,15 +122,40 @@ export const courseManagementService = {
         });
         return {
           success: false,
-          message: errorMessage,
-          courseNoticeId
+          message: errorMessage
         };
       }
       return {
         success: false,
-        message: 'An unexpected error occurred',
-        courseNoticeId
+        message: 'An unexpected error occurred'
       };
+    }
+  },
+
+  getLessonProgress: async (courseId: string) => {
+    try {
+      if (!courseId) {
+        throw new Error('Course ID is required');
+      }
+
+      const response = await apiClient.get(`/courses/${courseId}/lesson-progress`);
+      
+      if (!response.data || !response.data.success) {
+        throw new Error('Failed to fetch lesson progress');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('Course not found');
+        }
+        if (error.response?.status === 401) {
+          throw new Error('Unauthorized access');
+        }
+        throw new Error(error.response?.data?.message || 'Failed to fetch lesson progress');
+      }
+      throw new Error('An unexpected error occurred');
     }
   }
 };

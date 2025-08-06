@@ -72,6 +72,7 @@ const CourseManagement: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true);
 
   const [upcomingExamsCount, setUpcomingExamsCount] = React.useState(0);
+  const [lessonProgress, setLessonProgress] = React.useState<any>(null);
 
   const handleNoticeDelete = React.useCallback((noticeId: string) => {
     setNotices(prevNotices => 
@@ -82,6 +83,23 @@ const CourseManagement: React.FC = () => {
   const handleUpcomingExamsCountChange = React.useCallback((count: number) => {
     setUpcomingExamsCount(count);
   }, []);
+
+  // Fetch lesson progress
+  React.useEffect(() => {
+    const fetchLessonProgress = async () => {
+      if (!courseIdState) return;
+      
+      try {
+        const progressData = await courseManagementService.getLessonProgress(courseIdState);
+        setLessonProgress(progressData);
+      } catch (error) {
+        console.error('Error fetching lesson progress:', error);
+        // Don't show error toast for this as it's not critical
+      }
+    };
+
+    fetchLessonProgress();
+  }, [courseIdState]);
 
 
     // Function to calculate upcoming exams
@@ -286,7 +304,9 @@ const CourseManagement: React.FC = () => {
   }, [courseDetails]);
 
   // Get completed lessons from backend data
-  const completedLessons = new Set([]); // For now, use empty array since enrollment doesn't have completed_lessons
+  const completedLessons = React.useMemo(() => {
+    return lessonProgress?.completed_lessons || [];
+  }, [lessonProgress]);
 
   // Get all lessons in the course for access checking
   const allLessons = React.useMemo(() => {
@@ -320,7 +340,7 @@ const CourseManagement: React.FC = () => {
     // For all lessons, check if all previous non-preview lessons in the course are completed
     for (let i = 0; i < lessonIndex; i++) {
       const prevLesson = allLessons[i];
-      if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
+      if (!prevLesson.is_preview && !completedLessons.includes(prevLesson.id)) {
         return false;
       }
     }
@@ -377,7 +397,7 @@ const CourseManagement: React.FC = () => {
                 <span className="text-sm font-semibold text-primary">{moduleIndex + 1}</span>
               </div>
               <div className="flex-grow min-w-0">
-                <h4 className="text-base font-semibold group-hover:text-primary transition-colors truncate">
+                <h4 className="text-base font-semibold group-hover:text-primary transition-colors">
                   {module.title || module.name || `Module ${moduleIndex + 1}`}
                 </h4>
                                  <p className="text-xs text-muted-foreground">
@@ -419,7 +439,7 @@ const CourseManagement: React.FC = () => {
                              let blockingLesson = null;
                              for (let i = 0; i < globalIndex; i++) {
                                const prevLesson = allLessons[i];
-                               if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
+                               if (!prevLesson.is_preview && !completedLessons.includes(prevLesson.id)) {
                                  blockingLesson = prevLesson;
                                  break;
                                }
@@ -439,7 +459,7 @@ const CourseManagement: React.FC = () => {
                            ) : (
                              <Lock className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
                            )}
-                           <span className={`text-xs truncate ${!isAccessible ? 'text-muted-foreground/50' : ''}`}>
+                           <span className={`text-xs ${!isAccessible ? 'text-muted-foreground/50' : ''}`}>
                              {lesson.title}
                            </span>
                          </div>
