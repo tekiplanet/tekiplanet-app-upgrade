@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { formatCurrency } from "@/lib/utils";
+import { formatAmountInUserCurrencySync } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Bell, GraduationCap, FileText, BookOpen, Wallet, PlayCircle, Lock } from "lucide-react";
 import PagePreloader from '@/components/ui/PagePreloader';
@@ -74,6 +74,10 @@ const CourseManagement: React.FC = () => {
   const [upcomingExamsCount, setUpcomingExamsCount] = React.useState(0);
   const [lessonProgress, setLessonProgress] = React.useState<any>(null);
 
+  // Currency symbol cache
+  const [currencySymbol, setCurrencySymbol] = React.useState<string>('$');
+  const [isLoadingCurrency, setIsLoadingCurrency] = React.useState(false);
+
   const handleNoticeDelete = React.useCallback((noticeId: string) => {
     setNotices(prevNotices => 
       prevNotices.filter(notice => notice.id !== noticeId)
@@ -83,6 +87,44 @@ const CourseManagement: React.FC = () => {
   const handleUpcomingExamsCountChange = React.useCallback((count: number) => {
     setUpcomingExamsCount(count);
   }, []);
+
+  // Fetch user's currency symbol
+  React.useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('$');
+        return;
+      }
+
+      if (isLoadingCurrency) return; // Prevent multiple requests
+
+      setIsLoadingCurrency(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        console.error('Error fetching currency symbol:', error);
+        setCurrencySymbol('$');
+      } finally {
+        setIsLoadingCurrency(false);
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
 
   // Fetch lesson progress
   React.useEffect(() => {
@@ -331,6 +373,26 @@ const CourseManagement: React.FC = () => {
     }) || [];
   }, [sortedModules]);
 
+  // Currency display component that formats amounts with user's currency symbol (no conversion)
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    // Use synchronous formatting with the provided currency symbol
+    const formattedAmount = formatAmountInUserCurrencySync(
+      amount, 
+      userCurrencyCode, 
+      currencySymbol
+    );
+    
+    return <span>{formattedAmount}</span>;
+  };
+
   // Check which lessons are accessible (same logic as LessonPlayer)
   const isLessonAccessible = (lesson: any, lessonIndex: number) => {
     // Preview lessons are always accessible
@@ -578,7 +640,11 @@ const CourseManagement: React.FC = () => {
                     <div>
                       <p className="text-xs text-muted-foreground">Tuition Fee</p>
                       <p className="text-sm font-medium">
-                        {formatCurrency(Number(course.price), settings?.default_currency)}
+                        <CurrencyDisplay 
+                          amount={Number(course.price)} 
+                          userCurrencyCode={user?.currency_code}
+                          currencySymbol={currencySymbol}
+                        />
                       </p>
                     </div>
                   </div>
@@ -678,7 +744,12 @@ const CourseManagement: React.FC = () => {
                   <Card className="border-none shadow-sm">
                     <CardContent className="p-4">
                       {courseIdState && (
-                        <PaymentInfo courseId={courseIdState} settings={settings} />
+                        <PaymentInfo 
+                          courseId={courseIdState} 
+                          settings={settings} 
+                          userCurrencyCode={user?.currency_code}
+                          currencySymbol={currencySymbol}
+                        />
                       )}
                     </CardContent>
                   </Card>

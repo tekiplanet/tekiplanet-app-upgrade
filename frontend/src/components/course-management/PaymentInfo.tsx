@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
+import { formatAmountInUserCurrencySync } from "@/lib/currency";
 import { enrollmentService } from "@/services/enrollmentService";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from 'sonner';
@@ -26,9 +26,11 @@ interface PaymentInfoProps {
     default_currency?: string;
     currency_symbol?: string;
   };
+  userCurrencyCode?: string;
+  currencySymbol?: string;
 }
 
-const PaymentInfo: React.FC<PaymentInfoProps> = ({ courseId, settings }) => {
+const PaymentInfo: React.FC<PaymentInfoProps> = ({ courseId, settings, userCurrencyCode, currencySymbol }) => {
 
   const navigate = useNavigate();
 
@@ -107,7 +109,7 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ courseId, settings }) => {
                 <p className="text-sm text-muted-foreground">
                   Installment {installment.id}
                 </p>
-                <p className="font-medium">{formatCurrency(installment.amount, settings?.default_currency)}</p>
+                <p className="font-medium">{formatAmountInUserCurrencySync(installment.amount, userCurrencyCode, currencySymbol)}</p>
                 <p className="text-xs text-muted-foreground">
                   Due: {new Date(installment.due_date).toLocaleDateString()}
                 </p>
