@@ -143,30 +143,28 @@ class LessonController extends Controller
     {
         try {
             $user = Auth::user();
-            
             // Check if user is enrolled
             $enrollment = Enrollment::where('user_id', $user->id)
                 ->where('course_id', $courseId)
                 ->first();
-            
             if (!$enrollment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You must be enrolled in this course to view progress'
                 ], 403);
             }
-            
+            // Only count non-preview lessons
             $completedLessons = LessonProgress::where('user_id', $user->id)
                 ->where('course_id', $courseId)
+                ->whereHas('lesson', function ($query) {
+                    $query->where('is_preview', false);
+                })
                 ->pluck('lesson_id')
                 ->toArray();
-            
             $totalLessons = CourseLesson::whereHas('module', function($query) use ($courseId) {
                 $query->where('course_id', $courseId);
-            })->count();
-            
+            })->where('is_preview', false)->count();
             $progressPercentage = $totalLessons > 0 ? (count($completedLessons) / $totalLessons) * 100 : 0;
-            
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -175,7 +173,6 @@ class LessonController extends Controller
                     'progress_percentage' => round($progressPercentage, 2)
                 ]
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -454,12 +451,16 @@ class LessonController extends Controller
      */
     private function calculateCourseProgress($userId, $courseId)
     {
+        // Only count non-preview lessons
         $totalLessons = CourseLesson::whereHas('module', function ($query) use ($courseId) {
             $query->where('course_id', $courseId);
-        })->count();
+        })->where('is_preview', false)->count();
         
         $completedLessons = LessonProgress::where('user_id', $userId)
             ->where('course_id', $courseId)
+            ->whereHas('lesson', function ($query) {
+                $query->where('is_preview', false);
+            })
             ->count();
         
         return $totalLessons > 0 ? ($completedLessons / $totalLessons) * 100 : 0;

@@ -33,6 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { enrollmentService } from '@/services/enrollmentService';
+import { courseManagementService } from '@/services/courseManagementService';
 import { Loader2 } from 'lucide-react';
 import InsufficientFundsModal from '@/components/modals/InsufficientFundsModal';
 import { settingsService } from '@/services/settingsService';
@@ -176,6 +177,32 @@ export default function MyCourses() {
     queryKey: ['settings'],
     queryFn: settingsService.fetchSettings
   });
+
+  // Fetch lesson progress for each course
+  const [courseProgressData, setCourseProgressData] = useState<{[courseId: string]: any}>({});
+
+  // Function to fetch lesson progress for a course
+  const fetchCourseProgress = async (courseId: string) => {
+    try {
+      const progressData = await courseManagementService.getLessonProgress(courseId);
+      setCourseProgressData(prev => ({
+        ...prev,
+        [courseId]: progressData
+      }));
+    } catch (error) {
+      console.error(`Error fetching progress for course ${courseId}:`, error);
+      // Don't show error toast as this is not critical
+    }
+  };
+
+  // Fetch progress for all courses when enrolled courses change
+  useEffect(() => {
+    if (enrolledCourses.length > 0) {
+      enrolledCourses.forEach(course => {
+        fetchCourseProgress(course.course_id);
+      });
+    }
+  }, [enrolledCourses]);
 
   // Fetch user's currency symbol
   useEffect(() => {
@@ -341,15 +368,10 @@ export default function MyCourses() {
                (a.enrolled_at ? new Date(a.enrolled_at).getTime() : 0);
       }
       if (sortBy === "progress") {
-        // console.log('Sorting progress:', {
-        //   'a.course_title': a.course_title, 
-        //   'a.progress': a.progress, 
-        //   'a.paid_amount': a.paid_amount,
-        //   'b.course_title': b.course_title, 
-        //   'b.progress': b.progress, 
-        //   'b.paid_amount': b.paid_amount
-        // });
-        return (b.progress ?? 0) - (a.progress ?? 0);
+        // Use lesson progress data for sorting, fallback to enrollment progress
+        const aProgress = courseProgressData[a.course_id]?.progress_percentage || a.progress || 0;
+        const bProgress = courseProgressData[b.course_id]?.progress_percentage || b.progress || 0;
+        return bProgress - aProgress;
       }
       return 0;
     });
@@ -928,9 +950,14 @@ export default function MyCourses() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Course Progress</span>
-                      <span className="font-medium text-primary">{Math.round(enrollment.progress || 0)}%</span>
+                      <span className="font-medium text-primary">
+                        {Math.round(courseProgressData[enrollment.course_id]?.progress_percentage || enrollment.progress || 0)}%
+                      </span>
                     </div>
-                    <Progress value={enrollment.progress || 0} className="h-2" />
+                    <Progress 
+                      value={courseProgressData[enrollment.course_id]?.progress_percentage || enrollment.progress || 0} 
+                      className="h-2" 
+                    />
                   </div>
 
                   {/* Next Up Section */}

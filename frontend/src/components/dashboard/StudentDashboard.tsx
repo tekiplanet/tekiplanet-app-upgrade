@@ -354,7 +354,7 @@ export default function StudentDashboard() {
                         <>
                           <div className="flex justify-between text-xs">
                             <span className="text-muted-foreground">Progress</span>
-                            <span className="font-medium">{course.progress}%</span>
+                            <span className="font-medium">{Math.round(course.progress)}%</span>
                           </div>
                           <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
                             <motion.div 

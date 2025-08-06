@@ -20,29 +20,36 @@ class StudentDashboardController extends Controller
             $user = Auth::user();
             
             // Get enrollments with course and schedule data
-            $enrollments = Enrollment::with(['course.schedules', 'course.instructor'])
+            $enrollments = Enrollment::with(['course.schedules', 'course.instructor', 'course.modules.lessons'])
                 ->where('user_id', $user->id)
                 ->get();
 
             // Calculate achievements (completed courses)
             $achievements = $enrollments->where('progress', 100)->count();
 
-            // Calculate overall progress
-            $totalProgress = $enrollments->count() > 0
-                ? round($enrollments->avg('progress'))
-                : 0;
+            // Calculate overall progress using correct lesson progress
+            $totalProgress = 0;
+            if ($enrollments->count() > 0) {
+                $totalProgressSum = 0;
+                foreach ($enrollments as $enrollment) {
+                    $progress = $this->calculateCourseProgress($user->id, $enrollment->course_id);
+                    $totalProgressSum += $progress;
+                }
+                $totalProgress = round($totalProgressSum / $enrollments->count());
+            }
 
             // Get courses for the slider
             $coursesForDisplay = $enrollments->count() > 0
-                ? $enrollments->take(2)->map(function ($enrollment) {
+                ? $enrollments->take(2)->map(function ($enrollment) use ($user) {
                     $nextClass = $this->getNextClassSchedule($enrollment->course);
                     $totalLessons = $enrollment->course->modules->sum(function($module) {
-                        return $module->lessons->count();
+                        return $module->lessons->count(); // includes ALL lessons
                     });
+                    $progress = $this->calculateCourseProgress($user->id, $enrollment->course_id);
                     return [
                         'id' => $enrollment->course->id,
                         'title' => $enrollment->course->title,
-                        'progress' => $enrollment->progress,
+                        'progress' => $progress,
                         'nextClass' => $nextClass ? $this->formatNextClass($nextClass) : null,
                         'image' => $enrollment->course->image_url,
                         'instructor' => $enrollment->course->instructor?->full_name ?? 'Unknown Instructor',
@@ -53,7 +60,7 @@ class StudentDashboardController extends Controller
                 : Course::with(['instructor', 'modules.lessons'])->inRandomOrder()->take(5)->get()->map(function ($course) {
                     $nextClass = $this->getNextClassSchedule($course);
                     $totalLessons = $course->modules->sum(function($module) {
-                        return $module->lessons->count();
+                        return $module->lessons->count(); // includes ALL lessons
                     });
                     return [
                         'id' => $course->id,
@@ -133,5 +140,22 @@ class StudentDashboardController extends Controller
         } else {
             return $schedule->start_date->format('M d') . " at " . Carbon::parse($schedule->start_time)->format('g:i A');
         }
+    }
+
+    private function calculateCourseProgress($userId, $courseId)
+    {
+        // Only count non-preview lessons
+        $totalLessons = \App\Models\CourseLesson::whereHas('module', function ($query) use ($courseId) {
+            $query->where('course_id', $courseId);
+        })->where('is_preview', false)->count();
+        
+        $completedLessons = \App\Models\LessonProgress::where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->whereHas('lesson', function ($query) {
+                $query->where('is_preview', false);
+            })
+            ->count();
+        
+        return $totalLessons > 0 ? ($completedLessons / $totalLessons) * 100 : 0;
     }
 } 

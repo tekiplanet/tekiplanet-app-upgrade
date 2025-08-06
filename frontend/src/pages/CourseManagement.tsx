@@ -72,7 +72,6 @@ const CourseManagement: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true);
 
   const [upcomingExamsCount, setUpcomingExamsCount] = React.useState(0);
-  const [lessonProgress, setLessonProgress] = React.useState<any>(null);
 
   // Currency symbol cache
   const [currencySymbol, setCurrencySymbol] = React.useState<string>('$');
@@ -126,45 +125,34 @@ const CourseManagement: React.FC = () => {
     fetchUserCurrencySymbol();
   }, [user?.currency_code]);
 
-  // Fetch lesson progress
-  React.useEffect(() => {
-    const fetchLessonProgress = async () => {
-      if (!courseIdState) return;
-      
-      try {
-        const progressData = await courseManagementService.getLessonProgress(courseIdState);
-        setLessonProgress(progressData);
-      } catch (error) {
-        console.error('Error fetching lesson progress:', error);
-        // Don't show error toast for this as it's not critical
-      }
-    };
+  // Fetch lesson progress using the same approach as LessonPlayer
+  const { 
+    data: progressData, 
+    isLoading: isProgressLoading 
+  } = useQuery({
+    queryKey: ['lesson-progress', courseIdState],
+    queryFn: () => courseManagementService.getLessonProgress(courseIdState!),
+    enabled: !!courseIdState
+  });
 
-    fetchLessonProgress();
-  }, [courseIdState]);
-
-
-    // Function to calculate upcoming exams
-    const calculateUpcomingExams = React.useCallback((exams: any[] = []) => {
-      const now = new Date();
-      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
-      const upcomingExams = exams.filter(exam => {
-        const examDate = new Date(exam.date);
-        
-        // Log details for debugging
-        // console.log('Upcoming Exams Calculation:', {
-        //   examTitle: exam.title,
-        //   examDate: examDate.toISOString(),
-        //   nowDate: nowDate.toISOString(),
-        //   isUpcoming: examDate >= nowDate
-        // });
-        
-        return examDate >= nowDate;
-      });
+  // Get completed lessons from backend data
+  const completedLessons = new Set(progressData?.completed_lessons || []);
   
-      return upcomingExams.length;
-    }, []);
+  // Calculate progress percentage from lesson progress data
+  const progressPercentage = progressData?.progress_percentage || 0;
+
+  // Function to calculate upcoming exams
+  const calculateUpcomingExams = React.useCallback((exams: any[] = []) => {
+    const now = new Date();
+    const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const upcomingExams = exams.filter(exam => {
+      const examDate = new Date(exam.date);
+      return examDate >= nowDate;
+    });
+
+    return upcomingExams.length;
+  }, []);
 
   // Move the state update to useEffect
   React.useEffect(() => {
@@ -345,11 +333,6 @@ const CourseManagement: React.FC = () => {
       : [];
   }, [courseDetails]);
 
-  // Get completed lessons from backend data
-  const completedLessons = React.useMemo(() => {
-    return lessonProgress?.completed_lessons || [];
-  }, [lessonProgress]);
-
   // Get all lessons in the course for access checking
   const allLessons = React.useMemo(() => {
     return sortedModules?.flatMap(module => 
@@ -402,7 +385,7 @@ const CourseManagement: React.FC = () => {
     // For all lessons, check if all previous non-preview lessons in the course are completed
     for (let i = 0; i < lessonIndex; i++) {
       const prevLesson = allLessons[i];
-      if (!prevLesson.is_preview && !completedLessons.includes(prevLesson.id)) {
+      if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
         return false;
       }
     }
@@ -501,7 +484,7 @@ const CourseManagement: React.FC = () => {
                              let blockingLesson = null;
                              for (let i = 0; i < globalIndex; i++) {
                                const prevLesson = allLessons[i];
-                               if (!prevLesson.is_preview && !completedLessons.includes(prevLesson.id)) {
+                               if (!prevLesson.is_preview && !completedLessons.has(prevLesson.id)) {
                                  blockingLesson = prevLesson;
                                  break;
                                }
@@ -623,8 +606,8 @@ const CourseManagement: React.FC = () => {
                     <div>
                       <p className="text-xs text-muted-foreground">Progress</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{enrollment?.progress || 0}%</p>
-                        <Progress value={enrollment?.progress || 0} className="w-24 h-1.5" />
+                        <p className="text-sm font-medium">{Math.round(progressPercentage)}%</p>
+                        <Progress value={progressPercentage} className="w-24 h-1.5" />
                       </div>
                     </div>
                   </div>
