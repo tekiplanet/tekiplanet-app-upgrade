@@ -35,6 +35,7 @@ class User extends Authenticatable
         'avatar',
         'status',
         'wallet_balance',
+        'learn_rewards',
         'dark_mode',
         'email_notifications',
         'push_notifications',

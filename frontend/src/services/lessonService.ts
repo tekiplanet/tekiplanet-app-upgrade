@@ -213,6 +213,8 @@ class LessonService {
     total_points: number;
     percentage: number;
     passed: boolean;
+    learn_rewards_earned?: number;
+    total_learn_rewards?: number;
   }> {
     try {
       const response = await apiClient.post(`/lessons/${lessonId}/quiz/submit`, data);

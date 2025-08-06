@@ -46,6 +46,8 @@ interface QuizAttempt {
   passed: boolean;
   started_at: string;
   completed_at?: string;
+  learn_rewards_earned?: number;
+  total_learn_rewards?: number;
 }
 
 interface QuizResponse {
@@ -110,7 +112,11 @@ export default function QuizPlayer({ lessonId, onComplete }: QuizPlayerProps) {
         setIsSubmitting(false);
         
         if (data.passed) {
-          toast.success('Congratulations! You passed the quiz!');
+          let message = 'Congratulations! You passed the quiz!';
+          if (data.learn_rewards_earned > 0) {
+            message += ` You earned ${data.learn_rewards_earned} learn rewards!`;
+          }
+          toast.success(message);
           if (onComplete) onComplete();
         } else {
           toast.error('You did not pass the quiz. You can retake it to improve your score.');

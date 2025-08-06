@@ -56,6 +56,15 @@
                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
 
+                <!-- Learn Rewards -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Learn Rewards</label>
+                    <input type="number" name="learn_rewards" min="0" step="1"
+                           placeholder="0"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Reward points user will earn for completing this lesson.</p>
+                </div>
+
                 <!-- Order -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Order</label>

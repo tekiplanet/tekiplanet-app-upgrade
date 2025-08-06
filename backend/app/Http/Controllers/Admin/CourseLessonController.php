@@ -30,7 +30,8 @@ class CourseLessonController extends Controller
                 'order' => 'required|integer|min:1',
                 'resource_url' => 'nullable|url',
                 'is_preview' => 'boolean',
-                'pass_percentage' => 'nullable|integer|min:0|max:100'
+                'pass_percentage' => 'nullable|integer|min:0|max:100',
+                'learn_rewards' => 'nullable|integer|min:0'
             ]);
 
             \Log::debug('Validation passed', ['validated_data' => $validated]);
@@ -75,7 +76,8 @@ class CourseLessonController extends Controller
                 'order' => 'required|integer|min:1',
                 'resource_url' => 'nullable|url',
                 'is_preview' => 'boolean',
-                'pass_percentage' => 'nullable|integer|min:0|max:100'
+                'pass_percentage' => 'nullable|integer|min:0|max:100',
+                'learn_rewards' => 'nullable|integer|min:0'
             ]);
 
             $lesson->update($validated);

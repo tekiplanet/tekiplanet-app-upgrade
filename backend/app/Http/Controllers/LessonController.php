@@ -114,6 +114,13 @@ class LessonController extends Controller
                 'completed_at' => now()
             ]);
             
+            // Award learn rewards if the lesson has any
+            $learnRewardsEarned = 0;
+            if ($lesson->learn_rewards > 0) {
+                $user->increment('learn_rewards', $lesson->learn_rewards);
+                $learnRewardsEarned = $lesson->learn_rewards;
+            }
+            
             // Calculate updated progress
             $progressPercentage = $this->calculateCourseProgress($user->id, $course->id);
             
@@ -123,7 +130,9 @@ class LessonController extends Controller
                 'data' => [
                     'lesson_id' => $lessonId,
                     'completed_at' => now()->toISOString(),
-                    'progress_percentage' => $progressPercentage
+                    'progress_percentage' => $progressPercentage,
+                    'learn_rewards_earned' => $learnRewardsEarned,
+                    'total_learn_rewards' => $user->fresh()->learn_rewards
                 ]
             ]);
             
@@ -687,6 +696,13 @@ class LessonController extends Controller
                 'completed_at' => now()
             ]);
             
+            // Award learn rewards if quiz was passed and lesson has rewards
+            $learnRewardsEarned = 0;
+            if ($passed && $lesson->learn_rewards > 0) {
+                $user->increment('learn_rewards', $lesson->learn_rewards);
+                $learnRewardsEarned = $lesson->learn_rewards;
+            }
+            
             return response()->json([
                 'success' => true,
                 'attempt' => $attempt,
@@ -694,7 +710,9 @@ class LessonController extends Controller
                 'score' => $earnedPoints,
                 'total_points' => $totalPoints,
                 'percentage' => $percentage,
-                'passed' => $passed
+                'passed' => $passed,
+                'learn_rewards_earned' => $learnRewardsEarned,
+                'total_learn_rewards' => $user->fresh()->learn_rewards
             ]);
             
         } catch (\Exception $e) {

@@ -527,6 +527,7 @@ function loadLesson(lessonId) {
                 form.order.value = data.lesson.order;
                 form.resource_url.value = data.lesson.resource_url || '';
                 form.is_preview.checked = data.lesson.is_preview;
+                form.learn_rewards.value = data.lesson.learn_rewards || '';
                 
                 // Trigger content type change to show/hide quiz management section
                 handleContentTypeChange();
@@ -557,7 +558,8 @@ function handleLessonSubmit(event) {
         duration_minutes: formData.get('duration_minutes'),
         order: formData.get('order'),
         resource_url: formData.get('resource_url'),
-        is_preview: formData.get('is_preview') === 'on'
+        is_preview: formData.get('is_preview') === 'on',
+        learn_rewards: formData.get('learn_rewards')
     };
     fetch(url, {
         method: method,

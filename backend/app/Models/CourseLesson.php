@@ -20,7 +20,8 @@ class CourseLesson extends Model
         'order',
         'resource_url',
         'is_preview',
-        'pass_percentage'
+        'pass_percentage',
+        'learn_rewards'
     ];
 
     protected static function boot()
