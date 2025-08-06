@@ -654,7 +654,7 @@ export default function LessonPlayer() {
                      {/* Mobile Lesson Navigation - Bottom sheet style */}
            <div className="lg:hidden mt-6">
              <div className="bg-card border rounded-lg p-4">
-               <h3 className="font-semibold mb-3 text-sm">Module Lessons</h3>
+               <h3 className="font-semibold mb-3 text-sm">{`Module ${getModuleNumber(currentModule?.id)} Lessons`}</h3>
                <div className="space-y-2 max-h-48 overflow-y-auto">
                  {currentModuleLessons.map((lesson, moduleIndex) => {
                    // Find the global index of this lesson in allLessons
@@ -706,7 +706,7 @@ export default function LessonPlayer() {
                            <p className={`text-xs font-medium truncate ${
                              lesson.id === currentLesson?.id ? 'text-primary' : ''
                            }`}>
-                             Module {moduleNumber} • {moduleIndex + 1}. {lesson.title}
+                             {moduleIndex + 1}. {lesson.title}
                            </p>
                            <p className="text-xs text-muted-foreground">
                              {lesson.duration_minutes} min • {lesson.content_type}
@@ -727,7 +727,7 @@ export default function LessonPlayer() {
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-card border rounded-lg p-4">
-                <h3 className="font-semibold mb-3">Module Lessons</h3>
+                <h3 className="font-semibold mb-3">{`Module ${getModuleNumber(currentModule?.id)} Lessons`}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   {currentLesson?.moduleTitle || 'Current Module'}
                 </p>
@@ -782,7 +782,7 @@ export default function LessonPlayer() {
                           <p className={`text-sm font-medium truncate ${
                             lesson.id === currentLesson?.id ? 'text-primary' : ''
                           }`}>
-                            Module {moduleNumber} • {moduleIndex + 1}. {lesson.title}
+                            {moduleIndex + 1}. {lesson.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {lesson.duration_minutes} min • {lesson.content_type}
