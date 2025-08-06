@@ -27,10 +27,41 @@ class LessonController extends Controller
                 ->where('course_id', $course->id)
                 ->first();
             
-            if (!$enrollment && !$lesson->is_preview) {
+            // Allow access to preview lessons regardless of enrollment
+            if ($lesson->is_preview) {
+                return response()->json([
+                    'success' => true,
+                    'lesson' => $lesson
+                ]);
+            }
+            
+            // Check if it's the first lesson - allow access even if not enrolled
+            $isFirstLesson = $this->isFirstLesson($course->id, $lesson->id);
+            $isFirstLessonOfModule = $this->isFirstLessonOfModule($course->id, $lesson->id);
+            
+            if ($isFirstLesson || $isFirstLessonOfModule) {
+                return response()->json([
+                    'success' => true,
+                    'lesson' => $lesson
+                ]);
+            }
+            
+            // If not enrolled and not first lesson, deny access
+            if (!$enrollment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You must be enrolled in this course to access this lesson'
+                ], 403);
+            }
+            
+            // Check lesson progression - user can only access lessons in sequence
+            $hasAccess = $this->checkLessonAccess($user->id, $course->id, $lesson);
+            
+            if (!$hasAccess['allowed']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $hasAccess['message'],
+                    'required_lesson' => $hasAccess['required_lesson'] ?? null
                 ], 403);
             }
             
@@ -187,13 +218,16 @@ class LessonController extends Controller
                 ], 403);
             }
             
-            // Get all lessons in the course ordered by module and lesson order
+            // Get all lessons in the course ordered by module order and lesson order
             $allLessons = CourseLesson::whereHas('module', function($query) use ($course) {
                 $query->where('course_id', $course->id);
             })
             ->with(['module'])
-            ->orderBy('order')
-            ->get();
+            ->get()
+            ->sortBy(function ($lesson) {
+                return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+            })
+            ->values();
             
             $currentIndex = -1;
             foreach ($allLessons as $index => $lesson) {
@@ -248,13 +282,16 @@ class LessonController extends Controller
                 ], 403);
             }
             
-            // Get all lessons in the course ordered by module and lesson order
+            // Get all lessons in the course ordered by module order and lesson order
             $allLessons = CourseLesson::whereHas('module', function($query) use ($course) {
                 $query->where('course_id', $course->id);
             })
             ->with(['module'])
-            ->orderBy('order')
-            ->get();
+            ->get()
+            ->sortBy(function ($lesson) {
+                return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+            })
+            ->values();
             
             $currentIndex = -1;
             foreach ($allLessons as $index => $lesson) {
@@ -297,22 +334,62 @@ class LessonController extends Controller
             $lesson = CourseLesson::with(['module.course'])->findOrFail($lessonId);
             $course = $lesson->module->course;
             
+            // Preview lessons are always accessible
+            if ($lesson->is_preview) {
+                return response()->json([
+                    'success' => true,
+                    'has_access' => true,
+                    'reason' => null,
+                    'access_type' => 'preview'
+                ]);
+            }
+            
+            // Check if it's the first lesson of the course or module
+            $isFirstLesson = $this->isFirstLesson($course->id, $lesson->id);
+            $isFirstLessonOfModule = $this->isFirstLessonOfModule($course->id, $lesson->id);
+            
+            if ($isFirstLesson || $isFirstLessonOfModule) {
+                return response()->json([
+                    'success' => true,
+                    'has_access' => true,
+                    'reason' => null,
+                    'access_type' => $isFirstLesson ? 'first_lesson' : 'first_module_lesson'
+                ]);
+            }
+            
             // Check if user is enrolled
             $enrollment = Enrollment::where('user_id', $user->id)
                 ->where('course_id', $course->id)
                 ->first();
             
-            $hasAccess = $enrollment || $lesson->is_preview;
-            $reason = null;
+            // If not enrolled, deny access
+            if (!$enrollment) {
+                return response()->json([
+                    'success' => true,
+                    'has_access' => false,
+                    'reason' => 'You must be enrolled in this course to access this lesson',
+                    'access_type' => 'enrollment_required'
+                ]);
+            }
             
-            if (!$hasAccess) {
-                $reason = 'You must be enrolled in this course to access this lesson';
+            // Check lesson progression
+            $progressionCheck = $this->checkLessonAccess($user->id, $course->id, $lesson);
+            
+            if (!$progressionCheck['allowed']) {
+                return response()->json([
+                    'success' => true,
+                    'has_access' => false,
+                    'reason' => $progressionCheck['message'],
+                    'access_type' => 'progression_blocked',
+                    'required_lesson' => $progressionCheck['required_lesson'] ?? null
+                ]);
             }
             
             return response()->json([
                 'success' => true,
-                'has_access' => $hasAccess,
-                'reason' => $reason
+                'has_access' => true,
+                'reason' => null,
+                'access_type' => 'progression_allowed'
             ]);
             
         } catch (\Exception $e) {
@@ -322,6 +399,104 @@ class LessonController extends Controller
                 'reason' => 'Lesson not found'
             ], 404);
         }
+    }
+
+    /**
+     * Check if user has access to a specific lesson based on progression
+     */
+    private function checkLessonAccess($userId, $courseId, $lesson)
+    {
+        // Get all lessons in the course ordered by module order and lesson order
+        $allLessons = CourseLesson::whereHas('module', function ($query) use ($courseId) {
+            $query->where('course_id', $courseId);
+        })
+        ->with(['module'])
+        ->get()
+        ->sortBy(function ($lesson) {
+            return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+        })
+        ->values();
+
+        // Find the current lesson index
+        $currentLessonIndex = -1;
+        foreach ($allLessons as $index => $l) {
+            if ($l->id === $lesson->id) {
+                $currentLessonIndex = $index;
+                break;
+            }
+        }
+
+        // If lesson not found, deny access
+        if ($currentLessonIndex === -1) {
+            return [
+                'allowed' => false,
+                'message' => 'Lesson not found in course.'
+            ];
+        }
+
+        // If it's the first lesson of the entire course, allow access
+        if ($currentLessonIndex === 0) {
+            return ['allowed' => true];
+        }
+
+        // Check if it's the first lesson of its module
+        $moduleLessons = CourseLesson::where('module_id', $lesson->module_id)
+            ->whereHas('module', function ($query) use ($courseId) {
+                $query->where('course_id', $courseId);
+            })
+            ->with(['module'])
+            ->get()
+            ->sortBy(function ($lesson) {
+                return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+            })
+            ->values();
+
+        $isFirstLessonOfModule = $moduleLessons->count() > 0 && $moduleLessons->first()->id === $lesson->id;
+        
+        if ($isFirstLessonOfModule) {
+            return ['allowed' => true];
+        }
+
+        // Get completed lessons
+        $completedLessonIds = LessonProgress::where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->pluck('lesson_id')
+            ->toArray();
+
+        // Check if all previous lessons in the same module are completed
+        $lessonIndexInModule = -1;
+        foreach ($moduleLessons as $index => $l) {
+            if ($l->id === $lesson->id) {
+                $lessonIndexInModule = $index;
+                break;
+            }
+        }
+
+        if ($lessonIndexInModule > 0) {
+            for ($i = 0; $i < $lessonIndexInModule; $i++) {
+                $previousLesson = $moduleLessons[$i];
+                
+                // Skip preview lessons - they don't block progression
+                if ($previousLesson->is_preview) {
+                    continue;
+                }
+                
+                // If any previous lesson in the module is not completed, deny access
+                if (!in_array($previousLesson->id, $completedLessonIds)) {
+                    return [
+                        'allowed' => false,
+                        'message' => 'You must complete the previous lesson before accessing this one.',
+                        'required_lesson' => [
+                            'id' => $previousLesson->id,
+                            'title' => $previousLesson->title,
+                            'module_title' => $previousLesson->module->title
+                        ]
+                    ];
+                }
+            }
+        }
+
+        return ['allowed' => true];
     }
 
     /**
@@ -672,5 +847,66 @@ class LessonController extends Controller
                 'message' => 'Failed to load quiz attempts'
             ], 500);
         }
+    }
+
+    /**
+     * Helper to check if a lesson is the first lesson in a course.
+     */
+    private function isFirstLesson($courseId, $lessonId)
+    {
+        $allLessons = CourseLesson::whereHas('module', function ($query) use ($courseId) {
+            $query->where('course_id', $courseId);
+        })
+        ->with(['module'])
+        ->get()
+        ->sortBy(function ($lesson) {
+            return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+        })
+        ->values();
+
+        $isFirst = $allLessons->count() > 0 && $allLessons->first()->id === $lessonId;
+        
+        return $isFirst;
+    }
+
+    /**
+     * Helper to check if a lesson is the first lesson of its module.
+     */
+    private function isFirstLessonOfModule($courseId, $lessonId)
+    {
+        $allLessons = CourseLesson::whereHas('module', function ($query) use ($courseId) {
+            $query->where('course_id', $courseId);
+        })
+        ->with(['module'])
+        ->get()
+        ->sortBy(function ($lesson) {
+            return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+        })
+        ->values();
+
+        $currentLesson = null;
+        foreach ($allLessons as $lesson) {
+            if ($lesson->id === $lessonId) {
+                $currentLesson = $lesson;
+                break;
+            }
+        }
+
+        if (!$currentLesson) {
+            return false;
+        }
+
+        $moduleLessons = CourseLesson::where('module_id', $currentLesson->module_id)
+            ->whereHas('module', function ($query) use ($courseId) {
+                $query->where('course_id', $courseId);
+            })
+            ->with(['module'])
+            ->get()
+            ->sortBy(function ($lesson) {
+                return $lesson->module->order . '.' . str_pad($lesson->order, 5, '0', STR_PAD_LEFT);
+            })
+            ->values();
+
+        return $moduleLessons->count() > 0 && $moduleLessons->first()->id === $lessonId;
     }
 } 

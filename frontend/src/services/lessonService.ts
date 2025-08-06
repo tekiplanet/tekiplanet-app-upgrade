@@ -126,6 +126,12 @@ class LessonService {
     success: boolean;
     has_access: boolean;
     reason?: string;
+    access_type?: 'preview' | 'first_lesson' | 'first_module_lesson' | 'enrollment_required' | 'progression_blocked' | 'progression_allowed';
+    required_lesson?: {
+      id: string;
+      title: string;
+      module_title: string;
+    };
   }> {
     try {
       const response = await apiClient.get(`/lessons/${lessonId}/access`);

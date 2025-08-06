@@ -4,7 +4,7 @@ import { apiClient } from "@/lib/api-client";
 import { 
   Clock, Users, Star, BookOpen, ChevronLeft,
   GraduationCap, Calendar, CheckCircle2, PlayCircle,
-  Shield, Award, Globe
+  Shield, Award, Globe, Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import PagePreloader from "@/components/ui/PagePreloader";
 import { formatAmountInUserCurrencySync } from '@/lib/currency';
 import { useState, useEffect } from 'react';
+import { lessonService } from '@/services/lessonService';
 
 interface EnrollmentResponse {
   success: boolean;
@@ -128,6 +129,19 @@ export default function CourseDetails() {
     refetchOnMount: true
   });
 
+  // Fetch lesson progress for accessibility checking
+  const { 
+    data: progressData, 
+    isLoading: isProgressLoading 
+  } = useQuery({
+    queryKey: ['lesson-progress', courseId],
+    queryFn: () => lessonService.getLessonProgress(courseId!),
+    enabled: !!courseId,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
+  });
+
   // Extract course and related data
   const course = courseData?.course;
   const instructor = courseData?.instructor;
@@ -152,6 +166,36 @@ export default function CourseDetails() {
 
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = React.useState(false);
   const [showConfirmEnrollmentModal, setShowConfirmEnrollmentModal] = React.useState(false);
+
+  // Add lesson accessibility check function - simplified to use backend access control
+  const isLessonAccessible = (lesson: any, lessonIndex: number, completedLessons: Set<string>) => {
+    // Preview lessons are always accessible
+    if (lesson.is_preview) return true;
+    
+    // First lesson is always accessible
+    if (lessonIndex === 0) return true;
+    
+    // For other lessons, we'll let the backend handle the access control
+    // This is a simplified check for UI purposes
+    return true;
+  };
+
+  // Get all lessons in the course for accessibility checking
+  const allLessons = curriculum?.flatMap(module => 
+    module.topics?.flatMap(topic => 
+      topic.lessons?.map(lesson => ({ ...lesson, moduleTitle: module.title, moduleId: module.id })) || []
+    ) || []
+  ).sort((a, b) => {
+    // Sort by module order first, then by lesson order
+    const moduleA = curriculum?.find(m => m.id === a.moduleId);
+    const moduleB = curriculum?.find(m => m.id === b.moduleId);
+    
+    if (moduleA?.order !== moduleB?.order) {
+      return (moduleA?.order || 0) - (moduleB?.order || 0);
+    }
+    
+    return a.order - b.order;
+  }) || [];
 
   // Render Curriculum Section
   const renderCurriculum = () => {
@@ -202,28 +246,46 @@ export default function CourseDetails() {
                         
                         {topic.lessons && topic.lessons.length > 0 && (
                           <div className="space-y-2 ml-9">
-                            {topic.lessons.map((lesson, lessonIndex) => (
-                              <div 
-                                key={lesson.id}
-                                className="flex items-center gap-3 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors cursor-pointer"
-                                onClick={() => navigate(`/dashboard/academy/course/${courseId}/lesson/${lesson.id}`)}
-                              >
-                                <div className="flex items-center gap-2 flex-1">
-                                  <PlayCircle className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm">{lesson.title}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="secondary" className="text-xs">
-                                    {lesson.duration || '10'} mins
-                                  </Badge>
-                                  {lesson.is_preview && (
-                                    <Badge variant="outline" className="text-xs">
-                                      Preview
+                            {topic.lessons.map((lesson, lessonIndex) => {
+                              // Find the global index of this lesson in allLessons
+                              const globalIndex = allLessons.findIndex(l => l.id === lesson.id);
+                              const completedLessons = new Set(progressData?.data?.completed_lessons || []);
+                              const isAccessible = isLessonAccessible(lesson, globalIndex, completedLessons);
+                              
+                              return (
+                                <div 
+                                  key={lesson.id}
+                                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                                    isAccessible 
+                                      ? 'bg-background/50 hover:bg-background cursor-pointer' 
+                                      : 'bg-muted/30 opacity-50 cursor-not-allowed'
+                                  }`}
+                                  onClick={() => {
+                                    // Always allow navigation - backend will handle access control
+                                    navigate(`/dashboard/academy/course/${courseId}/lesson/${lesson.id}`);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2 flex-1">
+                                    {isAccessible ? (
+                                      <PlayCircle className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                      <Lock className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                    <span className="text-sm">{lesson.title}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {lesson.duration || '10'} mins
                                     </Badge>
-                                  )}
+                                    {lesson.is_preview && (
+                                      <Badge variant="outline" className="text-xs">
+                                        Preview
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </CardContent>
