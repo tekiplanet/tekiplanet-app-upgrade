@@ -19,6 +19,7 @@ class UserConversionTask extends Model
         'status',
         'assigned_at',
         'completed_at',
+        'referral_count',
     ];
 
     public function user()

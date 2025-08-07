@@ -33,6 +33,35 @@ class AuthController extends Controller
             // 'account_type' => 'student',
         ]);
 
+        // Handle referral registration
+        $referrerId = $request->query('ref');
+        $userTaskId = $request->query('task');
+        if ($referrerId && $userTaskId) {
+            $referralTask = \App\Models\UserConversionTask::where('id', $userTaskId)
+                ->where('user_id', $referrerId)
+                ->with('task')
+                ->first();
+            if ($referralTask && strtolower($referralTask->task->type->name) === 'refer to register') {
+                // Create UserReferral record
+                \App\Models\UserReferral::create([
+                    'referrer_user_id' => $referrerId,
+                    'referred_user_id' => $user->id,
+                    'user_conversion_task_id' => $userTaskId,
+                    'registered_at' => now(),
+                    'status' => 'completed',
+                ]);
+                // Increment referral_count
+                $referralTask->referral_count = ($referralTask->referral_count ?? 0) + 1;
+                // Mark as completed if target met
+                $target = $referralTask->task->referral_target ?? 1;
+                if ($referralTask->referral_count >= $target) {
+                    $referralTask->status = 'completed';
+                    $referralTask->completed_at = now();
+                }
+                $referralTask->save();
+            }
+        }
+
         // Create and send verification code
         $verificationService = app(EmailVerificationService::class);
         $verification = $verificationService->createVerification($user);

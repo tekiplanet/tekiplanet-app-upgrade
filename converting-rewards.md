@@ -117,6 +117,8 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
   - user_conversion_task_id (uuid, foreign key to user_conversion_tasks)
   - registered_at (timestamp)
   - status (string: e.g., pending, completed)
+- [x] Add referral_count to user_conversion_tasks for tracking referral progress
+- [x] Update registration logic to handle referral links: create UserReferral, increment referral_count, and mark task as completed if target is reached
 
 ---
 
@@ -132,7 +134,7 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - **2024-06-08:** Created dedicated tasks page with filtering, sorting, and modern UI design. Modified Rewards & Tasks page to show only 2 recent tasks with "View All Tasks" button.
 - **2024-06-08:** Implemented backend pagination, filtering, and sorting for optimal performance with large datasets. Added pagination controls and per-page selection.
 - **2024-06-09:** Backend models, controllers, and services for conversion tasks, task types, reward types, and user conversion tasks are implemented. Conversion initiation, task assignment, and user task listing are working. Next: actionable instructions, referral link generation, and tracking.
-- **2024-06-10:** Created migration and model for user_referrals table to track referral events for conversion tasks.
+- **2024-06-10:** Registration now processes referral links, creates UserReferral records, increments referral_count, and marks tasks as completed when the referral target is met.
 
 ---
 
