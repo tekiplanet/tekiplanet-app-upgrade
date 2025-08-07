@@ -1,0 +1,146 @@
+-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+--
+-- Host: localhost    Database: tph
+-- ------------------------------------------------------
+-- Server version	10.4.32-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `access_cards`
+--
+
+DROP TABLE IF EXISTS `access_cards`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `access_cards` (
+  `id` char(36) NOT NULL,
+  `subscription_id` char(36) NOT NULL,
+  `card_number` varchar(255) NOT NULL,
+  `valid_date` date NOT NULL,
+  `qr_code` varchar(255) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `access_cards_card_number_unique` (`card_number`),
+  KEY `access_cards_subscription_id_foreign` (`subscription_id`),
+  CONSTRAINT `access_cards_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `workstation_subscriptions` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `access_cards`
+--
+
+LOCK TABLES `access_cards` WRITE;
+/*!40000 ALTER TABLE `access_cards` DISABLE KEYS */;
+/*!40000 ALTER TABLE `access_cards` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `admins`
+--
+
+DROP TABLE IF EXISTS `admins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `admins` (
+  `id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('super_admin','admin','management','tutor','sales','finance') NOT NULL DEFAULT 'admin',
+  `phone` varchar(255) DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `last_login_at` datetime DEFAULT NULL,
+  `last_login_ip` varchar(255) DEFAULT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `admins_email_unique` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `admins`
+--
+
+LOCK TABLES `admins` WRITE;
+/*!40000 ALTER TABLE `admins` DISABLE KEYS */;
+INSERT INTO `admins` VALUES ('9dce97a3-049d-47a5-8e3f-2083fe10966a','Super Admin','admin@tekiplanet.org','$2y$10$xvW8mmAcdklC67N6yIo0ZeonOMHH1VOaq6a3PkHMwfkKOc1SHbAi6','super_admin',NULL,NULL,1,'2024-12-27 08:20:00','192.168.43.190',NULL,'2024-12-25 05:58:49','2024-12-27 08:20:00',NULL),('9dd5b60b-1cd3-4381-819f-5475ac09ed39','Admin User','admin@admin.com','$2y$12$.jds/JNtUEkosOuEbat1OeDUD95dk8nYF3pk0vDZVx3W5w6/XBala','admin','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:37','2024-12-28 18:54:37',NULL),('9dd5b60d-6183-4a8b-8776-b369d7446c46','Tutor User','tutor@admin.com','$2y$12$ymr4bBUe8kzToHr8fpZTL.km4OV8gsxTmzIizz1.VxYCQ/OKlSrai','tutor','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:39','2024-12-28 18:54:39',NULL),('9dd5b60d-f1b2-466a-aac1-c7fd52a1f7d8','Finance User','finance@admin.com','$2y$12$TpwsPYV3APVfAW0P03esE.17x3Vj0IbMPpVULt0irjWnxjbSOuf/C','finance','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:39','2024-12-28 18:54:39',NULL),('9dd5b60e-f072-456e-b9a0-f2bd2bec92ef','Sales User','sales@admin.com','$2y$12$Lg/VYxRmTGX72WxdgzbRH.aWlxKuYAx4WSVlJN2dg8hvlMke/Y7Z.','sales','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:40','2024-12-28 18:54:40',NULL),('9dd5b60f-ba66-4cdc-a958-1a45f70bc930','Management User','management@admin.com','$2y$12$M2cHn7jvCmj8wFxsZJ/RROlwDrzjj7TrE2SqqzOl.jK2Lq2JWK0fa','management','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:40','2024-12-28 18:54:40',NULL);
+/*!40000 ALTER TABLE `admins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `bank_accounts`
+--
+
+DROP TABLE IF EXISTS `bank_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `bank_accounts` (
+  `id` char(36) NOT NULL,
+  `user_id` char(36) NOT NULL,
+  `bank_name` varchar(255) NOT NULL,
+  `bank_code` varchar(255) NOT NULL,
+  `account_number` varchar(255) NOT NULL,
+  `account_name` varchar(255) NOT NULL,
+  `recipient_code` varchar(255) DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `bank_accounts_user_id_account_number_unique` (`user_id`,`account_number`),
+  CONSTRAINT `bank_accounts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `bank_accounts`
+--
+
+LOCK TABLES `bank_accounts` WRITE;
+/*!40000 ALTER TABLE `bank_accounts` DISABLE KEYS */;
+INSERT INTO `bank_accounts` VALUES ('9dcd4761-c1bd-47da-9a58-ac1caa227750','74116e3c-1a91-4b2a-b3b8-cebf23c792e6','Guaranty Trust Bank','058','0590735752','OJABUOMA MIRACLE IYANU','RCP_b7or4fpdq4fn7uw',1,1,'2024-12-24 13:18:34','2024-12-24 13:18:34'),('9de06b58-c5fa-40d4-a3bd-b2882fa8c05e','3e2a1694-4958-4ff0-9d2d-a03031597266','PalmPay','999991','9029445486','RUTH  OMOIGUI','RCP_uy15co43bgcg1t4',1,1,'2025-01-03 02:39:52','2025-01-03 02:39:52');
+/*!40000 ALTER TABLE `bank_accounts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `brands`
+--
+
+DROP TABLE IF EXISTS `brands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `brands` (
+  `id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `brands`
+--
+
+LOCK TABLES `brands` WRITE;
+/*!40000 ALTER TABLE `brands` DISABLE KEYS */;
+INSERT INTO `brands` VALUES ('9dc573fb-8567-4905-a38c-497704f980a4','Apple','2024-12-20 15:56:39','2024-12-20 15:56:39'),('9dc573fb-c685-4460-b83d-eb356dc42347','Dell','2024-12-20 15:56:39','2024-12-20 15:56:39'),('9dc573fb-df86-4a78-a80b-4fbfa5c8eca8','HP','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fc-6747-473f-b59a-80c63ffeca93','Lenovo','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fc-d78d-41f8-98c0-4f0e9008a84c','ASUS','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fd-186c-4988-921a-85011517f0cb','Acer','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fd-439b-4e1a-81c6-250399964f40','MSI','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fd-6208-4791-b526-bb0c7ebed20f','Samsung','2024-12-20 15:56:41','2024-12-20 15:56:41'),('9dd1e337-90be-4067-b51d-6cb331ed5b14','Fitbits','2024-12-26 20:17:37','2024-12-26 20:26:09');
+/*!40000 ALTER TABLE `brands` ENABLE KEYS */;
+UNLOCK TABLES;
