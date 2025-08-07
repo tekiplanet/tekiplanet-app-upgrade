@@ -47,8 +47,9 @@
                             <td class="px-6 py-4">{{ $type->description }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
-                                    <button onclick="openEditModal(@json($type))"
-                                            class="text-blue-600 hover:text-blue-800">
+                                    <button type="button"
+                                            class="text-blue-600 hover:text-blue-800 edit-btn"
+                                            data-type='@json($type)'>
                                         Edit
                                     </button>
                                     <form action="{{ route('admin.conversion-task-types.destroy', $type) }}" method="POST" class="inline">
@@ -98,6 +99,13 @@ function openEditModal(type) {
 function closeModal() {
     document.getElementById('taskTypeModal').classList.add('hidden');
 }
+
+document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var type = JSON.parse(this.getAttribute('data-type'));
+        openEditModal(type);
+    });
+});
 </script>
 @endpush
 @endsection

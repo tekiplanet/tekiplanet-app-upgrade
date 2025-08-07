@@ -98,6 +98,10 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - [x] Create Rewards & Tasks page and add to Learning group in dashboard menu
 - [x] Implement backend endpoint for fetching user tasks (GET /rewards/tasks)
 - [x] Implement user interface for converting rewards and viewing/completing tasks
+- [x] Implement backend service for conversion initiation, task assignment, and user task creation
+- [x] Implement RewardConversionController and RewardConversionService for conversion logic
+- [x] Implement UserConversionTask and ConversionTask models and relationships
+- [x] API endpoints for conversion initiation, user task listing, and debug are available
 - [ ] Implement tracking for each task type:
   - [ ] Referral registration tracking
   - [ ] Course completion tracking
@@ -106,6 +110,13 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - [ ] Implement reward granting logic after task completion
 - [ ] Integrate with wallet, coupon, course access, and discount systems
 - [ ] Testing and QA
+- [x] Create a user_referrals table to track each referral event:
+  - id (uuid, primary)
+  - referrer_user_id (uuid, foreign key to users)
+  - referred_user_id (uuid, foreign key to users)
+  - user_conversion_task_id (uuid, foreign key to user_conversion_tasks)
+  - registered_at (timestamp)
+  - status (string: e.g., pending, completed)
 
 ---
 
@@ -120,6 +131,8 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - **2024-06-08:** Added confirmation dialog for reward conversion and improved error messages for better user experience.
 - **2024-06-08:** Created dedicated tasks page with filtering, sorting, and modern UI design. Modified Rewards & Tasks page to show only 2 recent tasks with "View All Tasks" button.
 - **2024-06-08:** Implemented backend pagination, filtering, and sorting for optimal performance with large datasets. Added pagination controls and per-page selection.
+- **2024-06-09:** Backend models, controllers, and services for conversion tasks, task types, reward types, and user conversion tasks are implemented. Conversion initiation, task assignment, and user task listing are working. Next: actionable instructions, referral link generation, and tracking.
+- **2024-06-10:** Created migration and model for user_referrals table to track referral events for conversion tasks.
 
 ---
 

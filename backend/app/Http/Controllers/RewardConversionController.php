@@ -143,6 +143,46 @@ class RewardConversionController extends Controller
     }
 
     /**
+     * Get actionable instructions and referral link for a user conversion task.
+     */
+    public function getTaskInstructions($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+            ->where('user_id', $user->id)
+            ->with('task')
+            ->firstOrFail();
+
+        $task = $userTask->task;
+        $instructions = '';
+        $referralLink = null;
+        $progress = null;
+
+        // Example: Only for referral registration tasks
+        if ($task && strtolower($task->type->name) === 'refer to register') {
+            $instructions = 'Share your referral link. When someone registers using your link, it will count towards your task.';
+            $referralLink = $userTask->getReferralLink();
+            $target = $task->referral_target ?? 1;
+            $progress = [
+                'needed' => $target,
+                'completed' => $userTask->referral_count ?? 0,
+            ];
+        } else {
+            $instructions = 'Complete the assigned task as described.';
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'instructions' => $instructions,
+                'referral_link' => $referralLink,
+                'progress' => $progress,
+                'task' => $task,
+            ]
+        ]);
+    }
+
+    /**
      * Debug method to check user's learning rewards and available tasks.
      */
     public function debug(): JsonResponse

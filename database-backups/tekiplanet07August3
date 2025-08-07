@@ -1,0 +1,498 @@
+-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+--
+-- Host: localhost    Database: tph
+-- ------------------------------------------------------
+-- Server version	10.4.32-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `access_cards`
+--
+
+DROP TABLE IF EXISTS `access_cards`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `access_cards` (
+  `id` char(36) NOT NULL,
+  `subscription_id` char(36) NOT NULL,
+  `card_number` varchar(255) NOT NULL,
+  `valid_date` date NOT NULL,
+  `qr_code` varchar(255) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `access_cards_card_number_unique` (`card_number`),
+  KEY `access_cards_subscription_id_foreign` (`subscription_id`),
+  CONSTRAINT `access_cards_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `workstation_subscriptions` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `access_cards`
+--
+
+LOCK TABLES `access_cards` WRITE;
+/*!40000 ALTER TABLE `access_cards` DISABLE KEYS */;
+/*!40000 ALTER TABLE `access_cards` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `admins`
+--
+
+DROP TABLE IF EXISTS `admins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `admins` (
+  `id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('super_admin','admin','management','tutor','sales','finance') NOT NULL DEFAULT 'admin',
+  `phone` varchar(255) DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `last_login_at` datetime DEFAULT NULL,
+  `last_login_ip` varchar(255) DEFAULT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `admins_email_unique` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `admins`
+--
+
+LOCK TABLES `admins` WRITE;
+/*!40000 ALTER TABLE `admins` DISABLE KEYS */;
+INSERT INTO `admins` VALUES ('9dce97a3-049d-47a5-8e3f-2083fe10966a','Super Admin','admin@tekiplanet.org','$2y$10$xvW8mmAcdklC67N6yIo0ZeonOMHH1VOaq6a3PkHMwfkKOc1SHbAi6','super_admin',NULL,NULL,1,'2024-12-27 08:20:00','192.168.43.190',NULL,'2024-12-25 05:58:49','2024-12-27 08:20:00',NULL),('9dd5b60b-1cd3-4381-819f-5475ac09ed39','Admin User','admin@admin.com','$2y$12$.jds/JNtUEkosOuEbat1OeDUD95dk8nYF3pk0vDZVx3W5w6/XBala','admin','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:37','2024-12-28 18:54:37',NULL),('9dd5b60d-6183-4a8b-8776-b369d7446c46','Tutor User','tutor@admin.com','$2y$12$ymr4bBUe8kzToHr8fpZTL.km4OV8gsxTmzIizz1.VxYCQ/OKlSrai','tutor','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:39','2024-12-28 18:54:39',NULL),('9dd5b60d-f1b2-466a-aac1-c7fd52a1f7d8','Finance User','finance@admin.com','$2y$12$TpwsPYV3APVfAW0P03esE.17x3Vj0IbMPpVULt0irjWnxjbSOuf/C','finance','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:39','2024-12-28 18:54:39',NULL),('9dd5b60e-f072-456e-b9a0-f2bd2bec92ef','Sales User','sales@admin.com','$2y$12$Lg/VYxRmTGX72WxdgzbRH.aWlxKuYAx4WSVlJN2dg8hvlMke/Y7Z.','sales','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:40','2024-12-28 18:54:40',NULL),('9dd5b60f-ba66-4cdc-a958-1a45f70bc930','Management User','management@admin.com','$2y$12$M2cHn7jvCmj8wFxsZJ/RROlwDrzjj7TrE2SqqzOl.jK2Lq2JWK0fa','management','1234567890',NULL,1,NULL,NULL,NULL,'2024-12-28 18:54:40','2024-12-28 18:54:40',NULL);
+/*!40000 ALTER TABLE `admins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `bank_accounts`
+--
+
+DROP TABLE IF EXISTS `bank_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `bank_accounts` (
+  `id` char(36) NOT NULL,
+  `user_id` char(36) NOT NULL,
+  `bank_name` varchar(255) NOT NULL,
+  `bank_code` varchar(255) NOT NULL,
+  `account_number` varchar(255) NOT NULL,
+  `account_name` varchar(255) NOT NULL,
+  `recipient_code` varchar(255) DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `bank_accounts_user_id_account_number_unique` (`user_id`,`account_number`),
+  CONSTRAINT `bank_accounts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `bank_accounts`
+--
+
+LOCK TABLES `bank_accounts` WRITE;
+/*!40000 ALTER TABLE `bank_accounts` DISABLE KEYS */;
+INSERT INTO `bank_accounts` VALUES ('9dcd4761-c1bd-47da-9a58-ac1caa227750','74116e3c-1a91-4b2a-b3b8-cebf23c792e6','Guaranty Trust Bank','058','0590735752','OJABUOMA MIRACLE IYANU','RCP_b7or4fpdq4fn7uw',1,1,'2024-12-24 13:18:34','2024-12-24 13:18:34'),('9de06b58-c5fa-40d4-a3bd-b2882fa8c05e','3e2a1694-4958-4ff0-9d2d-a03031597266','PalmPay','999991','9029445486','RUTH  OMOIGUI','RCP_uy15co43bgcg1t4',1,1,'2025-01-03 02:39:52','2025-01-03 02:39:52');
+/*!40000 ALTER TABLE `bank_accounts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `brands`
+--
+
+DROP TABLE IF EXISTS `brands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `brands` (
+  `id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `brands`
+--
+
+LOCK TABLES `brands` WRITE;
+/*!40000 ALTER TABLE `brands` DISABLE KEYS */;
+INSERT INTO `brands` VALUES ('9dc573fb-8567-4905-a38c-497704f980a4','Apple','2024-12-20 15:56:39','2024-12-20 15:56:39'),('9dc573fb-c685-4460-b83d-eb356dc42347','Dell','2024-12-20 15:56:39','2024-12-20 15:56:39'),('9dc573fb-df86-4a78-a80b-4fbfa5c8eca8','HP','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fc-6747-473f-b59a-80c63ffeca93','Lenovo','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fc-d78d-41f8-98c0-4f0e9008a84c','ASUS','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fd-186c-4988-921a-85011517f0cb','Acer','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fd-439b-4e1a-81c6-250399964f40','MSI','2024-12-20 15:56:40','2024-12-20 15:56:40'),('9dc573fd-6208-4791-b526-bb0c7ebed20f','Samsung','2024-12-20 15:56:41','2024-12-20 15:56:41'),('9dd1e337-90be-4067-b51d-6cb331ed5b14','Fitbits','2024-12-26 20:17:37','2024-12-26 20:26:09');
+/*!40000 ALTER TABLE `brands` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_customers`
+--
+
+DROP TABLE IF EXISTS `business_customers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_customers` (
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `business_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `state` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tags` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `currency` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'NGN',
+  `status` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_customers_business_id_foreign` (`business_id`),
+  CONSTRAINT `business_customers_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_customers`
+--
+
+LOCK TABLES `business_customers` WRITE;
+/*!40000 ALTER TABLE `business_customers` DISABLE KEYS */;
+INSERT INTO `business_customers` VALUES ('9dc72e8d-ac4c-4dab-99d1-00df2627e5a7','9dc64756-192e-41d8-91cc-26b502eb8a07','Victor Ayeri','mojabuoma@gmail.com','081982665288','20 Cooper Sq','Benin','Omusati Region','NA','[\"VIP\"]','Add a new customer to your business profile.','KES','active','2024-12-21 12:34:10','2024-12-21 12:34:10'),('9dc73066-f87e-4272-b04e-6e41ebedaf30','9dc64756-192e-41d8-91cc-26b502eb8a07','Amaka Juliet','amaklex@gmail.com','0819826652','20 Cooper Sq','New York','Northland Region','NZ','[\"vip\"]','Add a new customer to your business profile.','EUR','active','2024-12-21 12:39:21','2024-12-21 12:39:21'),('9dc8eba5-1834-4fe9-8003-5bc71cd2a350','9dc64756-192e-41d8-91cc-26b502eb8a07','Ebere Ominigho','omonigho4526@gmail.com','0719826652780','20 Oyedele Road',NULL,NULL,NULL,'[\"VIP\",\"Wholesale\"]',NULL,'NGN','active','2024-12-22 09:18:45','2024-12-22 09:18:45'),('9dcd85fd-b5da-40dd-a310-a5c48e05fed0','9dcd80ee-4c54-42ac-b29d-1674bc222082','Maihi Ben','maiben@gmail.com','18148579496','F11 basement complex','Panjāb','Baghlan','AF','[\"VIP\",\"International\"]','VIP customer','KES','active','2024-12-24 16:13:38','2024-12-24 17:32:51'),('9dcd94eb-9ba3-4b74-8b8f-3735ab7e913e','9dcd80ee-4c54-42ac-b29d-1674bc222082','Precious Eweka','eweka@gmail.com','0819826652','Police station road, Abraka.','Abraka','Akwa Ibom','NG','[\"International\"]',NULL,'GBP','active','2024-12-24 16:55:23','2024-12-24 16:55:23');
+/*!40000 ALTER TABLE `business_customers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_financial_categories`
+--
+
+DROP TABLE IF EXISTS `business_financial_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_financial_categories` (
+  `id` char(36) NOT NULL,
+  `business_id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` enum('income','expense') NOT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_financial_categories_business_id_foreign` (`business_id`),
+  CONSTRAINT `business_financial_categories_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_financial_categories`
+--
+
+LOCK TABLES `business_financial_categories` WRITE;
+/*!40000 ALTER TABLE `business_financial_categories` DISABLE KEYS */;
+/*!40000 ALTER TABLE `business_financial_categories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_financial_transactions`
+--
+
+DROP TABLE IF EXISTS `business_financial_transactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_financial_transactions` (
+  `id` char(36) NOT NULL,
+  `business_id` char(36) NOT NULL,
+  `category_id` char(36) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `type` enum('income','expense') NOT NULL,
+  `description` text DEFAULT NULL,
+  `date` date NOT NULL,
+  `reference_number` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_financial_transactions_business_id_foreign` (`business_id`),
+  KEY `business_financial_transactions_category_id_foreign` (`category_id`),
+  CONSTRAINT `business_financial_transactions_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `business_financial_transactions_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `business_financial_categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_financial_transactions`
+--
+
+LOCK TABLES `business_financial_transactions` WRITE;
+/*!40000 ALTER TABLE `business_financial_transactions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `business_financial_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_goals`
+--
+
+DROP TABLE IF EXISTS `business_goals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_goals` (
+  `id` char(36) NOT NULL,
+  `business_id` char(36) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `target_amount` decimal(15,2) NOT NULL,
+  `current_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `status` enum('in_progress','achieved','failed') NOT NULL DEFAULT 'in_progress',
+  `notification_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_goals_business_id_foreign` (`business_id`),
+  CONSTRAINT `business_goals_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_goals`
+--
+
+LOCK TABLES `business_goals` WRITE;
+/*!40000 ALTER TABLE `business_goals` DISABLE KEYS */;
+/*!40000 ALTER TABLE `business_goals` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_inventory_categories`
+--
+
+DROP TABLE IF EXISTS `business_inventory_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_inventory_categories` (
+  `id` char(36) NOT NULL,
+  `business_id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_inventory_categories_business_id_foreign` (`business_id`),
+  CONSTRAINT `business_inventory_categories_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_inventory_categories`
+--
+
+LOCK TABLES `business_inventory_categories` WRITE;
+/*!40000 ALTER TABLE `business_inventory_categories` DISABLE KEYS */;
+/*!40000 ALTER TABLE `business_inventory_categories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_inventory_items`
+--
+
+DROP TABLE IF EXISTS `business_inventory_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_inventory_items` (
+  `id` char(36) NOT NULL,
+  `business_id` char(36) NOT NULL,
+  `category_id` char(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `sku` varchar(255) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 0,
+  `low_stock_threshold` int(11) NOT NULL,
+  `cost_price` decimal(15,2) NOT NULL,
+  `selling_price` decimal(15,2) NOT NULL,
+  `status` enum('active','discontinued') NOT NULL DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `business_inventory_items_sku_unique` (`sku`),
+  KEY `business_inventory_items_business_id_foreign` (`business_id`),
+  KEY `business_inventory_items_category_id_foreign` (`category_id`),
+  CONSTRAINT `business_inventory_items_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `business_inventory_items_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `business_inventory_categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_inventory_items`
+--
+
+LOCK TABLES `business_inventory_items` WRITE;
+/*!40000 ALTER TABLE `business_inventory_items` DISABLE KEYS */;
+/*!40000 ALTER TABLE `business_inventory_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_invoice_items`
+--
+
+DROP TABLE IF EXISTS `business_invoice_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_invoice_items` (
+  `id` char(36) NOT NULL,
+  `invoice_id` char(36) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `unit_price` decimal(15,2) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_invoice_items_invoice_id_foreign` (`invoice_id`),
+  CONSTRAINT `business_invoice_items_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `business_invoices` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_invoice_items`
+--
+
+LOCK TABLES `business_invoice_items` WRITE;
+/*!40000 ALTER TABLE `business_invoice_items` DISABLE KEYS */;
+INSERT INTO `business_invoice_items` VALUES ('9dcdbca6-9a62-4687-a529-33c6fc524291','9dcdbca6-98d3-4a97-872c-de7701e95785','Lenovo laptop',1,8000.00,8000.00,'2024-12-24 18:46:28','2024-12-24 18:46:28'),('9dcdc05a-accc-4db6-acbe-73e88048a0d7','9dcdc05a-a6e7-4daa-b0ea-cf5939007fe6','Powerstation',1,890000.00,890000.00,'2024-12-24 18:56:50','2024-12-24 18:56:50');
+/*!40000 ALTER TABLE `business_invoice_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_invoice_payments`
+--
+
+DROP TABLE IF EXISTS `business_invoice_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_invoice_payments` (
+  `id` char(36) NOT NULL,
+  `invoice_id` char(36) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `converted_amount` decimal(60,2) NOT NULL DEFAULT 0.00,
+  `currency` varchar(3) NOT NULL DEFAULT 'NGN',
+  `payment_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_invoice_payments_invoice_id_foreign` (`invoice_id`),
+  CONSTRAINT `business_invoice_payments_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `business_invoices` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_invoice_payments`
+--
+
+LOCK TABLES `business_invoice_payments` WRITE;
+/*!40000 ALTER TABLE `business_invoice_payments` DISABLE KEYS */;
+INSERT INTO `business_invoice_payments` VALUES ('9dcdbe3d-ae53-494f-a031-15d2e176a009','9dcdbca6-98d3-4a97-872c-de7701e95785',1000.00,1942409.70,'GBP','2024-12-24 19:50:56',NULL,'2024-12-24 18:50:55','2024-12-24 18:50:56'),('9dcdbe90-7c41-40b2-bf9f-5db7cd599b16','9dcdbca6-98d3-4a97-872c-de7701e95785',7000.00,13596867.90,'GBP','2024-12-24 19:51:50',NULL,'2024-12-24 18:51:49','2024-12-24 18:51:50'),('9dcdc085-0e8c-478f-8259-d18693ae9c93','9dcdc05a-a6e7-4daa-b0ea-cf5939007fe6',1000.00,11976.40,'KES','2024-12-24 19:57:18',NULL,'2024-12-24 18:57:18','2024-12-24 18:57:18'),('9dcdc7de-0348-46d9-836d-254017380780','9dcdc05a-a6e7-4daa-b0ea-cf5939007fe6',5790.00,69343.36,'KES','2024-12-24 20:17:51',NULL,'2024-12-24 19:17:50','2024-12-24 19:17:51'),('9dcdc8a1-7e4d-4e4a-8c3f-2cef1ba71998','9dcdc05a-a6e7-4daa-b0ea-cf5939007fe6',3210.00,38444.24,'KES','2024-12-24 20:19:59',NULL,'2024-12-24 19:19:58','2024-12-24 19:19:59'),('9dd93fa1-4240-42f4-8d3a-0b1740193f25','9dcdc05a-a6e7-4daa-b0ea-cf5939007fe6',69000.00,826482.00,'KES','2024-12-30 13:06:52','Second payment','2024-12-30 12:06:49','2024-12-30 12:06:52');
+/*!40000 ALTER TABLE `business_invoice_payments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_invoices`
+--
+
+DROP TABLE IF EXISTS `business_invoices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_invoices` (
+  `id` char(36) NOT NULL,
+  `business_id` char(36) NOT NULL,
+  `customer_id` char(36) NOT NULL,
+  `invoice_number` varchar(255) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'NGN',
+  `paid_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `due_date` date NOT NULL,
+  `status` enum('draft','pending','sent','partially_paid','paid','overdue','cancelled') NOT NULL DEFAULT 'draft',
+  `payment_reminder_sent` tinyint(1) NOT NULL DEFAULT 0,
+  `theme_color` varchar(255) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `business_invoices_invoice_number_unique` (`invoice_number`),
+  KEY `business_invoices_business_id_foreign` (`business_id`),
+  KEY `business_invoices_customer_id_foreign` (`customer_id`),
+  CONSTRAINT `business_invoices_business_id_foreign` FOREIGN KEY (`business_id`) REFERENCES `business_profiles` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `business_invoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `business_customers` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_invoices`
+--
+
+LOCK TABLES `business_invoices` WRITE;
+/*!40000 ALTER TABLE `business_invoices` DISABLE KEYS */;
+INSERT INTO `business_invoices` VALUES ('9dcdbca6-98d3-4a97-872c-de7701e95785','9dcd80ee-4c54-42ac-b29d-1674bc222082','9dcd94eb-9ba3-4b74-8b8f-3735ab7e913e','INV-069588398',8000.00,'GBP',8000.00,'2024-12-24','paid',0,'#0000FF',NULL,'2024-12-24 18:46:28','2024-12-24 18:51:50'),('9dcdc05a-a6e7-4daa-b0ea-cf5939007fe6','9dcd80ee-4c54-42ac-b29d-1674bc222082','9dcd85fd-b5da-40dd-a310-a5c48e05fed0','INV-070209855',890000.00,'KES',79000.00,'2024-12-27','partially_paid',0,'#000000',NULL,'2024-12-24 18:56:50','2024-12-30 12:06:49');
+/*!40000 ALTER TABLE `business_invoices` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `business_profiles`
+--
+
+DROP TABLE IF EXISTS `business_profiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `business_profiles` (
+  `id` char(36) NOT NULL,
+  `user_id` char(36) NOT NULL,
+  `business_name` varchar(255) NOT NULL,
+  `business_email` varchar(255) NOT NULL,
+  `phone_number` varchar(255) NOT NULL,
+  `address` text NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `state` varchar(255) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `business_type` varchar(255) NOT NULL,
+  `registration_number` varchar(255) DEFAULT NULL,
+  `tax_number` varchar(255) DEFAULT NULL,
+  `logo` varchar(255) DEFAULT NULL,
+  `website` varchar(255) DEFAULT NULL,
+  `description` text NOT NULL,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `verified_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `business_profiles_user_id_foreign` (`user_id`),
+  CONSTRAINT `business_profiles_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `business_profiles`
+--
+

@@ -30,4 +30,14 @@ class UserConversionTask extends Model
     {
         return $this->belongsTo(ConversionTask::class, 'conversion_task_id');
     }
+
+    /**
+     * Generate a unique referral link for this user conversion task.
+     */
+    public function getReferralLink()
+    {
+        // You may want to use route() if you have a named route for registration
+        $baseUrl = config('app.url', 'https://yourdomain.com');
+        return $baseUrl . '/register?ref=' . $this->user_id . '&task=' . $this->id;
+    }
 }
