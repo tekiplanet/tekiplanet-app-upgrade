@@ -86,8 +86,8 @@ class RewardConversionController extends Controller
 
             // Get paginated results
             $userTasks = $query->with(['task' => function($query) {
-                $query->select('id', 'title', 'description', 'task_type_id', 'reward_type_id', 'min_points', 'max_points');
-            }])->paginate($perPage, ['*'], 'page', $page);
+                $query->select('id', 'title', 'description', 'task_type_id', 'reward_type_id', 'min_points', 'max_points', 'product_id', 'coupon_id', 'course_id', 'cash_amount', 'discount_percent', 'service_name');
+            }, 'task.type', 'task.rewardType', 'task.product', 'task.coupon', 'task.course'])->paginate($perPage, ['*'], 'page', $page);
 
             // Get total counts for stats
             $totalTasks = UserConversionTask::where('user_id', $user->id)->count();
@@ -178,6 +178,96 @@ class RewardConversionController extends Controller
                 'referral_link' => $referralLink,
                 'progress' => $progress,
                 'task' => $task,
+            ]
+        ]);
+    }
+
+    /**
+     * Get reward details for a completed user conversion task.
+     */
+    public function getTaskReward($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+            ->where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->with(['task.type', 'task.rewardType', 'task.product', 'task.coupon', 'task.course'])
+            ->firstOrFail();
+
+        $task = $userTask->task;
+        $rewardDetails = [];
+
+        // Debug logging
+        Log::info('Task reward debug', [
+            'task_id' => $task->id,
+            'reward_type' => $task->rewardType ? $task->rewardType->name : 'null',
+            'coupon_id' => $task->coupon_id,
+            'coupon_loaded' => $task->coupon ? 'yes' : 'no',
+            'coupon_data' => $task->coupon ? $task->coupon->toArray() : 'null'
+        ]);
+
+        // Build reward details based on reward type
+        if ($task->rewardType) {
+            $rewardType = strtolower($task->rewardType->name);
+            
+            switch ($rewardType) {
+                case 'cash':
+                    $rewardDetails = [
+                        'type' => 'cash',
+                        'amount' => $task->cash_amount,
+                        'currency' => 'NGN', // You might want to make this dynamic
+                        'description' => "₦{$task->cash_amount} added to your wallet"
+                    ];
+                    break;
+                    
+                case 'coupon':
+                    if ($task->coupon) {
+                        $rewardDetails = [
+                            'type' => 'coupon',
+                            'coupon' => $task->coupon,
+                            'description' => "Coupon: {$task->coupon->code}"
+                        ];
+                    } else {
+                        $rewardDetails = [
+                            'type' => 'coupon',
+                            'coupon' => null,
+                            'description' => "Coupon reward (code not yet assigned)"
+                        ];
+                    }
+                    break;
+                    
+                case 'course access':
+                    $rewardDetails = [
+                        'type' => 'course_access',
+                        'course' => $task->course,
+                        'description' => $task->course ? "Free access to: {$task->course->title}" : "Course access"
+                    ];
+                    break;
+                    
+                case 'discount code':
+                    $rewardDetails = [
+                        'type' => 'discount_code',
+                        'percentage' => $task->discount_percent,
+                        'service' => $task->service_name,
+                        'description' => "{$task->discount_percent}% discount on {$task->service_name}"
+                    ];
+                    break;
+                    
+                default:
+                    $rewardDetails = [
+                        'type' => 'unknown',
+                        'description' => 'Reward details not available'
+                    ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'task' => $task,
+                'reward_details' => $rewardDetails,
+                'completed_at' => $userTask->completed_at,
+                'user_task' => $userTask
             ]
         ]);
     }

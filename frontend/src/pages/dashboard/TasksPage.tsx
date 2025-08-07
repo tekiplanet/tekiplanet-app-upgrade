@@ -36,6 +36,9 @@ export default function TasksPage() {
   const [activeTask, setActiveTask] = useState<any>(null);
   const [taskInstructions, setTaskInstructions] = useState<any>(null);
   const [loadingInstructions, setLoadingInstructions] = useState(false);
+  const [showRewardDialog, setShowRewardDialog] = useState(false);
+  const [taskReward, setTaskReward] = useState<any>(null);
+  const [loadingReward, setLoadingReward] = useState(false);
 
   // Fetch user tasks with pagination and filtering
   const { data, isLoading, refetch } = useQuery({
@@ -118,6 +121,21 @@ export default function TasksPage() {
     if (taskInstructions?.referral_link) {
       navigator.clipboard.writeText(taskInstructions.referral_link);
       toast.success('Referral link copied!');
+    }
+  };
+
+  const handleViewReward = async (task: any) => {
+    setActiveTask(task);
+    setShowRewardDialog(true);
+    setLoadingReward(true);
+    try {
+      const reward = await rewardService.getTaskReward(task.id);
+      setTaskReward(reward);
+    } catch (e) {
+      toast.error('Failed to load reward details.');
+      setTaskReward(null);
+    } finally {
+      setLoadingReward(false);
     }
   };
 
@@ -409,6 +427,16 @@ export default function TasksPage() {
                             Start Task
                           </Button>
                         )}
+                        {task.status === 'completed' && (
+                          <Button 
+                            size="sm" 
+                            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                            onClick={() => handleViewReward(task)}
+                          >
+                            <Award className="h-4 w-4 mr-2" />
+                            View Reward
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -474,6 +502,91 @@ export default function TasksPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowTaskDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Task Reward Dialog */}
+      <Dialog open={showRewardDialog} onOpenChange={setShowRewardDialog}>
+        <DialogContent className="max-w-lg w-full">
+          <DialogTitle>Task Reward</DialogTitle>
+          {loadingReward ? (
+            <div className="py-8 flex justify-center items-center">
+              <span className="text-muted-foreground">Loading reward details...</span>
+            </div>
+          ) : taskReward ? (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                  <Award className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-green-600">Congratulations!</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You've successfully completed this task
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="p-4 bg-muted/30 rounded-lg">
+                  <h4 className="font-medium mb-2">Your Reward</h4>
+                  <p className="text-lg font-semibold text-green-600">
+                    {taskReward.reward_details?.description || 'Reward details not available'}
+                  </p>
+                </div>
+                
+                {taskReward.reward_details?.type === 'coupon' && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                    <h4 className="font-medium mb-2">Coupon Code</h4>
+                    {taskReward.reward_details?.coupon ? (
+                      <div className="flex gap-2 items-center">
+                        <code className="flex-1 bg-white dark:bg-gray-800 px-3 py-2 rounded border text-sm font-mono">
+                          {taskReward.reward_details.coupon.code}
+                        </code>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            navigator.clipboard.writeText(taskReward.reward_details.coupon.code);
+                            toast.success('Coupon code copied!');
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        <p>Your coupon code will be assigned soon. Please check back later or contact support.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {taskReward.reward_details?.type === 'course_access' && taskReward.reward_details?.course && (
+                  <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                    <h4 className="font-medium mb-2">Course Access</h4>
+                    <p className="text-sm text-muted-foreground">
+                      You now have free access to this course
+                    </p>
+                    <Button 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => navigate(`/courses/${taskReward.reward_details.course.id}`)}
+                    >
+                      View Course
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-xs text-muted-foreground text-center">
+                Completed on {new Date(taskReward.completed_at).toLocaleDateString()}
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-destructive">Failed to load reward details.</div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRewardDialog(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -26,7 +26,10 @@ class ConversionTaskController extends Controller
     {
         $taskTypes = ConversionTaskType::all();
         $rewardTypes = ConversionRewardType::all();
-        return view('admin.conversion-tasks.create', compact('taskTypes', 'rewardTypes'));
+        $products = \App\Models\Product::all(['id', 'name']);
+        $coupons = \App\Models\Coupon::all(['id', 'code']);
+        $courses = \App\Models\Course::all(['id', 'title']);
+        return view('admin.conversion-tasks.create', compact('taskTypes', 'rewardTypes', 'products', 'coupons', 'courses'));
     }
 
     public function store(Request $request)
@@ -39,9 +42,16 @@ class ConversionTaskController extends Controller
             'max_points' => 'required|integer|min:0|gte:min_points',
             'reward_type_id' => 'required|exists:conversion_reward_types,id',
             'referral_target' => 'nullable|integer|min:1',
+            // Reward-specific fields
+            'product_id' => 'nullable|exists:products,id',
+            'coupon_id' => 'nullable|exists:coupons,id',
+            'course_id' => 'nullable|exists:courses,id',
+            'cash_amount' => 'nullable|numeric|min:0',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'service_name' => 'nullable|string|max:255',
         ]);
+        
         $task = ConversionTask::create($validated);
-        // Optionally handle rewards creation here
         return redirect()->route('admin.conversion-tasks.index')->with('success', 'Task created successfully.');
     }
 
@@ -49,8 +59,11 @@ class ConversionTaskController extends Controller
     {
         $taskTypes = ConversionTaskType::all();
         $rewardTypes = ConversionRewardType::all();
+        $products = \App\Models\Product::all(['id', 'name']);
+        $coupons = \App\Models\Coupon::all(['id', 'code']);
+        $courses = \App\Models\Course::all(['id', 'title']);
         $conversionTask->load('rewards');
-        return view('admin.conversion-tasks.edit', compact('conversionTask', 'taskTypes', 'rewardTypes'));
+        return view('admin.conversion-tasks.edit', compact('conversionTask', 'taskTypes', 'rewardTypes', 'products', 'coupons', 'courses'));
     }
 
     public function update(Request $request, ConversionTask $conversionTask)
@@ -63,9 +76,16 @@ class ConversionTaskController extends Controller
             'max_points' => 'required|integer|min:0|gte:min_points',
             'reward_type_id' => 'required|exists:conversion_reward_types,id',
             'referral_target' => 'nullable|integer|min:1',
+            // Reward-specific fields
+            'product_id' => 'nullable|exists:products,id',
+            'coupon_id' => 'nullable|exists:coupons,id',
+            'course_id' => 'nullable|exists:courses,id',
+            'cash_amount' => 'nullable|numeric|min:0',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'service_name' => 'nullable|string|max:255',
         ]);
+        
         $conversionTask->update($validated);
-        // Optionally handle rewards update here
         return redirect()->route('admin.conversion-tasks.index')->with('success', 'Task updated successfully.');
     }
 

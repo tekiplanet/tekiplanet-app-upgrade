@@ -592,4 +592,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rewards/tasks', [\App\Http\Controllers\RewardConversionController::class, 'getUserTasks']);
     Route::get('/rewards/debug', [\App\Http\Controllers\RewardConversionController::class, 'debug']);
     Route::get('/rewards/tasks/{user_conversion_task_id}/instructions', [\App\Http\Controllers\RewardConversionController::class, 'getTaskInstructions']);
+    Route::get('/rewards/tasks/{user_conversion_task_id}/reward', [\App\Http\Controllers\RewardConversionController::class, 'getTaskReward']);
 });
