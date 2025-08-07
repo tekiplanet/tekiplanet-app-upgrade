@@ -514,6 +514,258 @@ class RewardConversionController extends Controller
     }
 
     /**
+     * Claim discount reward for a completed user conversion task.
+     */
+    public function claimDiscountReward($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        
+        try {
+            $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+                ->where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->with(['task.type', 'task.rewardType'])
+                ->firstOrFail();
+
+            $task = $userTask->task;
+            
+            // Verify this is a discount code reward
+            if (!$task->rewardType || strtolower($task->rewardType->name) !== 'discount code') {
+                throw new \Exception('This task does not have a discount code reward.');
+            }
+
+            // Check if the task reward has already been claimed
+            if ($userTask->claimed) {
+                // Get the existing discount slip
+                $discountSlip = \App\Models\DiscountSlip::where('user_conversion_task_id', $userTask->id)->first();
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This reward has already been claimed.',
+                    'data' => [
+                        'already_claimed' => true,
+                        'claimed_at' => $userTask->claimed_at,
+                        'discount_slip' => $discountSlip
+                    ]
+                ], 400);
+            }
+
+            // Validate required fields
+            if (!$task->discount_percent || !$task->service_name) {
+                throw new \Exception('Discount reward configuration is incomplete.');
+            }
+
+            // Create discount slip
+            $discountSlip = \App\Models\DiscountSlip::createForTask(
+                $userTask,
+                $task->service_name,
+                $task->discount_percent
+            );
+
+            // Mark the task as claimed
+            $userTask->update([
+                'claimed' => true,
+                'claimed_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Discount reward claimed successfully! Your discount slip has been generated.',
+                'data' => [
+                    'discount_slip' => $discountSlip,
+                    'task' => $task
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Discount reward claim failed', [
+                'user_id' => $user->id,
+                'user_conversion_task_id' => $userConversionTaskId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Get discount slip details for a claimed discount reward.
+     */
+    public function getDiscountSlip($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        
+        try {
+            $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+                ->where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->where('claimed', true)
+                ->with(['task.type', 'task.rewardType'])
+                ->firstOrFail();
+
+            $task = $userTask->task;
+            
+            // Verify this is a discount code reward
+            if (!$task->rewardType || strtolower($task->rewardType->name) !== 'discount code') {
+                throw new \Exception('This task does not have a discount code reward.');
+            }
+
+            // Get the discount slip
+            $discountSlip = \App\Models\DiscountSlip::where('user_conversion_task_id', $userTask->id)->first();
+            
+            if (!$discountSlip) {
+                throw new \Exception('Discount slip not found for this task.');
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'discount_slip' => $discountSlip,
+                    'task' => $task,
+                    'user_task' => $userTask
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get discount slip failed', [
+                'user_id' => $user->id,
+                'user_conversion_task_id' => $userConversionTaskId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Download discount slip as PDF.
+     */
+    public function downloadDiscountSlip($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        
+        try {
+            $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+                ->where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->where('claimed', true)
+                ->with(['task.type', 'task.rewardType'])
+                ->firstOrFail();
+
+            $task = $userTask->task;
+            
+            // Verify this is a discount code reward
+            if (!$task->rewardType || strtolower($task->rewardType->name) !== 'discount code') {
+                throw new \Exception('This task does not have a discount code reward.');
+            }
+
+            // Get the discount slip
+            $discountSlip = \App\Models\DiscountSlip::where('user_conversion_task_id', $userTask->id)->first();
+            
+            if (!$discountSlip) {
+                throw new \Exception('Discount slip not found for this task.');
+            }
+
+            // Generate PDF content (this is a simplified version - you might want to use a proper PDF library)
+            $pdfContent = $this->generateDiscountSlipPDF($discountSlip, $user, $task);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'pdf_content' => base64_encode($pdfContent),
+                    'filename' => "discount_slip_{$discountSlip->discount_code}.pdf",
+                    'discount_slip' => $discountSlip
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Download discount slip failed', [
+                'user_id' => $user->id,
+                'user_conversion_task_id' => $userConversionTaskId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Generate PDF content for discount slip.
+     */
+    private function generateDiscountSlipPDF($discountSlip, $user, $task): string
+    {
+        // This is a simplified HTML-based PDF generation
+        // In a real implementation, you might want to use a proper PDF library like Dompdf or TCPDF
+        
+        $html = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>Discount Slip</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                .discount-code { font-size: 24px; font-weight: bold; color: #2563eb; text-align: center; margin: 20px 0; }
+                .details { margin: 20px 0; }
+                .detail-row { margin: 10px 0; }
+                .label { font-weight: bold; }
+                .terms { margin-top: 30px; padding: 15px; background-color: #f3f4f6; border-radius: 5px; }
+                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class='header'>
+                <h1>Discount Slip</h1>
+                <p>TekPlanet Learning Platform</p>
+            </div>
+            
+            <div class='discount-code'>
+                {$discountSlip->discount_code}
+            </div>
+            
+            <div class='details'>
+                <div class='detail-row'>
+                    <span class='label'>Service:</span> {$discountSlip->service_name}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Discount:</span> {$discountSlip->discount_percent}%
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Valid Until:</span> {$discountSlip->expires_at->format('F j, Y')}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Issued To:</span> {$user->name}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Issued On:</span> {$discountSlip->created_at->format('F j, Y')}
+                </div>
+            </div>
+            
+            <div class='terms'>
+                <h3>Terms & Conditions</h3>
+                <p>{$discountSlip->terms_conditions}</p>
+            </div>
+            
+            <div class='footer'>
+                <p>This discount slip is valid for one-time use only.</p>
+                <p>Generated on {$discountSlip->created_at->format('F j, Y \a\t g:i A')}</p>
+            </div>
+        </body>
+        </html>";
+
+        // For now, return the HTML content
+        // In a real implementation, you would convert this to PDF using a library
+        return $html;
+    }
+
+    /**
      * Debug method to check user's learning rewards and available tasks.
      */
     public function debug(): JsonResponse

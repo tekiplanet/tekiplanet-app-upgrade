@@ -65,6 +65,33 @@ export const rewardService = {
       throw error;
     }
   },
+  claimDiscountReward: async (userConversionTaskId: string) => {
+    try {
+      const response = await apiClient.post(`/rewards/tasks/${userConversionTaskId}/claim-discount`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('claimDiscountReward error:', error);
+      throw error;
+    }
+  },
+  getDiscountSlip: async (userConversionTaskId: string) => {
+    try {
+      const response = await apiClient.get(`/rewards/tasks/${userConversionTaskId}/discount-slip`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('getDiscountSlip error:', error);
+      throw error;
+    }
+  },
+  downloadDiscountSlip: async (userConversionTaskId: string) => {
+    try {
+      const response = await apiClient.get(`/rewards/tasks/${userConversionTaskId}/download-discount-slip`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('downloadDiscountSlip error:', error);
+      throw error;
+    }
+  },
   debug: async () => {
     try {
       const response = await apiClient.get('/rewards/debug');

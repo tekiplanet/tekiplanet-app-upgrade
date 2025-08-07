@@ -595,4 +595,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/rewards/tasks/{user_conversion_task_id}/reward', [\App\Http\Controllers\RewardConversionController::class, 'getTaskReward']);
     Route::post('/rewards/tasks/{user_conversion_task_id}/claim-course-access', [\App\Http\Controllers\RewardConversionController::class, 'claimCourseAccess']);
     Route::post('/rewards/tasks/{user_conversion_task_id}/claim-cash', [\App\Http\Controllers\RewardConversionController::class, 'claimCashReward']);
+    Route::post('/rewards/tasks/{user_conversion_task_id}/claim-discount', [\App\Http\Controllers\RewardConversionController::class, 'claimDiscountReward']);
+    Route::get('/rewards/tasks/{user_conversion_task_id}/discount-slip', [\App\Http\Controllers\RewardConversionController::class, 'getDiscountSlip']);
+    Route::get('/rewards/tasks/{user_conversion_task_id}/download-discount-slip', [\App\Http\Controllers\RewardConversionController::class, 'downloadDiscountSlip']);
 });

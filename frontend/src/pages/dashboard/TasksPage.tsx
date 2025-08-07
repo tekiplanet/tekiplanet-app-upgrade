@@ -44,6 +44,7 @@ export default function TasksPage() {
   const [loadingReward, setLoadingReward] = useState(false);
   const [claimingCourseAccess, setClaimingCourseAccess] = useState(false);
   const [claimingCashReward, setClaimingCashReward] = useState(false);
+  const [claimingDiscountReward, setClaimingDiscountReward] = useState(false);
   const [currencySymbol, setCurrencySymbol] = useState<string>('₦');
 
   // Fetch user currency symbol
@@ -859,6 +860,141 @@ export default function TasksPage() {
                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                </svg>
                                Claim Cash Reward
+                             </>
+                           )}
+                         </Button>
+                       )}
+                     </div>
+                   </div>
+                 )}
+
+                 {taskReward.reward_details?.type === 'discount_code' && (
+                   <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                     <h4 className="font-medium mb-2">Discount Reward</h4>
+                     <div className="space-y-3">
+                       <div className="text-sm">
+                         <p className="font-medium text-blue-700 dark:text-blue-300">
+                           {taskReward.reward_details.percentage}% discount on {taskReward.reward_details.service}
+                         </p>
+                         <p className="text-muted-foreground mt-1">
+                           Generate a discount slip that you can use for {taskReward.reward_details.service} services!
+                         </p>
+                       </div>
+                       
+                       {taskReward.claimed ? (
+                         <div className="space-y-3">
+                           <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                             <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                               <CheckCircle className="h-4 w-4" />
+                               <span className="text-sm font-medium">Reward Claimed</span>
+                             </div>
+                             <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                               Claimed on {taskReward.claimed_at ? new Date(taskReward.claimed_at).toLocaleDateString() : 'Unknown date'}
+                             </p>
+                           </div>
+                           
+                           {/* Show discount slip details if available */}
+                           {taskReward.discount_slip && (
+                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                               <div className="space-y-2">
+                                 <div className="flex items-center justify-between">
+                                   <span className="text-sm font-medium">Discount Code:</span>
+                                   <span className="text-sm font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                     {taskReward.discount_slip.discount_code}
+                                   </span>
+                                 </div>
+                                 <div className="flex items-center justify-between">
+                                   <span className="text-sm">Service:</span>
+                                   <span className="text-sm">{taskReward.discount_slip.service_name}</span>
+                                 </div>
+                                 <div className="flex items-center justify-between">
+                                   <span className="text-sm">Discount:</span>
+                                   <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                     {taskReward.discount_slip.discount_percent}%
+                                   </span>
+                                 </div>
+                                 <div className="flex items-center justify-between">
+                                   <span className="text-sm">Valid Until:</span>
+                                   <span className="text-sm">
+                                     {new Date(taskReward.discount_slip.expires_at).toLocaleDateString()}
+                                   </span>
+                                 </div>
+                               </div>
+                               
+                               <Button 
+                                 size="sm" 
+                                 variant="outline"
+                                 className="w-full mt-3"
+                                 onClick={async () => {
+                                   try {
+                                     const result = await rewardService.downloadDiscountSlip(activeTask.id);
+                                     // Create a blob from the base64 PDF content
+                                     const pdfBlob = new Blob([Uint8Array.from(atob(result.pdf_content), c => c.charCodeAt(0))], { type: 'application/pdf' });
+                                     const url = URL.createObjectURL(pdfBlob);
+                                     const link = document.createElement('a');
+                                     link.href = url;
+                                     link.download = result.filename || 'discount_slip.pdf';
+                                     document.body.appendChild(link);
+                                     link.click();
+                                     document.body.removeChild(link);
+                                     URL.revokeObjectURL(url);
+                                     toast.success('Discount slip downloaded successfully!');
+                                   } catch (error: any) {
+                                     toast.error('Failed to download discount slip.');
+                                   }
+                                 }}
+                               >
+                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                                 Download Slip
+                               </Button>
+                             </div>
+                           )}
+                         </div>
+                       ) : (
+                         <Button 
+                           size="sm" 
+                           className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+                           disabled={claimingDiscountReward}
+                           onClick={async () => {
+                             try {
+                               setClaimingDiscountReward(true);
+                               const result = await rewardService.claimDiscountReward(activeTask.id);
+                               toast.success('Discount reward claimed successfully! Your discount slip has been generated.');
+                               setShowRewardDialog(false);
+                               // Refresh the reward details to show the discount slip
+                               const updatedReward = await rewardService.getTaskReward(activeTask.id);
+                               setTaskReward(updatedReward);
+                               setShowRewardDialog(true);
+                             } catch (error: any) {
+                               // Check if it's an axios error with response data
+                               if (error.response?.data?.data?.already_claimed) {
+                                 // Reward already claimed
+                                 toast.info('This reward has already been claimed.');
+                                 setShowRewardDialog(false);
+                               } else if (error.response?.data?.message) {
+                                 // Show the specific error message from the backend
+                                 toast.error(error.response.data.message);
+                               } else {
+                                 toast.error(error.message || 'Failed to claim discount reward.');
+                               }
+                             } finally {
+                               setClaimingDiscountReward(false);
+                             }
+                           }}
+                         >
+                           {claimingDiscountReward ? (
+                             <>
+                               <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                               Generating Slip...
+                             </>
+                           ) : (
+                             <>
+                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                               </svg>
+                               Generate Discount Slip
                              </>
                            )}
                          </Button>
