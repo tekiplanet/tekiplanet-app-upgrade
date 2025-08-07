@@ -21,6 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 export default function TasksPage() {
   const navigate = useNavigate();
@@ -29,6 +32,10 @@ export default function TasksPage() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [activeTask, setActiveTask] = useState<any>(null);
+  const [taskInstructions, setTaskInstructions] = useState<any>(null);
+  const [loadingInstructions, setLoadingInstructions] = useState(false);
 
   // Fetch user tasks with pagination and filtering
   const { data, isLoading, refetch } = useQuery({
@@ -90,6 +97,28 @@ export default function TasksPage() {
   const handlePerPageChange = (newPerPage: string) => {
     setPerPage(parseInt(newPerPage));
     setCurrentPage(1); // Reset to first page when changing per page
+  };
+
+  const handleStartTask = async (task: any) => {
+    setActiveTask(task);
+    setShowTaskDialog(true);
+    setLoadingInstructions(true);
+    try {
+      const instructions = await rewardService.getTaskInstructions(task.id);
+      setTaskInstructions(instructions);
+    } catch (e) {
+      toast.error('Failed to load task instructions.');
+      setTaskInstructions(null);
+    } finally {
+      setLoadingInstructions(false);
+    }
+  };
+
+  const handleCopyReferralLink = () => {
+    if (taskInstructions?.referral_link) {
+      navigator.clipboard.writeText(taskInstructions.referral_link);
+      toast.success('Referral link copied!');
+    }
   };
 
   // Generate pagination buttons
@@ -374,6 +403,7 @@ export default function TasksPage() {
                           <Button 
                             size="sm" 
                             className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                            onClick={() => handleStartTask(task)}
                           >
                             <PlayCircle className="h-4 w-4 mr-2" />
                             Start Task
@@ -404,6 +434,49 @@ export default function TasksPage() {
           </>
         )}
       </div>
+      {/* Task Instructions Dialog */}
+      <Dialog open={showTaskDialog} onOpenChange={setShowTaskDialog}>
+        <DialogContent className="max-w-lg w-full">
+          <DialogTitle>Task Instructions</DialogTitle>
+          {loadingInstructions ? (
+            <div className="py-8 flex justify-center items-center">
+              <span className="text-muted-foreground">Loading...</span>
+            </div>
+          ) : taskInstructions ? (
+            <div className="space-y-4">
+              <DialogDescription>
+                {taskInstructions.instructions}
+              </DialogDescription>
+              {taskInstructions.referral_link && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Your Referral Link</label>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={taskInstructions.referral_link}
+                      readOnly
+                      className="flex-1 bg-muted/30 text-xs sm:text-sm"
+                      onFocus={e => e.target.select()}
+                    />
+                    <Button size="icon" variant="outline" onClick={handleCopyReferralLink}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h8m-2 8v2a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
+                    </Button>
+                  </div>
+                  {taskInstructions.progress && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} referrals
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-destructive">Failed to load instructions.</div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTaskDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,11 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RegisterForm, RegisterFormData } from "@/components/auth/RegisterForm";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Parse URL parameters from the full URL to handle hash routing
+  const fullUrl = window.location.href;
+  const url = new URL(fullUrl);
+  const ref = url.searchParams.get('ref');
+  const task = url.searchParams.get('task');
+
+  // Debug logging
+  console.log('🔗 URL Debug:', {
+    fullUrl: window.location.href,
+    search: location.search,
+    ref,
+    task,
+    hasRef: !!ref,
+    hasTask: !!task
+  });
+
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const requiresVerification = useAuthStore((state) => state.requiresVerification);
   const register = useAuthStore((state) => state.register);
@@ -20,7 +38,8 @@ const Register: React.FC = () => {
   const handleRegister = async (data: RegisterFormData) => {
     try {
       console.log('🚀 Starting registration...');
-      const response = await register(data);
+      // Pass referral params to register function
+      const response = await register({ ...data, ref, task });
       console.log('✅ Registration response:', response);
 
       if (response.requires_verification) {

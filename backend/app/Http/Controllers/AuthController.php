@@ -36,12 +36,34 @@ class AuthController extends Controller
         // Handle referral registration
         $referrerId = $request->query('ref');
         $userTaskId = $request->query('task');
+        
+        Log::info('Referral registration attempt', [
+            'referrerId' => $referrerId,
+            'userTaskId' => $userTaskId,
+            'hasRef' => !empty($referrerId),
+            'hasTask' => !empty($userTaskId),
+            'newUserId' => $user->id
+        ]);
+        
         if ($referrerId && $userTaskId) {
             $referralTask = \App\Models\UserConversionTask::where('id', $userTaskId)
                 ->where('user_id', $referrerId)
-                ->with('task')
+                ->with(['task.type'])
                 ->first();
+                
+            Log::info('Referral task lookup result', [
+                'referralTaskFound' => $referralTask ? true : false,
+                'taskType' => $referralTask?->task?->type?->name ?? 'null',
+                'taskTypeCheck' => $referralTask && strtolower($referralTask->task->type->name) === 'refer to register'
+            ]);
+            
             if ($referralTask && strtolower($referralTask->task->type->name) === 'refer to register') {
+                Log::info('Creating referral record', [
+                    'referrerId' => $referrerId,
+                    'referredUserId' => $user->id,
+                    'userTaskId' => $userTaskId
+                ]);
+                
                 // Create UserReferral record
                 \App\Models\UserReferral::create([
                     'referrer_user_id' => $referrerId,
@@ -50,16 +72,38 @@ class AuthController extends Controller
                     'registered_at' => now(),
                     'status' => 'completed',
                 ]);
+                
                 // Increment referral_count
                 $referralTask->referral_count = ($referralTask->referral_count ?? 0) + 1;
+                
+                Log::info('Updated referral count', [
+                    'newCount' => $referralTask->referral_count,
+                    'target' => $referralTask->task->referral_target ?? 1
+                ]);
+                
                 // Mark as completed if target met
                 $target = $referralTask->task->referral_target ?? 1;
                 if ($referralTask->referral_count >= $target) {
                     $referralTask->status = 'completed';
                     $referralTask->completed_at = now();
+                    Log::info('Referral task completed', [
+                        'taskId' => $userTaskId,
+                        'referrerId' => $referrerId
+                    ]);
                 }
                 $referralTask->save();
+            } else {
+                Log::warning('Referral conditions not met', [
+                    'referralTaskExists' => $referralTask ? true : false,
+                    'taskType' => $referralTask?->task?->type?->name ?? 'null',
+                    'expectedType' => 'refer to register'
+                ]);
             }
+        } else {
+            Log::info('No referral parameters provided', [
+                'referrerId' => $referrerId,
+                'userTaskId' => $userTaskId
+            ]);
         }
 
         // Create and send verification code

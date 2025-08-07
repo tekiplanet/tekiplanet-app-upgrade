@@ -37,8 +37,8 @@ class UserConversionTask extends Model
      */
     public function getReferralLink()
     {
-        // You may want to use route() if you have a named route for registration
-        $baseUrl = config('app.url', 'https://yourdomain.com');
+        // Use the frontend URL for referral links
+        $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
         return $baseUrl . '/register?ref=' . $this->user_id . '&task=' . $this->id;
     }
 }

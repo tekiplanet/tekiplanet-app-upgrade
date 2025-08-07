@@ -29,6 +29,15 @@ export const rewardService = {
       throw error;
     }
   },
+  getTaskInstructions: async (userConversionTaskId: string) => {
+    try {
+      const response = await apiClient.get(`/rewards/tasks/${userConversionTaskId}/instructions`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('getTaskInstructions error:', error);
+      throw error;
+    }
+  },
   debug: async () => {
     try {
       const response = await apiClient.get('/rewards/debug');

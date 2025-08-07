@@ -95,15 +95,19 @@ export const authService = {
     }
   },
 
-  async register(data: RegisterData) {
+  async register(data: RegisterData & { ref?: string; task?: string }) {
     try {
+      const params: any = {};
+      if (data.ref) params.ref = data.ref;
+      if (data.task) params.task = data.task;
+
       // Register directly without CSRF token since it's a public API endpoint
       const response = await apiClient.post('/register', {
         username: data.username,
         email: data.email,
         password: data.password,
         password_confirmation: data.password_confirmation,
-      }, { withCredentials: true });
+      }, { params, withCredentials: true });
 
       return response.data;
     } catch (error: any) {
