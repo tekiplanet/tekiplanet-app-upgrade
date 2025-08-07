@@ -14,19 +14,29 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function RewardsTasksPage() {
   const queryClient = useQueryClient();
   const [isConverting, setIsConverting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Fetch user tasks and rewards
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['rewards-tasks'],
     queryFn: rewardService.getUserTasks,
+    retry: 2
   });
 
-  const tasks = data?.tasks || [];
-  const learnRewards = data?.learn_rewards ?? 0;
+  const tasks = (data as any)?.tasks || [];
+  const learnRewards = (data as any)?.learn_rewards ?? 0;
 
   // Calculate stats
   const stats = {
@@ -40,16 +50,32 @@ export default function RewardsTasksPage() {
   const mutation = useMutation({
     mutationFn: rewardService.initiateConversion,
     onSuccess: (res) => {
-      toast.success(res.message || 'Task assigned!');
+      toast.success('Task assigned successfully!');
       queryClient.invalidateQueries({ queryKey: ['rewards-tasks'] });
+      setShowConfirmDialog(false);
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Conversion failed');
+      let errorMessage = err?.response?.data?.message || err?.message || 'Conversion failed';
+      
+      // Improve error messages for better user experience
+      if (errorMessage.includes('No eligible conversion tasks')) {
+        errorMessage = 'No eligible tasks available right now. Try again later or continue earning more learning rewards!';
+      } else if (errorMessage.includes('Insufficient learning rewards')) {
+        errorMessage = 'You need more learning rewards to convert. Continue learning to earn more points!';
+      }
+      
+      toast.error(errorMessage);
+      console.error('Conversion error:', err);
+      setShowConfirmDialog(false);
     },
     onSettled: () => setIsConverting(false),
   });
 
   const handleConvert = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmConversion = () => {
     setIsConverting(true);
     mutation.mutate();
   };
@@ -101,7 +127,7 @@ export default function RewardsTasksPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative mb-6"
+        className="relative mb-4 sm:mb-6"
       >
         <Card className={cn(
           "relative overflow-hidden border-none bg-gradient-to-br backdrop-blur-xl",
@@ -110,27 +136,27 @@ export default function RewardsTasksPage() {
           "from-purple-500/10 via-purple-500/5 to-transparent",
           "dark:from-purple-500/20 dark:via-purple-500/10 dark:to-transparent"
         )}>
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-6">
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {/* Header */}
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1 sm:space-y-2">
                   <motion.h1 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="text-3xl font-bold flex items-center gap-3"
+                    className="text-lg sm:text-3xl font-bold flex items-center gap-2 sm:gap-3"
                   >
-                    <div className="p-2 rounded-xl bg-purple-500/20">
-                      <Gift className="h-6 w-6 text-purple-500" />
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-purple-500/20">
+                      <Gift className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />
                     </div>
-                    Rewards & Tasks
+                    <span className="truncate">Rewards & Tasks</span>
                   </motion.h1>
                   <motion.p 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="text-muted-foreground"
+                    className="text-xs sm:text-base text-muted-foreground"
                   >
                     Convert your learning rewards into amazing benefits
                   </motion.p>
@@ -139,9 +165,9 @@ export default function RewardsTasksPage() {
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="hidden sm:flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20"
+                  className="hidden sm:flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20"
                 >
-                  <Sparkles className="h-8 w-8 text-purple-500" />
+                  <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
                 </motion.div>
               </div>
 
@@ -387,6 +413,66 @@ export default function RewardsTasksPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <Gift className="h-5 w-5 text-purple-500" />
+              </div>
+              Confirm Conversion
+            </DialogTitle>
+            <DialogDescription>
+              <div className="space-y-3">
+                <p>
+                  Are you sure you want to convert your <span className="font-semibold text-blue-600">{learnRewards.toLocaleString('en-US')}</span> learning rewards into a task?
+                </p>
+                <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      This action will deduct points from your balance and assign you a task to complete. The points cannot be refunded.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={isConverting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirmConversion} 
+              disabled={isConverting}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            >
+              {isConverting ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin h-4 w-4" />
+                  Converting...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Convert Rewards
+                </div>
+              )}
+            </Button>
+          </DialogFooter>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

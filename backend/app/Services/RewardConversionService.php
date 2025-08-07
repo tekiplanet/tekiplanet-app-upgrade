@@ -31,7 +31,7 @@ class RewardConversionService
                 ->get();
 
             if ($eligibleTasks->isEmpty()) {
-                throw new Exception('No eligible conversion tasks available for your points.');
+                throw new Exception('No eligible conversion tasks available for your points. Try again later or continue earning more learning rewards!');
             }
 
             // Select a random task
@@ -39,7 +39,7 @@ class RewardConversionService
 
             // Deduct points (use min_points for deduction)
             if ($user->learn_rewards < $task->min_points) {
-                throw new Exception('Insufficient learning rewards for this conversion.');
+                throw new Exception('Insufficient learning rewards for this conversion. You need at least ' . $task->min_points . ' points to convert.');
             }
             $user->learn_rewards -= $task->min_points;
             $user->save();
