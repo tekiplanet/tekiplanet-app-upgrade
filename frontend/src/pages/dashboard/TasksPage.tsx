@@ -46,6 +46,7 @@ export default function TasksPage() {
   const [claimingCourseAccess, setClaimingCourseAccess] = useState(false);
   const [claimingCashReward, setClaimingCashReward] = useState(false);
   const [claimingDiscountReward, setClaimingDiscountReward] = useState(false);
+  const [downloadingSlip, setDownloadingSlip] = useState(false);
   const [currencySymbol, setCurrencySymbol] = useState<string>('₦');
 
   // Fetch user currency symbol
@@ -915,19 +916,39 @@ export default function TasksPage() {
                                    </span>
                                  </div>
                                  <div className="flex items-center justify-between">
+                                   <span className="text-sm">Status:</span>
+                                   <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                     taskReward.discount_slip.is_used 
+                                       ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' 
+                                       : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                   }`}>
+                                     {taskReward.discount_slip.is_used ? 'Used' : 'Active'}
+                                   </span>
+                                 </div>
+                                 <div className="flex items-center justify-between">
                                    <span className="text-sm">Valid Until:</span>
                                    <span className="text-sm">
                                      {new Date(taskReward.discount_slip.expires_at).toLocaleDateString()}
                                    </span>
                                  </div>
+                                 {taskReward.discount_slip.is_used && taskReward.discount_slip.used_at && (
+                                   <div className="flex items-center justify-between">
+                                     <span className="text-sm">Used On:</span>
+                                     <span className="text-sm text-gray-600 dark:text-gray-400">
+                                       {new Date(taskReward.discount_slip.used_at).toLocaleDateString()}
+                                     </span>
+                                   </div>
+                                 )}
                                </div>
                                
                                <Button 
                                  size="sm" 
                                  variant="outline"
                                  className="w-full mt-3"
+                                 disabled={downloadingSlip}
                                  onClick={async () => {
                                    try {
+                                     setDownloadingSlip(true);
                                      const result = await rewardService.downloadDiscountSlip(activeTask.id);
                                      
                                      // Check if we're in a Capacitor environment (mobile)
@@ -963,13 +984,24 @@ export default function TasksPage() {
                                    } catch (error: any) {
                                      console.error('Download error:', error);
                                      toast.error('Failed to download discount slip.');
+                                   } finally {
+                                     setDownloadingSlip(false);
                                    }
                                  }}
                                >
-                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                 </svg>
-                                 Download Slip
+                                 {downloadingSlip ? (
+                                   <>
+                                     <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                     Downloading...
+                                   </>
+                                 ) : (
+                                   <>
+                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                     </svg>
+                                     Download Slip
+                                   </>
+                                 )}
                                </Button>
                              </div>
                            )}

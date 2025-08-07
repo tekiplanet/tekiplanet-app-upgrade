@@ -145,31 +145,24 @@
     <div class="mt-6 bg-white rounded-lg shadow-md dark:bg-gray-800 p-6">
         <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Actions</h3>
         
-        <div class="flex flex-wrap gap-3">
-            <form action="{{ route('admin.discount-slips.toggle-used', $discountSlip) }}" method="POST" class="inline">
-                @csrf
-                @method('PATCH')
-                <button type="submit" 
-                        class="px-4 py-2 {{ $discountSlip->is_used ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} text-white rounded-lg">
-                    {{ $discountSlip->is_used ? 'Mark as Unused' : 'Mark as Used' }}
-                </button>
-            </form>
-            
-            <button onclick="openExtendModal()" 
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                Extend Expiration
-            </button>
-            
-            <form action="{{ route('admin.discount-slips.destroy', $discountSlip) }}" method="POST" class="inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                        onclick="return confirm('Are you sure you want to delete this discount slip?')">
-                    Delete
-                </button>
-            </form>
-        </div>
+                 <div class="flex flex-wrap gap-3">
+             <button type="button" 
+                     onclick="toggleUsedStatus('{{ $discountSlip->id }}', '{{ $discountSlip->is_used ? 'unused' : 'used' }}')" 
+                     class="px-4 py-2 {{ $discountSlip->is_used ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} text-white rounded-lg">
+                 {{ $discountSlip->is_used ? 'Mark as Unused' : 'Mark as Used' }}
+             </button>
+             
+             <button onclick="openExtendModal()" 
+                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                 Extend Expiration
+             </button>
+             
+             <button type="button" 
+                     onclick="deleteDiscountSlip('{{ $discountSlip->id }}')" 
+                     class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                 Delete
+             </button>
+         </div>
     </div>
 </div>
 
@@ -200,6 +193,17 @@
     </div>
 </div>
 
+<!-- Hidden Forms for Actions -->
+<form id="toggleUsedForm" method="POST" style="display: none;">
+    @csrf
+    @method('PATCH')
+</form>
+
+<form id="deleteForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 @push('scripts')
 <script>
 function openExtendModal() {
@@ -208,6 +212,46 @@ function openExtendModal() {
 
 function closeExtendModal() {
     document.getElementById('extendModal').classList.add('hidden');
+}
+
+function toggleUsedStatus(slipId, action) {
+    const status = action === 'used' ? 'mark as used' : 'mark as unused';
+    
+    Swal.fire({
+        title: 'Confirm Action',
+        text: `Are you sure you want to ${status} this discount slip?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, proceed!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('toggleUsedForm');
+            form.action = `/admin/discount-slips/${slipId}/toggle-used`;
+            form.submit();
+        }
+    });
+}
+
+function deleteDiscountSlip(slipId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this! This discount slip will be permanently deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('deleteForm');
+            form.action = `/admin/discount-slips/${slipId}`;
+            form.submit();
+        }
+    });
 }
 </script>
 @endpush

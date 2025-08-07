@@ -806,6 +806,12 @@ class RewardConversionController extends Controller
                     <span class='value'>{$discountSlip->discount_percent}%</span>
                 </div>
                 <div class='detail-row'>
+                    <span class='label'>Status:</span>
+                    <span class='value' style='font-weight: bold; color: " . ($discountSlip->is_used ? '#dc2626' : '#059669') . ";'>
+                        " . ($discountSlip->is_used ? 'USED' : 'ACTIVE') . "
+                    </span>
+                </div>
+                <div class='detail-row'>
                     <span class='label'>Valid Until:</span>
                     <span class='value'>{$discountSlip->expires_at->format('F j, Y')}</span>
                 </div>
@@ -817,11 +823,22 @@ class RewardConversionController extends Controller
                     <span class='label'>Issued On:</span>
                     <span class='value'>{$discountSlip->created_at->format('F j, Y')}</span>
                 </div>
+                " . ($discountSlip->is_used && $discountSlip->used_at ? "
+                <div class='detail-row'>
+                    <span class='label'>Used On:</span>
+                    <span class='value'>{$discountSlip->used_at->format('F j, Y')}</span>
+                </div>
+                " : "") . "
             </div>
             
             <div class='terms'>
                 <h3>Terms & Conditions</h3>
                 <p>{$discountSlip->terms_conditions}</p>
+                " . ($discountSlip->is_used ? "
+                <p style='color: #dc2626; font-weight: bold; margin-top: 15px;'>
+                    ⚠️ This discount slip has been used and is no longer valid.
+                </p>
+                " : "") . "
             </div>
             
             <div class='footer'>

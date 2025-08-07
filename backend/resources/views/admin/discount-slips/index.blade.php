@@ -87,21 +87,16 @@
                                        class="text-green-600 hover:text-green-800 text-sm">
                                         Edit
                                     </a>
-                                    <form action="{{ route('admin.discount-slips.toggle-used', $slip) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="text-orange-600 hover:text-orange-800 text-sm">
-                                            {{ $slip->is_used ? 'Mark Unused' : 'Mark Used' }}
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('admin.discount-slips.destroy', $slip) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm" 
-                                                onclick="return confirm('Delete this discount slip?')">
-                                            Delete
-                                        </button>
-                                    </form>
+                                                                         <button type="button" 
+                                             onclick="toggleUsedStatus('{{ $slip->id }}', '{{ $slip->is_used ? 'unused' : 'used' }}')" 
+                                             class="text-orange-600 hover:text-orange-800 text-sm">
+                                         {{ $slip->is_used ? 'Mark Unused' : 'Mark Used' }}
+                                     </button>
+                                     <button type="button" 
+                                             onclick="deleteDiscountSlip('{{ $slip->id }}')" 
+                                             class="text-red-600 hover:text-red-800 text-sm">
+                                         Delete
+                                     </button>
                                 </div>
                             </td>
                         </tr>
@@ -124,4 +119,59 @@
         </div>
     @endif
 </div>
+
+<!-- Hidden Forms for Actions -->
+<form id="toggleUsedForm" method="POST" style="display: none;">
+    @csrf
+    @method('PATCH')
+</form>
+
+<form id="deleteForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+@push('scripts')
+<script>
+function toggleUsedStatus(slipId, action) {
+    const status = action === 'used' ? 'mark as used' : 'mark as unused';
+    
+    Swal.fire({
+        title: 'Confirm Action',
+        text: `Are you sure you want to ${status} this discount slip?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, proceed!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('toggleUsedForm');
+            form.action = `/admin/discount-slips/${slipId}/toggle-used`;
+            form.submit();
+        }
+    });
+}
+
+function deleteDiscountSlip(slipId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this! This discount slip will be permanently deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('deleteForm');
+            form.action = `/admin/discount-slips/${slipId}`;
+            form.submit();
+        }
+    });
+}
+</script>
+@endpush
 @endsection
