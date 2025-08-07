@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Models\UserConversionTask;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RewardConversionController extends Controller
 {
@@ -312,6 +313,12 @@ class RewardConversionController extends Controller
             }
         }
 
+        // If this is a discount code reward and it's already claimed, include the discount slip
+        $discountSlip = null;
+        if ($userTask->claimed && $task->rewardType && strtolower($task->rewardType->name) === 'discount code') {
+            $discountSlip = \App\Models\DiscountSlip::where('user_conversion_task_id', $userTask->id)->first();
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -320,7 +327,8 @@ class RewardConversionController extends Controller
                 'completed_at' => $userTask->completed_at,
                 'claimed' => $userTask->claimed,
                 'claimed_at' => $userTask->claimed_at,
-                'user_task' => $userTask
+                'user_task' => $userTask,
+                'discount_slip' => $discountSlip
             ]
         ]);
     }
@@ -700,9 +708,6 @@ class RewardConversionController extends Controller
      */
     private function generateDiscountSlipPDF($discountSlip, $user, $task): string
     {
-        // This is a simplified HTML-based PDF generation
-        // In a real implementation, you might want to use a proper PDF library like Dompdf or TCPDF
-        
         $html = "
         <!DOCTYPE html>
         <html>
@@ -710,20 +715,81 @@ class RewardConversionController extends Controller
             <meta charset='utf-8'>
             <title>Discount Slip</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                .discount-code { font-size: 24px; font-weight: bold; color: #2563eb; text-align: center; margin: 20px 0; }
-                .details { margin: 20px 0; }
-                .detail-row { margin: 10px 0; }
-                .label { font-weight: bold; }
-                .terms { margin-top: 30px; padding: 15px; background-color: #f3f4f6; border-radius: 5px; }
-                .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    color: #333;
+                    line-height: 1.6;
+                }
+                .header { 
+                    text-align: center; 
+                    border-bottom: 2px solid #333; 
+                    padding-bottom: 20px; 
+                    margin-bottom: 30px; 
+                }
+                .header h1 {
+                    color: #2563eb;
+                    margin-bottom: 5px;
+                }
+                .discount-code { 
+                    font-size: 28px; 
+                    font-weight: bold; 
+                    color: #2563eb; 
+                    text-align: center; 
+                    margin: 30px 0; 
+                    padding: 20px;
+                    border: 3px solid #2563eb;
+                    border-radius: 10px;
+                    background-color: #f8fafc;
+                }
+                .details { 
+                    margin: 30px 0; 
+                    padding: 20px;
+                    background-color: #f8fafc;
+                    border-radius: 8px;
+                }
+                .detail-row { 
+                    margin: 15px 0; 
+                    display: flex;
+                    justify-content: space-between;
+                }
+                .label { 
+                    font-weight: bold; 
+                    color: #374151;
+                }
+                .value {
+                    color: #1f2937;
+                }
+                .terms { 
+                    margin-top: 30px; 
+                    padding: 20px; 
+                    background-color: #f3f4f6; 
+                    border-radius: 8px; 
+                    border-left: 4px solid #2563eb;
+                }
+                .terms h3 {
+                    color: #2563eb;
+                    margin-top: 0;
+                }
+                .footer { 
+                    margin-top: 40px; 
+                    text-align: center; 
+                    font-size: 12px; 
+                    color: #666; 
+                    border-top: 1px solid #e5e7eb;
+                    padding-top: 20px;
+                }
+                .logo {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #2563eb;
+                }
             </style>
         </head>
         <body>
             <div class='header'>
+                <div class='logo'>TekPlanet</div>
                 <h1>Discount Slip</h1>
-                <p>TekPlanet Learning Platform</p>
             </div>
             
             <div class='discount-code'>
@@ -732,19 +798,24 @@ class RewardConversionController extends Controller
             
             <div class='details'>
                 <div class='detail-row'>
-                    <span class='label'>Service:</span> {$discountSlip->service_name}
+                    <span class='label'>Service:</span>
+                    <span class='value'>{$discountSlip->service_name}</span>
                 </div>
                 <div class='detail-row'>
-                    <span class='label'>Discount:</span> {$discountSlip->discount_percent}%
+                    <span class='label'>Discount:</span>
+                    <span class='value'>{$discountSlip->discount_percent}%</span>
                 </div>
                 <div class='detail-row'>
-                    <span class='label'>Valid Until:</span> {$discountSlip->expires_at->format('F j, Y')}
+                    <span class='label'>Valid Until:</span>
+                    <span class='value'>{$discountSlip->expires_at->format('F j, Y')}</span>
                 </div>
                 <div class='detail-row'>
-                    <span class='label'>Issued To:</span> {$user->name}
+                    <span class='label'>Issued To:</span>
+                    <span class='value'>{$user->name}</span>
                 </div>
                 <div class='detail-row'>
-                    <span class='label'>Issued On:</span> {$discountSlip->created_at->format('F j, Y')}
+                    <span class='label'>Issued On:</span>
+                    <span class='value'>{$discountSlip->created_at->format('F j, Y')}</span>
                 </div>
             </div>
             
@@ -756,13 +827,17 @@ class RewardConversionController extends Controller
             <div class='footer'>
                 <p>This discount slip is valid for one-time use only.</p>
                 <p>Generated on {$discountSlip->created_at->format('F j, Y \a\t g:i A')}</p>
+                <p>TekPlanet Learning Platform - All rights reserved</p>
             </div>
         </body>
         </html>";
 
-        // For now, return the HTML content
-        // In a real implementation, you would convert this to PDF using a library
-        return $html;
+        // Use DomPDF Facade to generate PDF
+        $pdf = Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+        
+        // Return the PDF content as string
+        return $pdf->output();
     }
 
     /**

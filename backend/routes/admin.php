@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ConversionTaskTypeController;
 use App\Http\Controllers\Admin\ConversionRewardTypeController;
 use App\Http\Controllers\Admin\ConversionTaskController;
+use App\Http\Controllers\Admin\DiscountSlipController;
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     // Guest routes
@@ -388,6 +389,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::resource('conversion-reward-types', ConversionRewardTypeController::class)->names('conversion-reward-types');
             // Conversion Tasks
             Route::resource('conversion-tasks', ConversionTaskController::class)->names('conversion-tasks');
+            // Discount Slips
+            Route::resource('discount-slips', DiscountSlipController::class)->names('discount-slips');
+            Route::patch('/discount-slips/{discountSlip}/toggle-used', [DiscountSlipController::class, 'toggleUsed'])->name('discount-slips.toggle-used');
+            Route::patch('/discount-slips/{discountSlip}/extend-expiration', [DiscountSlipController::class, 'extendExpiration'])->name('discount-slips.extend-expiration');
         });
 
  

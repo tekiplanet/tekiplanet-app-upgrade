@@ -224,9 +224,9 @@
                     <!-- Conversion Rewards - visible to super admin -->
                     @if($admin->isSuperAdmin())
                     <li>
-                        <div x-data="{ open: {{ request()->routeIs('admin.conversion-task-types.*') || request()->routeIs('admin.conversion-reward-types.*') || request()->routeIs('admin.conversion-tasks.*') ? 'true' : 'false' }} }">
+                        <div x-data="{ open: {{ request()->routeIs('admin.conversion-task-types.*') || request()->routeIs('admin.conversion-reward-types.*') || request()->routeIs('admin.conversion-tasks.*') || request()->routeIs('admin.discount-slips.*') ? 'true' : 'false' }} }">
                             <button @click="open = !open"
-                                    class="{{ request()->routeIs('admin.conversion-task-types.*') || request()->routeIs('admin.conversion-reward-types.*') || request()->routeIs('admin.conversion-tasks.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex items-center justify-between w-full rounded-md p-2 text-sm leading-6 font-semibold">
+                                    class="{{ request()->routeIs('admin.conversion-task-types.*') || request()->routeIs('admin.conversion-reward-types.*') || request()->routeIs('admin.conversion-tasks.*') || request()->routeIs('admin.discount-slips.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex items-center justify-between w-full rounded-md p-2 text-sm leading-6 font-semibold">
                                 <div class="flex gap-x-3">
                                     <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0A9 9 0 1112 3a9 9 0 018.5 9z" />
@@ -249,6 +249,10 @@
                                 <a href="{{ route('admin.conversion-tasks.index') }}"
                                    class="{{ request()->routeIs('admin.conversion-tasks.*') ? 'bg-gray-700' : '' }} text-gray-400 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-md p-2 pl-11 text-sm leading-6 font-semibold">
                                     Tasks
+                                </a>
+                                <a href="{{ route('admin.discount-slips.index') }}"
+                                   class="{{ request()->routeIs('admin.discount-slips.*') ? 'bg-gray-700' : '' }} text-gray-400 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-md p-2 pl-11 text-sm leading-6 font-semibold">
+                                    Discount Slips
                                 </a>
                             </div>
                         </div>

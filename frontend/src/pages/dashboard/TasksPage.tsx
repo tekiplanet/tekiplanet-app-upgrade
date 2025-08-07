@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/useAuthStore';
 import { formatAmountInUserCurrencySync } from '@/lib/currency';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export default function TasksPage() {
   const navigate = useNavigate();
@@ -928,18 +929,39 @@ export default function TasksPage() {
                                  onClick={async () => {
                                    try {
                                      const result = await rewardService.downloadDiscountSlip(activeTask.id);
-                                     // Create a blob from the base64 PDF content
-                                     const pdfBlob = new Blob([Uint8Array.from(atob(result.pdf_content), c => c.charCodeAt(0))], { type: 'application/pdf' });
-                                     const url = URL.createObjectURL(pdfBlob);
-                                     const link = document.createElement('a');
-                                     link.href = url;
-                                     link.download = result.filename || 'discount_slip.pdf';
-                                     document.body.appendChild(link);
-                                     link.click();
-                                     document.body.removeChild(link);
-                                     URL.revokeObjectURL(url);
-                                     toast.success('Discount slip downloaded successfully!');
+                                     
+                                     // Check if we're in a Capacitor environment (mobile)
+                                     const isCapacitor = window.Capacitor?.isNative;
+                                     
+                                     if (isCapacitor) {
+                                       // Mobile: Use Capacitor Filesystem
+                                       const fileName = result.filename || `discount_slip_${Date.now()}.pdf`;
+                                       
+                                       const savedFile = await Filesystem.writeFile({
+                                         path: `Download/${fileName}`,
+                                         data: result.pdf_content,
+                                         directory: Directory.ExternalStorage,
+                                         recursive: true
+                                       });
+                                       
+                                       toast.success('Discount slip downloaded successfully!', {
+                                         description: 'File saved to Download folder'
+                                       });
+                                     } else {
+                                       // Web: Use browser download
+                                       const pdfBlob = new Blob([Uint8Array.from(atob(result.pdf_content), c => c.charCodeAt(0))], { type: 'application/pdf' });
+                                       const url = URL.createObjectURL(pdfBlob);
+                                       const link = document.createElement('a');
+                                       link.href = url;
+                                       link.download = result.filename || 'discount_slip.pdf';
+                                       document.body.appendChild(link);
+                                       link.click();
+                                       document.body.removeChild(link);
+                                       URL.revokeObjectURL(url);
+                                       toast.success('Discount slip downloaded successfully!');
+                                     }
                                    } catch (error: any) {
+                                     console.error('Download error:', error);
                                      toast.error('Failed to download discount slip.');
                                    }
                                  }}
