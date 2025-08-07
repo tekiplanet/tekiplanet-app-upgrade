@@ -564,23 +564,63 @@ export default function TasksPage() {
                 {taskReward.reward_details?.type === 'course_access' && taskReward.reward_details?.course && (
                   <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
                     <h4 className="font-medium mb-2">Course Access</h4>
-                    <p className="text-sm text-muted-foreground">
-                      You now have free access to this course
-                    </p>
-                    <Button 
-                      size="sm" 
-                      className="mt-2"
-                      onClick={() => navigate(`/courses/${taskReward.reward_details.course.id}`)}
-                    >
-                      View Course
-                    </Button>
+                    <div className="space-y-3">
+                      <div className="text-sm">
+                        <p className="font-medium text-purple-700 dark:text-purple-300">
+                          {taskReward.reward_details.course.title}
+                        </p>
+                        <p className="text-muted-foreground mt-1">
+                          You have been granted free access to this paid course!
+                        </p>
+                      </div>
+                      
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Original Tuition Fee:</span>
+                          <span className="line-through text-red-500">₦{taskReward.reward_details.course.price?.toLocaleString() || '0'}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Original Enrollment Fee:</span>
+                          <span className="line-through text-red-500">₦{taskReward.reward_details.course.enrollment_fee?.toLocaleString() || '0'}</span>
+                        </div>
+                        <div className="border-t pt-2">
+                          <div className="flex justify-between text-sm font-medium">
+                            <span className="text-green-600">Your Cost:</span>
+                            <span className="text-green-600">₦0 (Fully Covered)</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        size="sm" 
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                        onClick={async () => {
+                          try {
+                            const result = await rewardService.claimCourseAccess(activeTask.id);
+                            toast.success('Course access claimed successfully! You are now enrolled.');
+                            setShowRewardDialog(false);
+                            // Navigate to course management
+                            navigate(result.course_management_url);
+                          } catch (error: any) {
+                            if (error.data?.already_enrolled) {
+                              // User is already enrolled, offer to go to course management
+                              toast.info('You are already enrolled in this course!');
+                              setShowRewardDialog(false);
+                              navigate(error.data.course_management_url);
+                            } else {
+                              toast.error(error.message || 'Failed to claim course access.');
+                            }
+                          }
+                        }}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Claim Course Access
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
-              
-              <div className="text-xs text-muted-foreground text-center">
-                Completed on {new Date(taskReward.completed_at).toLocaleDateString()}
-              </div>
+
             </div>
           ) : (
             <div className="py-8 text-center text-destructive">Failed to load reward details.</div>

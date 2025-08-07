@@ -47,6 +47,15 @@ export const rewardService = {
       throw error;
     }
   },
+  claimCourseAccess: async (userConversionTaskId: string) => {
+    try {
+      const response = await apiClient.post(`/rewards/tasks/${userConversionTaskId}/claim-course-access`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('claimCourseAccess error:', error);
+      throw error;
+    }
+  },
   debug: async () => {
     try {
       const response = await apiClient.get('/rewards/debug');

@@ -133,6 +133,30 @@
     // Hide all on load
     hideAllDynamicFields();
     showReferralTargetIfNeeded();
+    
+    // Initialize fields based on current reward type selection
+    function initializeRewardFields() {
+        var rewardTypeSelect = document.getElementById('reward_type_id');
+        if (rewardTypeSelect && rewardTypeSelect.value) {
+            var selected = rewardTypeSelect.options[rewardTypeSelect.selectedIndex].text.toLowerCase();
+            if (selected.includes('product')) {
+                document.getElementById('product-field').classList.remove('hidden');
+            } else if (selected.includes('coupon')) {
+                document.getElementById('coupon-field').classList.remove('hidden');
+            } else if (selected.includes('course')) {
+                document.getElementById('course-field').classList.remove('hidden');
+            } else if (selected.includes('cash')) {
+                document.getElementById('cash-field').classList.remove('hidden');
+            } else if (selected.includes('discount')) {
+                document.getElementById('discount-field').classList.remove('hidden');
+            }
+        }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeRewardFields();
+    });
 
     // Patch openEditModal to populate referral_target
     if (typeof openEditModal === 'function') {
@@ -146,6 +170,8 @@
                 document.getElementById('referral_target').value = '';
                 document.getElementById('referral-target-field').classList.add('hidden');
             }
+            // Initialize reward fields after populating the form
+            setTimeout(initializeRewardFields, 100);
         }
     }
 </script>

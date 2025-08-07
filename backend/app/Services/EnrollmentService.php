@@ -149,4 +149,70 @@ class EnrollmentService
             return $transaction;
         });
     }
+
+    public function enrollUserInCourseForReward(User $user, Course $course)
+    {
+        // Start a database transaction
+        return DB::transaction(function () use ($user, $course) {
+            // Check if user is already enrolled
+            $existingEnrollment = Enrollment::where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->first();
+
+            if ($existingEnrollment) {
+                throw new \Exception('You are already enrolled in this course.');
+            }
+
+            // Create enrollment without charging enrollment fee
+            $enrollment = Enrollment::create([
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'status' => 'active',
+                'progress' => 0,
+                'payment_status' => 'fully_paid',
+                'enrolled_at' => now()
+            ]);
+
+            // Create a fully paid installment for the full course price
+            $fullTuitionInstallment = Installment::create([
+                'enrollment_id' => $enrollment->id,
+                'user_id' => $user->id,
+                'amount' => $course->price, // Full course price
+                'due_date' => now(),
+                'status' => 'paid', // Mark as already paid
+                'paid_at' => now(),
+                'order' => 1
+            ]);
+
+            // Create transaction record for the free enrollment (for tracking)
+            Transaction::create([
+                'user_id' => $user->id,
+                'amount' => 0, // No charge
+                'type' => 'credit',
+                'description' => "Free course access reward: {$course->title}",
+                'category' => 'reward',
+                'status' => 'completed',
+                'payment_method' => 'reward',
+                'reference_number' => 'REWARD-' . uniqid(),
+                'notes' => [
+                    'enrollment_id' => $enrollment->id,
+                    'course_id' => $course->id,
+                    'course_title' => $course->title,
+                    'reward_type' => 'course_access',
+                    'installment_id' => $fullTuitionInstallment->id
+                ]
+            ]);
+
+            // Log the free enrollment
+            Log::info('User enrolled in course for free (reward)', [
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'enrollment_id' => $enrollment->id,
+                'installment_id' => $fullTuitionInstallment->id,
+                'course_price' => $course->price
+            ]);
+
+            return $enrollment;
+        });
+    }
 }

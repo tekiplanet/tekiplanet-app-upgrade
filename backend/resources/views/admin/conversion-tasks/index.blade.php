@@ -118,6 +118,15 @@ window.openEditModal = function(task) {
     form.elements['reward_type_id'].value = task.reward_type_id;
     form.elements['min_points'].value = task.min_points;
     form.elements['max_points'].value = task.max_points;
+    
+    // Populate reward-specific fields
+    if (task.product_id) form.elements['product_id'].value = task.product_id;
+    if (task.coupon_id) form.elements['coupon_id'].value = task.coupon_id;
+    if (task.course_id) form.elements['course_id'].value = task.course_id;
+    if (task.cash_amount) form.elements['cash_amount'].value = task.cash_amount;
+    if (task.discount_percent) form.elements['discount_percent'].value = task.discount_percent;
+    if (task.service_name) form.elements['service_name'].value = task.service_name;
+    
     if ('referral_target' in task && document.getElementById('referral_target')) {
         document.getElementById('referral_target').value = task.referral_target ?? '';
     } else if (document.getElementById('referral_target')) {
@@ -129,12 +138,32 @@ window.openEditModal = function(task) {
     document.getElementById('taskModal').classList.remove('hidden');
     window.hideAllDynamicFields();
     window.showReferralTargetIfNeeded();
-    // Show referral field if needed
-    var taskTypeSelect = document.getElementById('task_type_id');
-    var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
-    if (selectedText.includes('refer')) {
-        document.getElementById('referral-target-field').classList.remove('hidden');
-    }
+    
+    // Show appropriate reward fields based on selected reward type
+    setTimeout(function() {
+        var rewardTypeSelect = document.getElementById('reward_type_id');
+        if (rewardTypeSelect && rewardTypeSelect.value) {
+            var selected = rewardTypeSelect.options[rewardTypeSelect.selectedIndex].text.toLowerCase();
+            if (selected.includes('product')) {
+                document.getElementById('product-field').classList.remove('hidden');
+            } else if (selected.includes('coupon')) {
+                document.getElementById('coupon-field').classList.remove('hidden');
+            } else if (selected.includes('course')) {
+                document.getElementById('course-field').classList.remove('hidden');
+            } else if (selected.includes('cash')) {
+                document.getElementById('cash-field').classList.remove('hidden');
+            } else if (selected.includes('discount')) {
+                document.getElementById('discount-field').classList.remove('hidden');
+            }
+        }
+        
+        // Show referral field if needed
+        var taskTypeSelect = document.getElementById('task_type_id');
+        var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+        if (selectedText.includes('refer')) {
+            document.getElementById('referral-target-field').classList.remove('hidden');
+        }
+    }, 100);
 }
 window.closeModal = function() {
     document.getElementById('taskModal').classList.add('hidden');

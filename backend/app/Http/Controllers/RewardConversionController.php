@@ -273,6 +273,76 @@ class RewardConversionController extends Controller
     }
 
     /**
+     * Claim course access reward for a completed user conversion task.
+     */
+    public function claimCourseAccess($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        
+        try {
+            $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+                ->where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->with(['task.type', 'task.rewardType', 'task.course'])
+                ->firstOrFail();
+
+            $task = $userTask->task;
+            
+            // Verify this is a course access reward
+            if (!$task->rewardType || strtolower($task->rewardType->name) !== 'course access') {
+                throw new \Exception('This task does not have a course access reward.');
+            }
+            
+            if (!$task->course) {
+                throw new \Exception('No course assigned to this reward.');
+            }
+
+            // Check if user is already enrolled in this course
+            $existingEnrollment = \App\Models\Enrollment::where('user_id', $user->id)
+                ->where('course_id', $task->course->id)
+                ->first();
+
+            if ($existingEnrollment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are already enrolled in this course.',
+                    'data' => [
+                        'already_enrolled' => true,
+                        'enrollment' => $existingEnrollment,
+                        'course' => $task->course,
+                        'course_management_url' => "/dashboard/academy/course/{$task->course->id}/manage"
+                    ]
+                ], 400);
+            }
+
+            // Use the enrollment service to enroll user for free
+            $enrollmentService = new \App\Services\EnrollmentService();
+            $enrollment = $enrollmentService->enrollUserInCourseForReward($user, $task->course);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Course access claimed successfully! You are now enrolled.',
+                'data' => [
+                    'enrollment' => $enrollment,
+                    'course' => $task->course,
+                    'course_management_url' => "/dashboard/academy/course/{$task->course->id}/manage"
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Course access claim failed', [
+                'user_id' => $user->id,
+                'user_conversion_task_id' => $userConversionTaskId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
      * Debug method to check user's learning rewards and available tasks.
      */
     public function debug(): JsonResponse
