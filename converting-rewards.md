@@ -30,7 +30,10 @@ Enable users to convert their learning rewards into various benefits, with the c
 
 ## Implementation Checklist
 
-- [ ] Design database schema for tasks, task types, reward point ranges, and reward types
+- [x] Design database schema for tasks, task types, reward point ranges, and reward types
+  - All new tables use UUIDs as primary keys and for all relevant foreign keys for consistency.
+- [x] Create Eloquent models for all conversion tables
+  - Models use UUIDs and define relationships for easy querying and logic.
 - [ ] Implement admin interface for managing tasks and assigning rewards
 - [ ] Implement tracking for each task type:
   - [ ] Referral registration tracking
@@ -45,4 +48,4 @@ Enable users to convert their learning rewards into various benefits, with the c
 
 ---
 
-Let's begin implementation one step at a time, starting with the database schema design for tasks and rewards.
+Next: Implement the admin interface for managing tasks and assigning rewards.
