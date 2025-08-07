@@ -227,12 +227,12 @@ export default function StudentDashboard() {
                   className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10"
                 >
                   <div className="p-2 rounded-lg bg-blue-500/20">
-                    <Target className="h-4 w-4 text-blue-500" />
+                    <Trophy className="h-4 w-4 text-blue-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-blue-500/70">Progress</p>
+                    <p className="text-xs text-blue-500/70">Reward Points</p>
                     <p className="text-sm font-semibold text-blue-500">
-                      {dashboardData?.statistics.overall_progress}%
+                      {dashboardData?.user.learn_rewards?.toLocaleString('en-US')}
                     </p>
                   </div>
                 </motion.div>

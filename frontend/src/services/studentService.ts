@@ -4,6 +4,7 @@ export interface StudentDashboardData {
   user: {
     first_name: string;
     wallet_balance: number;
+    learn_rewards: number;
   };
   currency: {
     code: string;

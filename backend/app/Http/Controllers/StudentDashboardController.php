@@ -85,7 +85,8 @@ class StudentDashboardController extends Controller
             return response()->json([
                 'user' => [
                     'first_name' => $user->first_name,
-                    'wallet_balance' => $user->wallet_balance
+                    'wallet_balance' => $user->wallet_balance,
+                    'learn_rewards' => $user->learn_rewards, // Add reward points
                 ],
                 'currency' => $currency,
                 'statistics' => [
