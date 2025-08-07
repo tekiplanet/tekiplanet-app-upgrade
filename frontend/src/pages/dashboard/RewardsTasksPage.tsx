@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -25,25 +26,29 @@ import {
 
 export default function RewardsTasksPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isConverting, setIsConverting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Fetch user tasks and rewards
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['rewards-tasks'],
-    queryFn: rewardService.getUserTasks,
+    queryFn: () => rewardService.getUserTasks({ page: 1, per_page: 2 }),
     retry: 2
   });
 
   const tasks = (data as any)?.tasks || [];
   const learnRewards = (data as any)?.learn_rewards ?? 0;
 
+  // Get only the 2 most recent tasks for display
+  const recentTasks = tasks;
+
   // Calculate stats
   const stats = {
-    totalTasks: tasks.length,
-    completedTasks: tasks.filter((t: any) => t.status === 'completed').length,
-    activeTasks: tasks.filter((t: any) => t.status === 'assigned' || t.status === 'in_progress').length,
-    completionRate: tasks.length > 0 ? (tasks.filter((t: any) => t.status === 'completed').length / tasks.length) * 100 : 0
+    totalTasks: (data as any)?.stats?.total_tasks || 0,
+    completedTasks: (data as any)?.stats?.completed_tasks || 0,
+    activeTasks: ((data as any)?.stats?.assigned_tasks || 0) + ((data as any)?.stats?.in_progress_tasks || 0),
+    completionRate: (data as any)?.stats?.total_tasks > 0 ? (((data as any)?.stats?.completed_tasks || 0) / (data as any)?.stats?.total_tasks) * 100 : 0
   };
 
   // Mutation for conversion
@@ -338,7 +343,7 @@ export default function RewardsTasksPage() {
           </motion.div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {tasks.map((task: any, index: number) => (
+            {recentTasks.map((task: any, index: number) => (
               <motion.div
                 key={task.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -410,6 +415,22 @@ export default function RewardsTasksPage() {
                 </Card>
               </motion.div>
             ))}
+            {tasks.length > 2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="flex justify-center"
+              >
+                <Button
+                  onClick={() => navigate('/tasks')}
+                  className="h-12 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Users className="h-5 w-5 mr-2" />
+                  View All Tasks
+                </Button>
+              </motion.div>
+            )}
           </div>
         )}
       </div>
@@ -421,55 +442,56 @@ export default function RewardsTasksPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
           >
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <Gift className="h-5 w-5 text-purple-500" />
-              </div>
-              Confirm Conversion
-            </DialogTitle>
-            <DialogDescription>
-              <div className="space-y-3">
-                <p>
-                  Are you sure you want to convert your <span className="font-semibold text-blue-600">{learnRewards.toLocaleString('en-US')}</span> learning rewards into a task?
-                </p>
-                <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                      This action will deduct points from your balance and assign you a task to complete. The points cannot be refunded.
-                    </p>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <Gift className="h-5 w-5 text-purple-500" />
+                </div>
+                Confirm Conversion
+              </DialogTitle>
+              <DialogDescription>
+                <div className="flex flex-col gap-4">
+                  <p className="mb-1">
+                    Are you sure you want to convert your <span className="font-semibold text-blue-600">{learnRewards.toLocaleString('en-US')}</span> learning rewards into a task?
+                  </p>
+                  <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        This action will deduct points from your balance and assign you a task to complete. The points cannot be refunded.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowConfirmDialog(false)}
-              disabled={isConverting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleConfirmConversion} 
-              disabled={isConverting}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-            >
-              {isConverting ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="animate-spin h-4 w-4" />
-                  Converting...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  Convert Rewards
-                </div>
-              )}
-            </Button>
-          </DialogFooter>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col gap-2 pt-4 sm:flex-row sm:gap-4 sm:pt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isConverting}
+                className="w-full sm:w-auto"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleConfirmConversion} 
+                disabled={isConverting}
+                className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              >
+                {isConverting ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Converting...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Convert Rewards
+                  </div>
+                )}
+              </Button>
+            </DialogFooter>
           </motion.div>
         </DialogContent>
       </Dialog>

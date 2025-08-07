@@ -118,6 +118,8 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - **2024-06-08:** Implemented backend endpoint for fetching user tasks (GET /rewards/tasks).
 - **2024-06-08:** Completed user interface for converting rewards and viewing/completing tasks with modern design.
 - **2024-06-08:** Added confirmation dialog for reward conversion and improved error messages for better user experience.
+- **2024-06-08:** Created dedicated tasks page with filtering, sorting, and modern UI design. Modified Rewards & Tasks page to show only 2 recent tasks with "View All Tasks" button.
+- **2024-06-08:** Implemented backend pagination, filtering, and sorting for optimal performance with large datasets. Added pagination controls and per-page selection.
 
 ---
 

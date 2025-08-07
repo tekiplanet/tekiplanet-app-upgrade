@@ -1,9 +1,15 @@
 import { apiClient } from '@/lib/api-client';
 
 export const rewardService = {
-  getUserTasks: async () => {
+  getUserTasks: async (params?: {
+    page?: number;
+    per_page?: number;
+    status?: string;
+    sort_by?: string;
+    sort_order?: string;
+  }) => {
     try {
-      const response = await apiClient.get('/rewards/tasks');
+      const response = await apiClient.get('/rewards/tasks', { params });
       console.log('getUserTasks response:', response.data);
       // Return the data property from the response
       return response.data.data || response.data;

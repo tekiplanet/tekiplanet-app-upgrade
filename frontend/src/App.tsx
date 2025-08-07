@@ -45,6 +45,7 @@ import { notificationService } from '@/services/notificationService';
 import { Toast } from '@capacitor/toast';
 import { Capacitor } from '@capacitor/core';
 import RewardsTasksPage from '@/pages/dashboard/RewardsTasksPage';
+import TasksPage from '@/pages/dashboard/TasksPage';
 
 // Lazy load pages
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
@@ -288,6 +289,7 @@ const AppContent = () => {
             <Route path="my-requests" element={<MyRequests />} />
             <Route path="product-request/:id" element={<ProductRequestDetails />} />
             <Route path="rewards-tasks" element={<RewardsTasksPage />} />
+            <Route path="tasks" element={<TasksPage />} />
           </Route>
 
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

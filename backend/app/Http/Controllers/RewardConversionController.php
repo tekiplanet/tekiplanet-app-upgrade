@@ -48,43 +48,96 @@ class RewardConversionController extends Controller
     }
 
     /**
-     * Get the authenticated user's conversion tasks and rewards balance.
+     * Get the authenticated user's conversion tasks and rewards balance with pagination and filtering.
      */
-    public function getUserTasks(): JsonResponse
+    public function getUserTasks(Request $request): JsonResponse
     {
         $user = Auth::user();
         
         try {
-            // Get user's conversion tasks with task details
-            $userTasks = UserConversionTask::with(['task', 'task.taskType', 'task.rewardType'])
-                ->where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
+            // Get query parameters
+            $page = $request->get('page', 1);
+            $perPage = min($request->get('per_page', 10), 50); // Max 50 per page
+            $status = $request->get('status', 'all');
+            $sortBy = $request->get('sort_by', 'created_at');
+            $sortOrder = $request->get('sort_order', 'desc');
 
-            Log::info('Fetched user tasks', [
+            // Build query
+            $query = UserConversionTask::where('user_id', $user->id);
+
+            // Apply status filter
+            if ($status !== 'all') {
+                $query->where('status', $status);
+            }
+
+            // Apply sorting
+            switch ($sortBy) {
+                case 'assigned_at':
+                    $query->orderBy('assigned_at', $sortOrder);
+                    break;
+                case 'status':
+                    $query->orderBy('status', $sortOrder);
+                    break;
+                case 'created_at':
+                default:
+                    $query->orderBy('created_at', $sortOrder);
+                    break;
+            }
+
+            // Get paginated results
+            $userTasks = $query->with(['task' => function($query) {
+                $query->select('id', 'title', 'description', 'task_type_id', 'reward_type_id', 'min_points', 'max_points');
+            }])->paginate($perPage, ['*'], 'page', $page);
+
+            // Get total counts for stats
+            $totalTasks = UserConversionTask::where('user_id', $user->id)->count();
+            $assignedTasks = UserConversionTask::where('user_id', $user->id)->where('status', 'assigned')->count();
+            $inProgressTasks = UserConversionTask::where('user_id', $user->id)->where('status', 'in_progress')->count();
+            $completedTasks = UserConversionTask::where('user_id', $user->id)->where('status', 'completed')->count();
+            $failedTasks = UserConversionTask::where('user_id', $user->id)->where('status', 'failed')->count();
+
+            Log::info('Fetched user tasks with pagination', [
                 'user_id' => $user->id,
                 'learn_rewards' => $user->learn_rewards,
-                'task_count' => $userTasks->count()
+                'page' => $page,
+                'per_page' => $perPage,
+                'status_filter' => $status,
+                'sort_by' => $sortBy,
+                'total_tasks' => $totalTasks,
+                'current_page_count' => $userTasks->count()
             ]);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'tasks' => $userTasks,
+                    'tasks' => $userTasks->items(),
+                    'pagination' => [
+                        'current_page' => $userTasks->currentPage(),
+                        'last_page' => $userTasks->lastPage(),
+                        'per_page' => $userTasks->perPage(),
+                        'total' => $userTasks->total(),
+                        'from' => $userTasks->firstItem(),
+                        'to' => $userTasks->lastItem(),
+                    ],
+                    'stats' => [
+                        'total_tasks' => $totalTasks,
+                        'assigned_tasks' => $assignedTasks,
+                        'in_progress_tasks' => $inProgressTasks,
+                        'completed_tasks' => $completedTasks,
+                        'failed_tasks' => $failedTasks,
+                    ],
                     'learn_rewards' => $user->learn_rewards,
-                    'total_tasks' => $userTasks->count(),
-                    'completed_tasks' => $userTasks->where('status', 'completed')->count(),
-                    'active_tasks' => $userTasks->whereIn('status', ['assigned', 'in_progress'])->count(),
                 ]
             ]);
         } catch (Exception $e) {
             Log::error('Error fetching user tasks: ' . $e->getMessage(), [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch tasks'
+                'message' => 'Failed to fetch tasks: ' . $e->getMessage()
             ], 500);
         }
     }
