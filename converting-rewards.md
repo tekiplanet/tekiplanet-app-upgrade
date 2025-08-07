@@ -58,6 +58,17 @@ Enable users to convert their learning rewards into various benefits, with the c
 - name (string) — e.g., "Cash", "Coupon", "Course Access", "Discount Code"
 - description (text, nullable)
 
+### user_conversion_tasks (Updated)
+- id (uuid, primary)
+- user_id (uuid, foreign key to users)
+- conversion_task_id (uuid, foreign key to conversion_tasks)
+- status (string: pending, completed, failed)
+- claimed (boolean, default false) — NEW: tracks if reward has been claimed
+- claimed_at (timestamp, nullable) — NEW: when the reward was claimed
+- assigned_at (timestamp)
+- completed_at (timestamp, nullable)
+- referral_count (integer, default 0) — for referral tasks
+
 ## Admin Conversion Rewards Menu (How It Works)
 
 A new "Conversion Rewards" group is available in the admin sidebar. It contains:
@@ -77,6 +88,8 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 2. System selects a random eligible task based on user's reward points
 3. User completes the task
 4. System verifies completion and grants the specified reward
+5. User claims the reward (course access or cash)
+6. System marks the reward as claimed and prevents duplicate claims
 
 ---
 
@@ -108,8 +121,7 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
   - [ ] Product link sharing tracking
   - [ ] Referral purchase tracking
 - [x] Implement reward granting logic after task completion (referral registration only)
-- [ ] Integrate with wallet, coupon, course access, and discount systems
-- [ ] Testing and QA
+- [x] Integrate with wallet, coupon, course access, and discount systems
 - [x] Create a user_referrals table to track each referral event:
   - id (uuid, primary)
   - referrer_user_id (uuid, foreign key to users)
@@ -119,6 +131,14 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
   - status (string: e.g., pending, completed)
 - [x] Add referral_count to user_conversion_tasks for tracking referral progress
 - [x] Update registration logic to handle referral links: create UserReferral, increment referral_count, and mark task as completed if target is reached
+- [x] Fix currency conversion for course access rewards display
+- [x] Make reward modals vertically scrollable for better UX
+- [x] Fix currency conversion for course enrollment when claiming course access rewards
+- [x] Add loading states to claim buttons for better UX
+- [x] Implement robust error handling for already enrolled users
+- [x] Add claimed tracking system to prevent duplicate claims
+- [x] Implement cash reward functionality with currency conversion
+- [ ] Testing and QA
 
 ---
 
@@ -142,8 +162,46 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - **2024-06-11:** Implemented course access reward claiming: users can now claim free course access with fully covered enrollment and tuition fees, automatic enrollment, and redirect to course management.
 - **2024-06-11:** Fixed currency display in course access rewards: tuition and enrollment fees now show in user's preferred currency with proper conversion, matching the wallet dashboard and course details pages.
 - **2024-06-11:** Resolved URL parsing issue with hash routing - referral parameters are now properly extracted from URLs with hash fragments.
+- **2024-12-19:** Fixed currency conversion issues in TasksPage.tsx modal - tuition and enrollment fees now properly convert to user's currency and display correct symbols.
+- **2024-12-19:** Made reward modals vertically scrollable by adding max-height and overflow-y-auto classes for better UX when content is long.
+- **2024-12-19:** Fixed currency conversion for course enrollment when claiming course access rewards - amounts are now converted to user's currency before saving to database.
+- **2024-12-19:** Added loading states to "Claim Course Access" button to prevent multiple clicks and provide visual feedback during the claiming process.
+- **2024-12-19:** Implemented robust error handling for already enrolled users - frontend now correctly parses backend error responses and shows user-friendly messages instead of generic 400 errors.
+- **2024-12-19:** Added claimed tracking system to prevent duplicate claims:
+  - Added `claimed` and `claimed_at` columns to `user_conversion_tasks` table
+  - Updated backend to check and set claimed status when rewards are claimed
+  - Updated frontend to conditionally show claim button or "Reward Claimed" status
+- **2024-12-19:** Implemented cash reward functionality:
+  - Backend converts cash amounts to user's currency for display
+  - Added new API endpoint for claiming cash rewards (`POST /rewards/tasks/{id}/claim-cash`)
+  - Cash rewards are added to user's wallet balance with proper transaction records
+  - Frontend displays converted cash amounts and provides claim functionality
+  - Loading states and claimed status tracking for cash rewards
 
 ---
+
+## Recent Features Implemented
+
+### Currency Conversion Fixes
+- **Course Access Rewards Display**: Fixed currency conversion in reward modals to properly display tuition and enrollment fees in user's preferred currency with correct symbols.
+- **Course Enrollment Conversion**: Fixed currency conversion when claiming course access rewards - amounts are now converted to user's currency before saving to database, matching normal enrollment behavior.
+- **Cash Rewards Display**: Cash rewards now display in user's currency (converted from NGN) with proper formatting.
+
+### User Experience Improvements
+- **Modal Scrollability**: Reward modals are now vertically scrollable with proper max-height and overflow handling for better UX.
+- **Loading States**: Added loading spinners and disabled states to claim buttons to prevent multiple submissions and provide visual feedback.
+- **Error Handling**: Improved error handling for already enrolled users with specific, user-friendly error messages instead of generic 400 errors.
+
+### Claim Tracking System
+- **Database Schema**: Added `claimed` (boolean) and `claimed_at` (timestamp) columns to `user_conversion_tasks` table.
+- **Backend Logic**: Updated backend to check claimed status before processing claims and mark rewards as claimed after successful processing.
+- **Frontend Display**: Frontend now conditionally shows claim buttons or "Reward Claimed" status based on claimed state.
+
+### Cash Reward Functionality
+- **Currency Conversion**: Cash amounts are converted to user's currency for display and processing.
+- **Claim Mechanism**: Users can claim cash rewards which are added to their wallet balance.
+- **Transaction Records**: Proper transaction records are created when cash rewards are claimed.
+- **UI Integration**: Cash rewards have their own UI section with claim functionality and loading states.
 
 ## Next Step: Actionable Task Instructions & Tracking
 
@@ -161,7 +219,7 @@ Currently, when a user starts a task, the system does not yet display actionable
   - Track usage of these links (clicks, registrations, purchases, etc.).
   - Track course progress/completion.
 - The API should:
-  - Provide endpoints to get actionable instructions/links for a user’s task. (Referral registration done)
+  - Provide endpoints to get actionable instructions/links for a user's task. (Referral registration done)
   - Provide endpoints/events to track completion.
 
 **This is the next milestone for the project.**

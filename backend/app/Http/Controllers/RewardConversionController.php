@@ -215,11 +215,37 @@ class RewardConversionController extends Controller
             
             switch ($rewardType) {
                 case 'cash':
+                    // Convert cash amount if user has a different currency
+                    $cashAmount = $task->cash_amount;
+                    $originalCurrency = 'NGN';
+                    $userCurrency = $user->currency_code;
+                    
+                    if ($userCurrency && $userCurrency !== 'NGN') {
+                        $cashAmount = $this->currencyService->convertAmount(
+                            $task->cash_amount,
+                            'NGN', // Cash amounts are stored in NGN
+                            $userCurrency
+                        );
+                    }
+                    
+                    // Get currency symbol for display
+                    $currencySymbol = '₦'; // Default to NGN
+                    if ($userCurrency && $userCurrency !== 'NGN') {
+                        try {
+                            $currencySymbol = $this->currencyService->getCurrencySymbol($userCurrency);
+                        } catch (\Exception $e) {
+                            // Fallback to currency code if symbol not found
+                            $currencySymbol = $userCurrency;
+                        }
+                    }
+                    
                     $rewardDetails = [
                         'type' => 'cash',
-                        'amount' => $task->cash_amount,
-                        'currency' => 'NGN', // You might want to make this dynamic
-                        'description' => "₦{$task->cash_amount} added to your wallet"
+                        'amount' => $cashAmount,
+                        'original_amount' => $task->cash_amount,
+                        'currency' => $userCurrency ?: 'NGN',
+                        'original_currency' => 'NGN',
+                        'description' => "You have been rewarded {$currencySymbol}{$cashAmount}"
                     ];
                     break;
                     
@@ -377,6 +403,104 @@ class RewardConversionController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Course access claim failed', [
+                'user_id' => $user->id,
+                'user_conversion_task_id' => $userConversionTaskId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Claim cash reward for a completed user conversion task.
+     */
+    public function claimCashReward($userConversionTaskId): JsonResponse
+    {
+        $user = Auth::user();
+        
+        try {
+            $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
+                ->where('user_id', $user->id)
+                ->where('status', 'completed')
+                ->with(['task.type', 'task.rewardType'])
+                ->firstOrFail();
+
+            $task = $userTask->task;
+            
+            // Verify this is a cash reward
+            if (!$task->rewardType || strtolower($task->rewardType->name) !== 'cash') {
+                throw new \Exception('This task does not have a cash reward.');
+            }
+
+            // Check if the task reward has already been claimed
+            if ($userTask->claimed) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This reward has already been claimed.',
+                    'data' => [
+                        'already_claimed' => true,
+                        'claimed_at' => $userTask->claimed_at
+                    ]
+                ], 400);
+            }
+
+            // Convert cash amount to user's currency for wallet addition
+            $cashAmount = $task->cash_amount;
+            if ($user->currency_code && $user->currency_code !== 'NGN') {
+                $cashAmount = $this->currencyService->convertAmount(
+                    $task->cash_amount,
+                    'NGN', // Cash amounts are stored in NGN
+                    $user->currency_code
+                );
+            }
+
+            // Add to user's wallet balance
+            $user->wallet_balance += $cashAmount;
+            $user->save();
+
+            // Create transaction record
+            \App\Models\Transaction::create([
+                'user_id' => $user->id,
+                'amount' => $cashAmount,
+                'type' => 'credit',
+                'description' => "Cash reward from task: {$task->title}",
+                'category' => 'reward',
+                'status' => 'completed',
+                'payment_method' => 'reward',
+                'reference_number' => 'REWARD-' . uniqid(),
+                'notes' => [
+                    'user_conversion_task_id' => $userTask->id,
+                    'task_id' => $task->id,
+                    'task_title' => $task->title,
+                    'reward_type' => 'cash',
+                    'original_amount_ngn' => $task->cash_amount,
+                    'converted_amount' => $cashAmount,
+                    'user_currency' => $user->currency_code
+                ]
+            ]);
+
+            // Mark the task as claimed
+            $userTask->update([
+                'claimed' => true,
+                'claimed_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cash reward claimed successfully! Amount added to your wallet.',
+                'data' => [
+                    'amount' => $cashAmount,
+                    'currency' => $user->currency_code ?: 'NGN',
+                    'wallet_balance' => $user->wallet_balance,
+                    'task' => $task
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Cash reward claim failed', [
                 'user_id' => $user->id,
                 'user_conversion_task_id' => $userConversionTaskId,
                 'error' => $e->getMessage()

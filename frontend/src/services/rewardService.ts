@@ -56,6 +56,15 @@ export const rewardService = {
       throw error;
     }
   },
+  claimCashReward: async (userConversionTaskId: string) => {
+    try {
+      const response = await apiClient.post(`/rewards/tasks/${userConversionTaskId}/claim-cash`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('claimCashReward error:', error);
+      throw error;
+    }
+  },
   debug: async () => {
     try {
       const response = await apiClient.get('/rewards/debug');
