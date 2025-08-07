@@ -91,20 +91,35 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - [x] Implement admin Blade views and modals for managing tasks and rewards
   - Views and modals scaffolded for task types, reward types, and tasks, matching project conventions.
 - [x] Implement dynamic admin form for task creation/editing, showing correct fields for products, coupons, courses, cash, or discount based on selection
+- [x] Implement logic to select a random eligible task based on user's reward points
+- [x] Deduct user's learning rewards and create user_conversion_tasks record on conversion initiation
+- [x] Implement API endpoint and controller for conversion initiation (user POST /rewards/convert)
+- [x] Implement frontend rewardService for fetching tasks and initiating conversion
+- [x] Create Rewards & Tasks page and add to Learning group in dashboard menu
+- [ ] Implement user interface for converting rewards and viewing/completing tasks
 - [ ] Implement tracking for each task type:
   - [ ] Referral registration tracking
   - [ ] Course completion tracking
   - [ ] Product link sharing tracking
   - [ ] Referral purchase tracking
-- [ ] Implement user interface for converting rewards and viewing/completing tasks
-- [ ] Implement logic to select a random eligible task based on user's reward points
 - [ ] Implement reward granting logic after task completion
 - [ ] Integrate with wallet, coupon, course access, and discount systems
 - [ ] Testing and QA
 
 ---
 
-Next: Implement dynamic admin form for task creation/editing, showing correct fields for products, coupons, courses, cash, or discount based on selection.
+## Progress Log
+
+- **2024-06-08:** Started and in progress: Conversion initiation logic (deduct points, assign random eligible task, create user_conversion_tasks record).
+- **2024-06-08:** Implemented API endpoint and controller for conversion initiation (user POST /rewards/convert).
+- **2024-06-08:** Implemented frontend rewardService for fetching tasks and initiating conversion.
+- **2024-06-08:** Created Rewards & Tasks page and added to Learning group in dashboard menu.
+
+---
+
+## Next
+
+The next step is to implement the backend endpoint for fetching user tasks (GET /rewards/tasks).
 
 ## Recommended Task Types and Reward Types to Add
 

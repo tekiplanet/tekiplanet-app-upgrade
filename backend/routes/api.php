@@ -585,3 +585,6 @@ Route::middleware('auth:sanctum')->group(function () {
 // Onboarding data routes
 Route::get('/onboarding/countries', [App\Http\Controllers\Api\OnboardingController::class, 'getCountries']);
 Route::get('/onboarding/currencies', [App\Http\Controllers\Api\OnboardingController::class, 'getCurrencies']);
+
+// Reward Conversion
+Route::middleware('auth:sanctum')->post('/rewards/convert', [\App\Http\Controllers\RewardConversionController::class, 'initiate']);

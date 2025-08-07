@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
-import { Home, BookOpen, Briefcase, ShoppingBag, Wallet, Settings, LogOut, UserCircle2, GraduationCap, Menu, ArrowLeft, Bell, ChevronDown, ShoppingCart, Package, BrainCircuit, Calendar, Building2, LayoutDashboard, CreditCard, Users, ClipboardList } from "lucide-react"
+import { Home, BookOpen, Briefcase, ShoppingBag, Wallet, Settings, LogOut, UserCircle2, GraduationCap, Menu, ArrowLeft, Bell, ChevronDown, ShoppingCart, Package, BrainCircuit, Calendar, Building2, LayoutDashboard, CreditCard, Users, ClipboardList, Gift } from "lucide-react"
 import { useNavigate, Routes, Route, useLocation, Outlet } from "react-router-dom"
 import { toast } from "sonner"
 import {
@@ -260,6 +260,11 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
       label: "My Courses",
       path: "/dashboard/academy/my-courses",
       icon: <GraduationCap className="w-4 h-4" />
+    },
+    {
+      label: "Rewards & Tasks",
+      path: "/dashboard/rewards-tasks",
+      icon: <Gift className="w-4 h-4" />
     },
 
     // BUSINESS
@@ -614,7 +619,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 {user?.account_type === 'student' && (
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Learning</h4>
-                    {menuItems.slice(5, 7).map((item) => (
+                    {menuItems.slice(5, 8).map((item) => (
                       <Button
                         key={item.path}
                         variant={location.pathname === item.path ? "secondary" : "ghost"}
@@ -1261,7 +1266,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                           {user?.account_type === 'student' && (
                             <div className="space-y-1">
                               <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Learning</h4>
-                              {menuItems.slice(5, 7).map((item) => (
+                              {menuItems.slice(5, 8).map((item) => (
                                 <Button
                                   key={item.path}
                                   variant={location.pathname === item.path ? "secondary" : "ghost"}
