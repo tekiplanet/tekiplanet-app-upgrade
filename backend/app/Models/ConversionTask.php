@@ -20,6 +20,12 @@ class ConversionTask extends Model
         'min_points',
         'max_points',
         'reward_type_id',
+        'product_id',
+        'coupon_id',
+        'course_id',
+        'cash_amount',
+        'discount_percent',
+        'service_name',
     ];
 
     public function type()
@@ -40,5 +46,20 @@ class ConversionTask extends Model
     public function userTasks()
     {
         return $this->hasMany(UserConversionTask::class, 'conversion_task_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class, 'coupon_id');
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
     }
 }

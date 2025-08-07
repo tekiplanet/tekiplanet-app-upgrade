@@ -40,6 +40,9 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\ConversionTaskTypeController;
+use App\Http\Controllers\Admin\ConversionRewardTypeController;
+use App\Http\Controllers\Admin\ConversionTaskController;
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     // Guest routes
@@ -377,5 +380,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
                 Route::post('/update-positions', [CurrencyController::class, 'updatePositions'])->name('update-positions');
             });
         });
+
+        Route::middleware('admin.roles:super_admin,admin')->group(function () {
+            // Conversion Task Types
+            Route::resource('conversion-task-types', ConversionTaskTypeController::class)->names('conversion-task-types');
+            // Conversion Reward Types
+            Route::resource('conversion-reward-types', ConversionRewardTypeController::class)->names('conversion-reward-types');
+            // Conversion Tasks
+            Route::resource('conversion-tasks', ConversionTaskController::class)->names('conversion-tasks');
+        });
+
+ 
     });
 }); 

@@ -221,6 +221,40 @@
                     </li>                    
                     @endif
 
+                    <!-- Conversion Rewards - visible to super admin -->
+                    @if($admin->isSuperAdmin())
+                    <li>
+                        <div x-data="{ open: {{ request()->routeIs('admin.conversion-task-types.*') || request()->routeIs('admin.conversion-reward-types.*') || request()->routeIs('admin.conversion-tasks.*') ? 'true' : 'false' }} }">
+                            <button @click="open = !open"
+                                    class="{{ request()->routeIs('admin.conversion-task-types.*') || request()->routeIs('admin.conversion-reward-types.*') || request()->routeIs('admin.conversion-tasks.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex items-center justify-between w-full rounded-md p-2 text-sm leading-6 font-semibold">
+                                <div class="flex gap-x-3">
+                                    <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0A9 9 0 1112 3a9 9 0 018.5 9z" />
+                                    </svg>
+                                    Conversion Rewards
+                                </div>
+                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-90': open }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                            <div x-show="open" class="mt-1 space-y-1" style="display: none;">
+                                <a href="{{ route('admin.conversion-task-types.index') }}"
+                                   class="{{ request()->routeIs('admin.conversion-task-types.*') ? 'bg-gray-700' : '' }} text-gray-400 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-md p-2 pl-11 text-sm leading-6 font-semibold">
+                                    Task Types
+                                </a>
+                                <a href="{{ route('admin.conversion-reward-types.index') }}"
+                                   class="{{ request()->routeIs('admin.conversion-reward-types.*') ? 'bg-gray-700' : '' }} text-gray-400 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-md p-2 pl-11 text-sm leading-6 font-semibold">
+                                    Reward Types
+                                </a>
+                                <a href="{{ route('admin.conversion-tasks.index') }}"
+                                   class="{{ request()->routeIs('admin.conversion-tasks.*') ? 'bg-gray-700' : '' }} text-gray-400 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-md p-2 pl-11 text-sm leading-6 font-semibold">
+                                    Tasks
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    @endif
+
                     <!-- Hide all other menu items for sales role -->
                     @unless($admin->hasRole(AdminRole::SALES))
                     <!-- All other menu items -->

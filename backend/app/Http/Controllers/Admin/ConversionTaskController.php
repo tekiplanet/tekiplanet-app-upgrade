@@ -14,7 +14,12 @@ class ConversionTaskController extends Controller
     public function index()
     {
         $tasks = ConversionTask::with(['type', 'rewardType', 'rewards'])->get();
-        return view('admin.conversion-tasks.index', compact('tasks'));
+        $taskTypes = ConversionTaskType::all();
+        $rewardTypes = ConversionRewardType::all();
+        $products = \App\Models\Product::all(['id', 'name']);
+        $coupons = \App\Models\Coupon::all(['id', 'code']);
+        $courses = \App\Models\Course::all(['id', 'title']);
+        return view('admin.conversion-tasks.index', compact('tasks', 'taskTypes', 'rewardTypes', 'products', 'coupons', 'courses'));
     }
 
     public function create()
