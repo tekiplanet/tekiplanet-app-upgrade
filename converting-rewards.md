@@ -123,9 +123,28 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 
 ---
 
-## Next
+## Next Step: Actionable Task Instructions & Tracking
 
-The next step is to implement tracking for each task type (referral registration, course completion, product sharing, referral purchase).
+Currently, when a user starts a task, the system does not yet display actionable instructions or links (such as referral links, share links, or course links) tailored to the task type. Nor does it track user actions (such as link clicks, registrations, or course completions) for task completion.
+
+### What Needs to Be Implemented
+- When a user starts a task, the UI should display:
+  - For referral tasks: a unique referral link to copy/share.
+  - For share product/service tasks: a unique share link (with tracking) for the product/service.
+  - For course completion tasks: a direct link to the course the user must complete.
+  - For purchase referral tasks: a referral link and instructions.
+  - For any other task: clear, actionable instructions and any relevant links.
+- The backend should:
+  - Generate and return unique links for each user/task.
+  - Track usage of these links (clicks, registrations, purchases, etc.).
+  - Track course progress/completion.
+- The API should:
+  - Provide endpoints to get actionable instructions/links for a user’s task.
+  - Provide endpoints/events to track completion.
+
+**This is the next milestone for the project.**
+
+We will implement this one task type at a time, starting with the most common or critical type.
 
 ## Recommended Task Types and Reward Types to Add
 

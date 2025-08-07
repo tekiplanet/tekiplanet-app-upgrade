@@ -194,7 +194,7 @@ export default function TasksPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="text-3xl font-bold flex items-center gap-3"
+                    className="text-base sm:text-3xl font-bold flex items-center gap-3"
                   >
                     <div className="p-2 rounded-xl bg-blue-500/20">
                       <Award className="h-6 w-6 text-blue-500" />
@@ -205,7 +205,7 @@ export default function TasksPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="text-muted-foreground"
+                    className="text-xs sm:text-base text-muted-foreground"
                   >
                     Track and manage all your conversion tasks
                   </motion.p>
@@ -240,79 +240,6 @@ export default function TasksPage() {
         </Card>
       </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
-        {[
-          {
-            title: "Total Tasks",
-            value: stats.total_tasks,
-            icon: <BookOpen className="h-5 w-5" />,
-            color: "from-blue-500/10 via-blue-500/5 to-transparent",
-            iconColor: "text-blue-500"
-          },
-          {
-            title: "Assigned",
-            value: stats.assigned_tasks,
-            icon: <Clock className="h-5 w-5" />,
-            color: "from-yellow-500/10 via-yellow-500/5 to-transparent",
-            iconColor: "text-yellow-500"
-          },
-          {
-            title: "In Progress",
-            value: stats.in_progress_tasks,
-            icon: <PlayCircle className="h-5 w-5" />,
-            color: "from-blue-500/10 via-blue-500/5 to-transparent",
-            iconColor: "text-blue-500"
-          },
-          {
-            title: "Completed",
-            value: stats.completed_tasks,
-            icon: <CheckCircle className="h-5 w-5" />,
-            color: "from-green-500/10 via-green-500/5 to-transparent",
-            iconColor: "text-green-500"
-          },
-          {
-            title: "Failed",
-            value: stats.failed_tasks,
-            icon: <AlertCircle className="h-5 w-5" />,
-            color: "from-red-500/10 via-red-500/5 to-transparent",
-            iconColor: "text-red-500"
-          }
-        ].map((stat, index) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            className="group"
-          >
-            <Card className={cn(
-              "relative overflow-hidden border-none bg-gradient-to-br backdrop-blur-xl",
-              "hover:shadow-lg transition-all dark:shadow-none rounded-2xl",
-              "dark:bg-background/50",
-              stat.color
-            )}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "p-3 rounded-xl bg-background/50 dark:bg-background/80 backdrop-blur-xl",
-                    "group-hover:bg-background/80 dark:group-hover:bg-background/60 transition-colors",
-                    "shadow-sm dark:shadow-none"
-                  )}>
-                    <div className={stat.iconColor}>{stat.icon}</div>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{stat.title}</p>
-                    <p className="text-xl font-bold tracking-tight">{stat.value}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
       {/* Filters and Controls */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -325,7 +252,7 @@ export default function TasksPage() {
           <span className="text-sm font-medium">Filter:</span>
         </div>
         <Select value={statusFilter} onValueChange={handleFilterChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -337,7 +264,7 @@ export default function TasksPage() {
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -347,7 +274,7 @@ export default function TasksPage() {
           </SelectContent>
         </Select>
         <Select value={perPage.toString()} onValueChange={handlePerPageChange}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-full sm:w-[120px]">
             <SelectValue placeholder="Per page" />
           </SelectTrigger>
           <SelectContent>
@@ -440,10 +367,6 @@ export default function TasksPage() {
                               <span>Completed: {new Date(task.completed_at).toLocaleDateString()}</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-2">
-                            <Target className="h-4 w-4" />
-                            <span>Points: {task.task?.min_points || 0} - {task.task?.max_points || 0}</span>
-                          </div>
                         </div>
 
                         {/* Action Button */}

@@ -38,6 +38,7 @@ class ConversionTaskController extends Controller
             'min_points' => 'required|integer|min:0',
             'max_points' => 'required|integer|min:0|gte:min_points',
             'reward_type_id' => 'required|exists:conversion_reward_types,id',
+            'referral_target' => 'nullable|integer|min:1',
         ]);
         $task = ConversionTask::create($validated);
         // Optionally handle rewards creation here
@@ -61,6 +62,7 @@ class ConversionTaskController extends Controller
             'min_points' => 'required|integer|min:0',
             'max_points' => 'required|integer|min:0|gte:min_points',
             'reward_type_id' => 'required|exists:conversion_reward_types,id',
+            'referral_target' => 'nullable|integer|min:1',
         ]);
         $conversionTask->update($validated);
         // Optionally handle rewards update here

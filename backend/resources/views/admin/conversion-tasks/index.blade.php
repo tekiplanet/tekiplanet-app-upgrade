@@ -51,8 +51,9 @@
                             <td class="px-6 py-4">{{ $task->min_points }} - {{ $task->max_points }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
-                                    <button onclick="openEditModal(@json($task))"
-                                            class="text-blue-600 hover:text-blue-800">
+                                    <button type="button"
+                                            class="text-blue-600 hover:text-blue-800 edit-btn"
+                                            data-task='@json($task)'>
                                         Edit
                                     </button>
                                     <form action="{{ route('admin.conversion-tasks.destroy', $task) }}" method="POST" class="inline">
@@ -82,15 +83,33 @@
 
 @push('scripts')
 <script>
-function openCreateModal() {
+window.hideAllDynamicFields = function() {
+    document.getElementById('product-field').classList.add('hidden');
+    document.getElementById('coupon-field').classList.add('hidden');
+    document.getElementById('course-field').classList.add('hidden');
+    document.getElementById('cash-field').classList.add('hidden');
+    document.getElementById('discount-field').classList.add('hidden');
+    document.getElementById('referral-target-field').classList.add('hidden');
+}
+window.showReferralTargetIfNeeded = function() {
+    var taskTypeSelect = document.getElementById('task_type_id');
+    var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+    if (selectedText.includes('refer')) {
+        document.getElementById('referral-target-field').classList.remove('hidden');
+    } else {
+        document.getElementById('referral-target-field').classList.add('hidden');
+    }
+}
+window.openCreateModal = function() {
     document.getElementById('taskForm').reset();
     document.getElementById('modalTitle').textContent = 'Create Task';
     document.getElementById('taskForm').action = '{{ route('admin.conversion-tasks.store') }}';
     document.getElementById('taskForm').querySelector('input[name="_method"]').value = 'POST';
     document.getElementById('taskModal').classList.remove('hidden');
+    window.hideAllDynamicFields();
+    window.showReferralTargetIfNeeded();
 }
-
-function openEditModal(task) {
+window.openEditModal = function(task) {
     const form = document.getElementById('taskForm');
     form.reset();
     form.elements['title'].value = task.title;
@@ -99,15 +118,55 @@ function openEditModal(task) {
     form.elements['reward_type_id'].value = task.reward_type_id;
     form.elements['min_points'].value = task.min_points;
     form.elements['max_points'].value = task.max_points;
+    if ('referral_target' in task && document.getElementById('referral_target')) {
+        document.getElementById('referral_target').value = task.referral_target ?? '';
+    } else if (document.getElementById('referral_target')) {
+        document.getElementById('referral_target').value = '';
+    }
     form.action = `/admin/conversion-tasks/${task.id}`;
     form.querySelector('input[name="_method"]').value = 'PUT';
     document.getElementById('modalTitle').textContent = 'Edit Task';
     document.getElementById('taskModal').classList.remove('hidden');
+    window.hideAllDynamicFields();
+    window.showReferralTargetIfNeeded();
+    // Show referral field if needed
+    var taskTypeSelect = document.getElementById('task_type_id');
+    var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+    if (selectedText.includes('refer')) {
+        document.getElementById('referral-target-field').classList.remove('hidden');
+    }
 }
-
-function closeModal() {
+window.closeModal = function() {
     document.getElementById('taskModal').classList.add('hidden');
 }
+document.getElementById('reward_type_id').addEventListener('change', function() {
+    window.hideAllDynamicFields();
+    var selected = this.options[this.selectedIndex].text.toLowerCase();
+    if (selected.includes('product')) {
+        document.getElementById('product-field').classList.remove('hidden');
+    } else if (selected.includes('coupon')) {
+        document.getElementById('coupon-field').classList.remove('hidden');
+    } else if (selected.includes('course')) {
+        document.getElementById('course-field').classList.remove('hidden');
+    } else if (selected.includes('cash')) {
+        document.getElementById('cash-field').classList.remove('hidden');
+    } else if (selected.includes('discount')) {
+        document.getElementById('discount-field').classList.remove('hidden');
+    }
+    window.showReferralTargetIfNeeded();
+});
+document.getElementById('task_type_id').addEventListener('change', function() {
+    window.showReferralTargetIfNeeded();
+});
+// Hide all on load
+window.hideAllDynamicFields();
+window.showReferralTargetIfNeeded();
+document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var task = JSON.parse(this.getAttribute('data-task'));
+        window.openEditModal(task);
+    });
+});
 </script>
 @endpush
 @endsection

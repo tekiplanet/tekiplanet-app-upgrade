@@ -415,7 +415,7 @@ export default function RewardsTasksPage() {
                 </Card>
               </motion.div>
             ))}
-            {tasks.length > 2 && (
+            {stats.totalTasks > 2 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -423,7 +423,7 @@ export default function RewardsTasksPage() {
                 className="flex justify-center"
               >
                 <Button
-                  onClick={() => navigate('/tasks')}
+                  onClick={() => navigate('/dashboard/tasks')}
                   className="h-12 px-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Users className="h-5 w-5 mr-2" />

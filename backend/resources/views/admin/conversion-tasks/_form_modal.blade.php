@@ -78,6 +78,10 @@
                     <label for="service_name" class="block text-gray-700 mt-2">Service Name</label>
                     <input type="text" name="service_name" id="service_name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                 </div>
+                <div class="mb-4 hidden" id="referral-target-field">
+                    <label for="referral_target" class="block text-gray-700">Number of Referrals Required</label>
+                    <input type="number" name="referral_target" id="referral_target" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1">
+                </div>
             </div>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
@@ -96,6 +100,16 @@
         document.getElementById('course-field').classList.add('hidden');
         document.getElementById('cash-field').classList.add('hidden');
         document.getElementById('discount-field').classList.add('hidden');
+        document.getElementById('referral-target-field').classList.add('hidden');
+    }
+    function showReferralTargetIfNeeded() {
+        var taskTypeSelect = document.getElementById('task_type_id');
+        var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+        if (selectedText.includes('refer')) {
+            document.getElementById('referral-target-field').classList.remove('hidden');
+        } else {
+            document.getElementById('referral-target-field').classList.add('hidden');
+        }
     }
     document.getElementById('reward_type_id').addEventListener('change', function() {
         hideAllDynamicFields();
@@ -111,8 +125,28 @@
         } else if (selected.includes('discount')) {
             document.getElementById('discount-field').classList.remove('hidden');
         }
+        showReferralTargetIfNeeded();
+    });
+    document.getElementById('task_type_id').addEventListener('change', function() {
+        showReferralTargetIfNeeded();
     });
     // Hide all on load
     hideAllDynamicFields();
+    showReferralTargetIfNeeded();
+
+    // Patch openEditModal to populate referral_target
+    if (typeof openEditModal === 'function') {
+        const oldOpenEditModal = openEditModal;
+        window.openEditModal = function(task) {
+            oldOpenEditModal(task);
+            if (task.referral_target !== undefined && task.referral_target !== null) {
+                document.getElementById('referral_target').value = task.referral_target;
+                document.getElementById('referral-target-field').classList.remove('hidden');
+            } else {
+                document.getElementById('referral_target').value = '';
+                document.getElementById('referral-target-field').classList.add('hidden');
+            }
+        }
+    }
 </script>
 @endpush
