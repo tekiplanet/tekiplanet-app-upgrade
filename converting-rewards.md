@@ -140,6 +140,7 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - **2024-06-11:** Fixed referral registration flow: frontend now properly captures and forwards referral parameters to backend, and backend creates UserReferral records and increments referral count correctly.
 - **2024-06-11:** Fixed admin panel form: reward-specific fields (coupon dropdown, course dropdown, cash amount field, etc.) now show properly when editing tasks without requiring reward type changes.
 - **2024-06-11:** Implemented course access reward claiming: users can now claim free course access with fully covered enrollment and tuition fees, automatic enrollment, and redirect to course management.
+- **2024-06-11:** Fixed currency display in course access rewards: tuition and enrollment fees now show in user's preferred currency with proper conversion, matching the wallet dashboard and course details pages.
 - **2024-06-11:** Resolved URL parsing issue with hash routing - referral parameters are now properly extracted from URLs with hash fragments.
 
 ---

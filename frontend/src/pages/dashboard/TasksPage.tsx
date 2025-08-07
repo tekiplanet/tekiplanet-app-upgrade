@@ -10,7 +10,7 @@ import {
   Calendar, Filter, ChevronLeft, Users, Target,
   TrendingUp, BookOpen, Sparkles, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
@@ -24,9 +24,12 @@ import {
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/store/useAuthStore';
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
 
 export default function TasksPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -39,6 +42,89 @@ export default function TasksPage() {
   const [showRewardDialog, setShowRewardDialog] = useState(false);
   const [taskReward, setTaskReward] = useState<any>(null);
   const [loadingReward, setLoadingReward] = useState(false);
+  const [currencySymbol, setCurrencySymbol] = useState<string>('₦');
+
+  // Fetch user currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('₦'); // Default to NGN
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol(user.currency_code === 'NGN' ? '₦' : '$');
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+        setCurrencySymbol(user.currency_code === 'NGN' ? '₦' : '$');
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // CurrencyDisplay component that handles conversion properly
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    const [formattedAmount, setFormattedAmount] = useState<string>('0');
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+      const formatAmount = async () => {
+        try {
+          setIsLoading(true);
+          if (currencySymbol && currencySymbol !== '₦') {
+            // Use provided symbol to avoid API call
+            const formatted = formatAmountInUserCurrencySync(amount, userCurrencyCode, currencySymbol);
+            setFormattedAmount(formatted);
+          } else {
+            // Do full conversion with API call
+            const { formatAmountInUserCurrency } = await import('@/lib/currency');
+            const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
+            setFormattedAmount(formatted);
+          }
+        } catch (error) {
+          console.error('Error formatting currency:', error);
+          // Fallback to sync version with default symbol
+          const fallbackSymbol = userCurrencyCode === 'NGN' ? '₦' : '$';
+          setFormattedAmount(formatAmountInUserCurrencySync(amount, userCurrencyCode, fallbackSymbol));
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      formatAmount();
+    }, [amount, userCurrencyCode, currencySymbol]);
+
+    if (isLoading) {
+      return <span>...</span>;
+    }
+
+    return <span>{formattedAmount}</span>;
+  };
 
   // Fetch user tasks with pagination and filtering
   const { data, isLoading, refetch } = useQuery({
@@ -577,16 +663,34 @@ export default function TasksPage() {
                       <div className="bg-white dark:bg-gray-800 rounded-lg p-3 space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Original Tuition Fee:</span>
-                          <span className="line-through text-red-500">₦{taskReward.reward_details.course.price?.toLocaleString() || '0'}</span>
+                          <span className="line-through text-red-500">
+                            <CurrencyDisplay 
+                              amount={taskReward.reward_details.course.price || 0} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Original Enrollment Fee:</span>
-                          <span className="line-through text-red-500">₦{taskReward.reward_details.course.enrollment_fee?.toLocaleString() || '0'}</span>
+                          <span className="line-through text-red-500">
+                            <CurrencyDisplay 
+                              amount={taskReward.reward_details.course.enrollment_fee || 0} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </span>
                         </div>
                         <div className="border-t pt-2">
                           <div className="flex justify-between text-sm font-medium">
                             <span className="text-green-600">Your Cost:</span>
-                            <span className="text-green-600">₦0 (Fully Covered)</span>
+                            <span className="text-green-600">
+                              <CurrencyDisplay 
+                                amount={0} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              /> (Fully Covered)
+                            </span>
                           </div>
                         </div>
                       </div>

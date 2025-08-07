@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\RewardConversionService;
+use App\Services\CurrencyService;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -13,10 +14,12 @@ use App\Models\UserConversionTask;
 class RewardConversionController extends Controller
 {
     protected $rewardConversionService;
+    protected $currencyService;
 
-    public function __construct(RewardConversionService $rewardConversionService)
+    public function __construct(RewardConversionService $rewardConversionService, CurrencyService $currencyService)
     {
         $this->rewardConversionService = $rewardConversionService;
+        $this->currencyService = $currencyService;
     }
 
     /**
@@ -237,10 +240,32 @@ class RewardConversionController extends Controller
                     break;
                     
                 case 'course access':
+                    // Convert course prices if user has a different currency
+                    $course = $task->course;
+                    if ($course && $user->currency_code && $user->currency_code !== 'NGN') {
+                        // Convert course price
+                        if (isset($course->price)) {
+                            $course->price = $this->currencyService->convertAmount(
+                                $course->price,
+                                'NGN', // Course prices are stored in NGN
+                                $user->currency_code
+                            );
+                        }
+                        
+                        // Convert enrollment fee if it exists
+                        if (isset($course->enrollment_fee)) {
+                            $course->enrollment_fee = $this->currencyService->convertAmount(
+                                $course->enrollment_fee,
+                                'NGN', // Enrollment fees are stored in NGN
+                                $user->currency_code
+                            );
+                        }
+                    }
+                    
                     $rewardDetails = [
                         'type' => 'course_access',
-                        'course' => $task->course,
-                        'description' => $task->course ? "Free access to: {$task->course->title}" : "Course access"
+                        'course' => $course,
+                        'description' => $course ? "Free access to: {$course->title}" : "Course access"
                     ];
                     break;
                     
