@@ -42,6 +42,13 @@ class CouponController extends Controller
             ], 422);
         }
 
+        // Check if coupon requires a task and if user has completed it
+        if (!$coupon->hasUserCompletedRequiredTask($user)) {
+            return response()->json([
+                'message' => 'This coupon requires completion of a specific task. You are not eligible to use this coupon.'
+            ], 422);
+        }
+
         // Get cart total
         $cart = Cart::where('user_id', $user->id)->first();
         if (!$cart) {

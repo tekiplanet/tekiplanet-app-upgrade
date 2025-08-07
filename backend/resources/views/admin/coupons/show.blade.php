@@ -53,6 +53,16 @@
                         {{ $coupon->is_active ? 'Active' : 'Inactive' }}
                     </span>
                 </div>
+                <div>
+                    <label class="text-sm text-gray-500">Requires Task Completion</label>
+                    <span class="px-2 py-1 text-xs rounded-full 
+                        {{ $coupon->requires_task ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800' }}">
+                        {{ $coupon->requires_task ? 'Yes' : 'No' }}
+                    </span>
+                    @if($coupon->requires_task)
+                        <p class="text-xs text-gray-500 mt-1">Users must complete a specific conversion task to use this coupon</p>
+                    @endif
+                </div>
             </div>
         </div>
 

@@ -26,7 +26,8 @@ class Coupon extends Model
         'times_used',
         'starts_at',
         'expires_at',
-        'is_active'
+        'is_active',
+        'requires_task'
     ];
 
     protected $casts = [
@@ -38,7 +39,8 @@ class Coupon extends Model
         'usage_limit_total' => 'integer',
         'starts_at' => 'datetime',
         'expires_at' => 'datetime',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'requires_task' => 'boolean'
     ];
 
     public function category(): BelongsTo
@@ -110,5 +112,32 @@ class Coupon extends Model
         }
 
         return $discount;
+    }
+
+    /**
+     * Check if a user has completed the required task for this coupon.
+     * This method verifies that the user has completed a conversion task
+     * that is associated with this coupon.
+     */
+    public function hasUserCompletedRequiredTask(User $user): bool
+    {
+        if (!$this->requires_task) {
+            return true; // No task required, so always valid
+        }
+
+        // Find ALL conversion tasks that use this coupon
+        $conversionTasks = \App\Models\ConversionTask::where('coupon_id', $this->id)->get();
+        
+        if ($conversionTasks->isEmpty()) {
+            return false; // No tasks found for this coupon
+        }
+
+        // Check if user has completed ANY of the tasks that use this coupon
+        $userTask = \App\Models\UserConversionTask::where('user_id', $user->id)
+            ->whereIn('conversion_task_id', $conversionTasks->pluck('id'))
+            ->where('status', 'completed')
+            ->first();
+
+        return $userTask !== null;
     }
 } 

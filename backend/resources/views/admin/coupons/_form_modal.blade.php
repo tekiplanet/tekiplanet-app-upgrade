@@ -118,6 +118,17 @@
                             Active
                         </label>
                     </div>
+
+                    <!-- Requires Task -->
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               name="requires_task" 
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+                            Requires Task Completion
+                        </label>
+                        <p class="ml-2 text-sm text-gray-500">If checked, users must complete a specific conversion task to use this coupon</p>
+                    </div>
                 </div>
 
                 <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
@@ -145,8 +156,9 @@ document.getElementById('couponForm').addEventListener('submit', async function(
     const isEdit = formData.get('id');
     const formObject = Object.fromEntries(formData);
     
-    // Properly handle checkbox - if it's not in formData, it means it's unchecked
+    // Properly handle checkboxes - if they're not in formData, it means they're unchecked
     formObject.is_active = formData.has('is_active');
+    formObject.requires_task = formData.has('requires_task');
     
     try {
         const response = await fetch(`/admin/coupons${isEdit ? '/' + isEdit : ''}`, {
@@ -195,6 +207,7 @@ function openEditModal(coupon) {
     form.querySelector('[name="expires_at"]').value = coupon.expires_at.split(' ')[0];
     form.querySelector('[name="usage_limit_per_user"]').value = coupon.usage_limit_per_user || '';
     form.querySelector('[name="is_active"]').checked = coupon.is_active;
+    form.querySelector('[name="requires_task"]').checked = coupon.requires_task;
 
     document.getElementById('couponModal').classList.remove('hidden');
 }

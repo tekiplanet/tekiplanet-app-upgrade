@@ -48,6 +48,7 @@
                         <th class="px-6 py-3">Usage</th>
                         <th class="px-6 py-3">Valid Period</th>
                         <th class="px-6 py-3">Status</th>
+                        <th class="px-6 py-3">Task Required</th>
                         <th class="px-6 py-3">Actions</th>
                     </tr>
                 </thead>
@@ -86,6 +87,12 @@
                                 <span class="px-2 py-1 text-xs rounded-full 
                                     {{ $coupon->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ $coupon->is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs rounded-full 
+                                    {{ $coupon->requires_task ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $coupon->requires_task ? 'Yes' : 'No' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4">

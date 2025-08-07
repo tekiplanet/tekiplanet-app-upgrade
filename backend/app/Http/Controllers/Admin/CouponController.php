@@ -36,7 +36,8 @@ class CouponController extends Controller
             'starts_at' => 'required|date',
             'expires_at' => 'required|date|after:starts_at',
             'usage_limit_per_user' => 'nullable|integer|min:1',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'requires_task' => 'boolean'
         ]);
 
         try {
@@ -78,7 +79,8 @@ class CouponController extends Controller
             'starts_at' => 'required|date',
             'expires_at' => 'required|date|after:starts_at',
             'usage_limit_per_user' => 'nullable|integer|min:1',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'requires_task' => 'boolean'
         ]);
 
         try {

@@ -50,7 +50,7 @@ class OrderController extends Controller
             $coupon = null;
             if ($request->coupon_code) {
                 $coupon = Coupon::where('code', $request->coupon_code)->first();
-                if ($coupon && $coupon->isValid() && $coupon->canBeUsedByUser(auth()->user())) {
+                if ($coupon && $coupon->isValid() && $coupon->canBeUsedByUser(auth()->user()) && $coupon->hasUserCompletedRequiredTask(auth()->user())) {
                     $discount = $coupon->calculateDiscount($cart->current_total);
                 }
             }
