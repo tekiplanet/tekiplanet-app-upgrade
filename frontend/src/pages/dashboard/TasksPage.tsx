@@ -42,6 +42,7 @@ export default function TasksPage() {
   const [showRewardDialog, setShowRewardDialog] = useState(false);
   const [taskReward, setTaskReward] = useState<any>(null);
   const [loadingReward, setLoadingReward] = useState(false);
+  const [claimingCourseAccess, setClaimingCourseAccess] = useState(false);
   const [currencySymbol, setCurrencySymbol] = useState<string>('₦');
 
   // Fetch user currency symbol
@@ -550,14 +551,14 @@ export default function TasksPage() {
       </div>
       {/* Task Instructions Dialog */}
       <Dialog open={showTaskDialog} onOpenChange={setShowTaskDialog}>
-        <DialogContent className="max-w-lg w-full">
+        <DialogContent className="max-w-lg w-full max-h-[80vh] flex flex-col">
           <DialogTitle>Task Instructions</DialogTitle>
           {loadingInstructions ? (
             <div className="py-8 flex justify-center items-center">
               <span className="text-muted-foreground">Loading...</span>
             </div>
           ) : taskInstructions ? (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               <DialogDescription>
                 {taskInstructions.instructions}
               </DialogDescription>
@@ -594,14 +595,14 @@ export default function TasksPage() {
       
       {/* Task Reward Dialog */}
       <Dialog open={showRewardDialog} onOpenChange={setShowRewardDialog}>
-        <DialogContent className="max-w-lg w-full">
+        <DialogContent className="max-w-lg w-full max-h-[80vh] flex flex-col">
           <DialogTitle>Task Reward</DialogTitle>
           {loadingReward ? (
             <div className="py-8 flex justify-center items-center">
               <span className="text-muted-foreground">Loading reward details...</span>
             </div>
           ) : taskReward ? (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
                   <Award className="h-8 w-8 text-white" />
@@ -695,31 +696,79 @@ export default function TasksPage() {
                         </div>
                       </div>
                       
-                      <Button 
-                        size="sm" 
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                        onClick={async () => {
-                          try {
-                            const result = await rewardService.claimCourseAccess(activeTask.id);
-                            toast.success('Course access claimed successfully! You are now enrolled.');
-                            setShowRewardDialog(false);
-                            // Navigate to course management
-                            navigate(result.course_management_url);
-                          } catch (error: any) {
-                            if (error.data?.already_enrolled) {
-                              // User is already enrolled, offer to go to course management
-                              toast.info('You are already enrolled in this course!');
-                              setShowRewardDialog(false);
-                              navigate(error.data.course_management_url);
-                            } else {
-                              toast.error(error.message || 'Failed to claim course access.');
-                            }
-                          }
-                        }}
-                      >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Claim Course Access
-                      </Button>
+                                             {taskReward.claimed ? (
+                         <div className="space-y-3">
+                           <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                             <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                               <CheckCircle className="h-4 w-4" />
+                               <span className="text-sm font-medium">Reward Claimed</span>
+                             </div>
+                             <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                               Claimed on {taskReward.claimed_at ? new Date(taskReward.claimed_at).toLocaleDateString() : 'Unknown date'}
+                             </p>
+                           </div>
+                           <Button 
+                             size="sm" 
+                             variant="outline"
+                             className="w-full"
+                             onClick={() => {
+                               setShowRewardDialog(false);
+                               navigate(`/dashboard/academy/course/${taskReward.reward_details.course.id}/manage`);
+                             }}
+                           >
+                             <BookOpen className="h-4 w-4 mr-2" />
+                             Go to Course
+                           </Button>
+                         </div>
+                       ) : (
+                         <Button 
+                           size="sm" 
+                           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                           disabled={claimingCourseAccess}
+                           onClick={async () => {
+                             try {
+                               setClaimingCourseAccess(true);
+                               const result = await rewardService.claimCourseAccess(activeTask.id);
+                               toast.success('Course access claimed successfully! You are now enrolled.');
+                               setShowRewardDialog(false);
+                               // Navigate to course management
+                               navigate(result.course_management_url);
+                             } catch (error: any) {
+                               // Check if it's an axios error with response data
+                               if (error.response?.data?.data?.already_enrolled) {
+                                 // User is already enrolled, offer to go to course management
+                                 toast.info('You are already enrolled in this course!');
+                                 setShowRewardDialog(false);
+                                 navigate(error.response.data.data.course_management_url);
+                               } else if (error.response?.data?.data?.already_claimed) {
+                                 // Reward already claimed
+                                 toast.info('This reward has already been claimed.');
+                                 setShowRewardDialog(false);
+                                 navigate(error.response.data.data.course_management_url);
+                               } else if (error.response?.data?.message) {
+                                 // Show the specific error message from the backend
+                                 toast.error(error.response.data.message);
+                               } else {
+                                 toast.error(error.message || 'Failed to claim course access.');
+                               }
+                             } finally {
+                               setClaimingCourseAccess(false);
+                             }
+                           }}
+                         >
+                           {claimingCourseAccess ? (
+                             <>
+                               <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                               Claiming Access...
+                             </>
+                           ) : (
+                             <>
+                               <BookOpen className="h-4 w-4 mr-2" />
+                               Claim Course Access
+                             </>
+                           )}
+                         </Button>
+                       )}
                     </div>
                   </div>
                 )}

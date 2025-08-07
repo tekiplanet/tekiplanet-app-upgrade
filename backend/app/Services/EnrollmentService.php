@@ -10,6 +10,7 @@ use App\Models\Installment;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\CurrencyService;
 
 class EnrollmentService
 {
@@ -163,6 +164,17 @@ class EnrollmentService
                 throw new \Exception('You are already enrolled in this course.');
             }
 
+            // Convert course price to user's currency if needed
+            $coursePriceInUserCurrency = $course->price;
+            if ($user->currency_code && $user->currency_code !== 'NGN') {
+                $currencyService = app(CurrencyService::class);
+                $coursePriceInUserCurrency = $currencyService->convertAmount(
+                    $course->price,
+                    'NGN', // Course prices are stored in NGN
+                    $user->currency_code
+                );
+            }
+
             // Create enrollment without charging enrollment fee
             $enrollment = Enrollment::create([
                 'user_id' => $user->id,
@@ -173,11 +185,11 @@ class EnrollmentService
                 'enrolled_at' => now()
             ]);
 
-            // Create a fully paid installment for the full course price
+            // Create a fully paid installment for the full course price (in user's currency)
             $fullTuitionInstallment = Installment::create([
                 'enrollment_id' => $enrollment->id,
                 'user_id' => $user->id,
-                'amount' => $course->price, // Full course price
+                'amount' => $coursePriceInUserCurrency, // Store in user's currency
                 'due_date' => now(),
                 'status' => 'paid', // Mark as already paid
                 'paid_at' => now(),
@@ -199,7 +211,9 @@ class EnrollmentService
                     'course_id' => $course->id,
                     'course_title' => $course->title,
                     'reward_type' => 'course_access',
-                    'installment_id' => $fullTuitionInstallment->id
+                    'installment_id' => $fullTuitionInstallment->id,
+                    'course_price_original' => $course->price, // Original price in NGN
+                    'course_price_converted' => $coursePriceInUserCurrency // Converted price in user's currency
                 ]
             ]);
 
@@ -209,7 +223,9 @@ class EnrollmentService
                 'course_id' => $course->id,
                 'enrollment_id' => $enrollment->id,
                 'installment_id' => $fullTuitionInstallment->id,
-                'course_price' => $course->price
+                'course_price_original' => $course->price, // Original price in NGN
+                'course_price_converted' => $coursePriceInUserCurrency, // Converted price in user's currency
+                'user_currency' => $user->currency_code
             ]);
 
             return $enrollment;

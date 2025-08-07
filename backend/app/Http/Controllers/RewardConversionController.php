@@ -292,6 +292,8 @@ class RewardConversionController extends Controller
                 'task' => $task,
                 'reward_details' => $rewardDetails,
                 'completed_at' => $userTask->completed_at,
+                'claimed' => $userTask->claimed,
+                'claimed_at' => $userTask->claimed_at,
                 'user_task' => $userTask
             ]
         ]);
@@ -322,6 +324,20 @@ class RewardConversionController extends Controller
                 throw new \Exception('No course assigned to this reward.');
             }
 
+            // Check if the task reward has already been claimed
+            if ($userTask->claimed) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This reward has already been claimed.',
+                    'data' => [
+                        'already_claimed' => true,
+                        'claimed_at' => $userTask->claimed_at,
+                        'course' => $task->course,
+                        'course_management_url' => "/dashboard/academy/course/{$task->course->id}/manage"
+                    ]
+                ], 400);
+            }
+
             // Check if user is already enrolled in this course
             $existingEnrollment = \App\Models\Enrollment::where('user_id', $user->id)
                 ->where('course_id', $task->course->id)
@@ -343,6 +359,12 @@ class RewardConversionController extends Controller
             // Use the enrollment service to enroll user for free
             $enrollmentService = new \App\Services\EnrollmentService();
             $enrollment = $enrollmentService->enrollUserInCourseForReward($user, $task->course);
+
+            // Mark the task as claimed
+            $userTask->update([
+                'claimed' => true,
+                'claimed_at' => now()
+            ]);
 
             return response()->json([
                 'success' => true,

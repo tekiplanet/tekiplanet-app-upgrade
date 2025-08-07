@@ -17,6 +17,8 @@ class UserConversionTask extends Model
         'user_id',
         'conversion_task_id',
         'status',
+        'claimed',
+        'claimed_at',
         'assigned_at',
         'completed_at',
         'referral_count',
