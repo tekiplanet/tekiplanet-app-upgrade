@@ -50,7 +50,21 @@ class CourseCompletionService
     public function checkAndCompleteTask(UserConversionTask $userTask): bool
     {
         $task = $userTask->task;
-        if (!$task || strtolower($task->type->name) !== 'complete course') {
+        
+        Log::info('CourseCompletionService::checkAndCompleteTask called', [
+            'user_task_id' => $userTask->id,
+            'task_exists' => $task ? 'yes' : 'no',
+            'task_type_name' => $task ? $task->type->name : 'null',
+            'task_course_id' => $task ? $task->task_course_id : 'null'
+        ]);
+        
+        if (!$task || $task->type->name !== 'Complete Course') {
+            Log::info('Task check failed', [
+                'user_task_id' => $userTask->id,
+                'task_exists' => $task ? 'yes' : 'no',
+                'task_type_name' => $task ? $task->type->name : 'null',
+                'expected_type' => 'Complete Course'
+            ]);
             return false;
         }
         
@@ -65,6 +79,13 @@ class CourseCompletionService
         $requiredPercentage = $task->completion_percentage ?? 100;
         $user = $userTask->user;
         $course = $task->taskCourse;
+        
+        Log::info('Checking course completion', [
+            'user_task_id' => $userTask->id,
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'required_percentage' => $requiredPercentage
+        ]);
         
         // Check if user has completed the course to the required percentage
         if ($this->hasCompletedCourse($user, $course, $requiredPercentage)) {
@@ -83,6 +104,15 @@ class CourseCompletionService
             ]);
             
             return true;
+        } else {
+            $actualPercentage = $this->calculateCourseCompletion($user, $course);
+            Log::info('Course completion not yet reached', [
+                'user_task_id' => $userTask->id,
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'required_percentage' => $requiredPercentage,
+                'actual_percentage' => $actualPercentage
+            ]);
         }
         
         return false;

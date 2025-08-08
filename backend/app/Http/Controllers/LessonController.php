@@ -77,12 +77,19 @@ class LessonController extends Controller
             $lesson = CourseLesson::with(['module.course'])->findOrFail($lessonId);
             $course = $lesson->module->course;
             
+            \Log::info('Lesson completion started', [
+                'user_id' => $user->id,
+                'lesson_id' => $lessonId,
+                'course_id' => $course->id,
+                'course_name' => $course->title
+            ]);
+            
             // Check if user is enrolled
             $enrollment = Enrollment::where('user_id', $user->id)
                 ->where('course_id', $course->id)
                 ->first();
             
-            if (!$enrollment) {
+            if (!$enrollment && !$lesson->is_preview) {
                 return response()->json([
                     'success' => false,
                     'message' => 'You must be enrolled in this course to mark lessons as complete'
@@ -96,16 +103,9 @@ class LessonController extends Controller
             
             if ($existingProgress) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Lesson already marked as complete',
-                    'data' => [
-                        'lesson_id' => $lessonId,
-                        'completed_at' => $existingProgress->completed_at,
-                        'progress_percentage' => $this->calculateCourseProgress($user->id, $course->id),
-                        'learn_rewards_earned' => 0,
-                        'total_learn_rewards' => $user->learn_rewards
-                    ]
-                ]);
+                    'success' => false,
+                    'message' => 'Lesson already marked as complete'
+                ], 400);
             }
             
             // Mark lesson as complete
@@ -114,6 +114,12 @@ class LessonController extends Controller
                 'lesson_id' => $lessonId,
                 'course_id' => $course->id,
                 'completed_at' => now()
+            ]);
+            
+            \Log::info('Lesson marked as complete', [
+                'user_id' => $user->id,
+                'lesson_id' => $lessonId,
+                'course_id' => $course->id
             ]);
             
             // Award learn rewards if the lesson has any (only for non-quiz lessons)
@@ -125,6 +131,12 @@ class LessonController extends Controller
             
             // Calculate updated progress
             $progressPercentage = $this->calculateCourseProgress($user->id, $course->id);
+            
+            \Log::info('Course progress calculated', [
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'progress_percentage' => $progressPercentage
+            ]);
             
             // Check for course completion tasks
             $this->checkCourseCompletionTasks($user, $course);
@@ -142,6 +154,13 @@ class LessonController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Error marking lesson as complete', [
+                'user_id' => $user->id ?? 'unknown',
+                'lesson_id' => $lessonId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to mark lesson as complete',
@@ -486,6 +505,12 @@ class LessonController extends Controller
     private function checkCourseCompletionTasks($user, $course)
     {
         try {
+            \Log::info('Checking course completion tasks', [
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'course_name' => $course->title
+            ]);
+            
             // Get all pending course completion tasks for this user and course
             $pendingTasks = \App\Models\UserConversionTask::where('user_id', $user->id)
                 ->where('status', 'assigned')
@@ -495,23 +520,55 @@ class LessonController extends Controller
                               $typeQuery->where('name', 'Complete Course');
                           });
                 })
+                ->with(['task.type', 'task.taskCourse'])
                 ->get();
             
+            \Log::info('Found pending course completion tasks', [
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'task_count' => $pendingTasks->count(),
+                'tasks' => $pendingTasks->map(function($task) {
+                    return [
+                        'task_id' => $task->id,
+                        'conversion_task_id' => $task->conversion_task_id,
+                        'task_type' => $task->task->type->name ?? 'null',
+                        'task_course_id' => $task->task->task_course_id ?? 'null',
+                        'completion_percentage' => $task->task->completion_percentage ?? 'null'
+                    ];
+                })
+            ]);
+            
             if ($pendingTasks->isEmpty()) {
+                \Log::info('No pending course completion tasks found', [
+                    'user_id' => $user->id,
+                    'course_id' => $course->id
+                ]);
                 return;
             }
             
             $courseCompletionService = app(\App\Services\CourseCompletionService::class);
             
             foreach ($pendingTasks as $userTask) {
-                $courseCompletionService->checkAndCompleteTask($userTask);
+                \Log::info('Processing course completion task', [
+                    'user_task_id' => $userTask->id,
+                    'task_type' => $userTask->task->type->name ?? 'null',
+                    'task_course_id' => $userTask->task->task_course_id ?? 'null'
+                ]);
+                
+                $result = $courseCompletionService->checkAndCompleteTask($userTask);
+                
+                \Log::info('Course completion task check result', [
+                    'user_task_id' => $userTask->id,
+                    'was_completed' => $result
+                ]);
             }
             
         } catch (\Exception $e) {
             \Log::error('Error checking course completion tasks: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'course_id' => $course->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }
@@ -758,6 +815,16 @@ class LessonController extends Controller
                         'course_id' => $course->id,
                         'completed_at' => now()
                     ]);
+                    
+                    \Log::info('Quiz lesson marked as complete', [
+                        'user_id' => $user->id,
+                        'lesson_id' => $lessonId,
+                        'course_id' => $course->id,
+                        'course_name' => $course->title
+                    ]);
+                    
+                    // Check for course completion tasks
+                    $this->checkCourseCompletionTasks($user, $course);
                 }
             }
             

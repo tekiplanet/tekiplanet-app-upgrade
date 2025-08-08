@@ -47,6 +47,7 @@ export default function TasksPage() {
   const [claimingCashReward, setClaimingCashReward] = useState(false);
   const [claimingDiscountReward, setClaimingDiscountReward] = useState(false);
   const [downloadingSlip, setDownloadingSlip] = useState(false);
+  const [claimingCourseCompletionReward, setClaimingCourseCompletionReward] = useState(false);
   const [currencySymbol, setCurrencySymbol] = useState<string>('₦');
 
   // Fetch user currency symbol
@@ -856,14 +857,46 @@ export default function TasksPage() {
                     {taskInstructions.progress.status === 'completed' ? (
                       <Button 
                         className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => {
-                          setShowTaskDialog(false);
-                          // Navigate to course management to claim reward
-                          navigate(`/dashboard/academy/course/${taskInstructions.course.id}/manage`);
+                        disabled={claimingCourseCompletionReward}
+                        onClick={async () => {
+                          setClaimingCourseCompletionReward(true);
+                          try {
+                            // Get the reward details to determine the claim method
+                            const rewardDetails = await rewardService.getTaskReward(activeTask.id);
+                            
+                            if (rewardDetails.reward_details?.type === 'course access') {
+                              const result = await rewardService.claimCourseAccess(activeTask.id);
+                              toast.success('Course access claimed successfully!');
+                              navigate(`/dashboard/academy/course/${result.course.id}/manage`);
+                            } else if (rewardDetails.reward_details?.type === 'cash') {
+                              const result = await rewardService.claimCashReward(activeTask.id);
+                              toast.success('Cash reward claimed successfully!');
+                              navigate('/dashboard/wallet');
+                            } else if (rewardDetails.reward_details?.type === 'discount code') {
+                              const result = await rewardService.claimDiscountReward(activeTask.id);
+                              toast.success('Discount code claimed successfully!');
+                              // Stay on current page or navigate to appropriate location
+                            } else if (rewardDetails.reward_details?.type === 'coupon') {
+                              // For coupon rewards, just show success message since they don't need claiming
+                              toast.success('Coupon reward is ready! Check the reward details to copy your coupon code.');
+                              // Stay on current page since coupon codes are automatically assigned
+                            } else {
+                              toast.error('Unknown reward type');
+                            }
+                            
+                            setShowTaskDialog(false);
+                            // Refresh the tasks list
+                            refetch();
+                          } catch (error) {
+                            console.error('Error claiming reward:', error);
+                            toast.error('Failed to claim reward. Please try again.');
+                          } finally {
+                            setClaimingCourseCompletionReward(false);
+                          }
                         }}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Claim Your Reward
+                        {claimingCourseCompletionReward ? 'Claiming Reward...' : 'Claim Your Reward'}
                       </Button>
                     ) : (
                       <Button 
@@ -901,7 +934,7 @@ export default function TasksPage() {
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">4</span>
-                        <p>You can then claim your reward from the task management page.</p>
+                        <p>Once you reach the required completion percentage, click "Claim Your Reward" to receive your reward.</p>
                       </div>
                     </div>
                   </div>
