@@ -265,11 +265,38 @@ class RewardConversionController extends Controller
         $user = Auth::user();
         $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
             ->where('user_id', $user->id)
-            ->where('status', 'completed')
             ->with(['task.type', 'task.rewardType', 'task.product', 'task.coupon', 'task.course', 'task.taskCourse'])
             ->firstOrFail();
 
         $task = $userTask->task;
+        
+        // Special handling for course completion tasks that aren't yet marked as completed
+        if ($task->type->name === 'Complete Course' && $userTask->status !== 'completed') {
+            $courseCompletionService = app(\App\Services\CourseCompletionService::class);
+            
+            // Check if user has actually completed the course to the required percentage
+            if ($courseCompletionService->checkAndCompleteTask($userTask)) {
+                // Task was just marked as completed, refresh the userTask
+                $userTask->refresh();
+                Log::info('Course completion task auto-completed during reward claim', [
+                    'user_task_id' => $userTask->id,
+                    'user_id' => $user->id,
+                    'course_id' => $task->task_course_id
+                ]);
+            } else {
+                // User hasn't met the completion criteria yet
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Course completion criteria not yet met'
+                ], 400);
+            }
+        } else if ($userTask->status !== 'completed') {
+            // For non-course completion tasks, still require completed status
+            return response()->json([
+                'success' => false,
+                'message' => 'Task not yet completed'
+            ], 400);
+        }
         $rewardDetails = [];
 
         // Debug logging
@@ -284,6 +311,12 @@ class RewardConversionController extends Controller
         // Build reward details based on reward type
         if ($task->rewardType) {
             $rewardType = strtolower($task->rewardType->name);
+            
+            // Debug the actual reward type name
+            Log::info('Processing reward type', [
+                'original_name' => $task->rewardType->name,
+                'lowercase_name' => $rewardType
+            ]);
             
             switch ($rewardType) {
                 case 'cash':
@@ -338,8 +371,19 @@ class RewardConversionController extends Controller
                     break;
                     
                 case 'course access':
+                case 'courseaccess':
+                case 'course_access':
                     // Convert course prices if user has a different currency
                     $course = $task->course;
+                    
+                    // Debug course data
+                    Log::info('Course access reward processing', [
+                        'course_exists' => $course ? 'yes' : 'no',
+                        'course_id' => $course ? $course->id : 'null',
+                        'course_title' => $course ? $course->title : 'null',
+                        'task_course_id' => $task->course_id
+                    ]);
+                    
                     if ($course && $user->currency_code && $user->currency_code !== 'NGN') {
                         // Convert course price
                         if (isset($course->price)) {
@@ -365,6 +409,12 @@ class RewardConversionController extends Controller
                         'course' => $course,
                         'description' => $course ? "Free access to: {$course->title}" : "Course access"
                     ];
+                    
+                    Log::info('Course access reward details created', [
+                        'reward_type' => 'course_access',
+                        'course_title' => $course ? $course->title : 'null',
+                        'description' => $course ? "Free access to: {$course->title}" : "Course access"
+                    ]);
                     break;
                     
                 case 'discount code':
@@ -377,6 +427,10 @@ class RewardConversionController extends Controller
                     break;
                     
                 default:
+                    Log::info('Reward type not matched, falling to default case', [
+                        'reward_type' => $rewardType,
+                        'original_name' => $task->rewardType->name
+                    ]);
                     $rewardDetails = [
                         'type' => 'unknown',
                         'description' => 'Reward details not available'
@@ -411,6 +465,11 @@ class RewardConversionController extends Controller
     {
         $user = Auth::user();
         
+        Log::info('claimCourseAccess called', [
+            'user_conversion_task_id' => $userConversionTaskId,
+            'user_id' => $user->id
+        ]);
+        
         try {
             $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
                 ->where('user_id', $user->id)
@@ -420,17 +479,42 @@ class RewardConversionController extends Controller
 
             $task = $userTask->task;
             
+            Log::info('User task found for claimCourseAccess', [
+                'user_task_id' => $userTask->id,
+                'task_id' => $task->id,
+                'task_status' => $userTask->status,
+                'task_claimed' => $userTask->claimed,
+                'claimed_at' => $userTask->claimed_at,
+                'reward_type' => $task->rewardType ? $task->rewardType->name : 'null',
+                'course_id' => $task->course ? $task->course->id : 'null',
+                'course_title' => $task->course ? $task->course->title : 'null'
+            ]);
+            
             // Verify this is a course access reward
-            if (!$task->rewardType || strtolower($task->rewardType->name) !== 'course access') {
+            $rewardTypeName = strtolower($task->rewardType->name ?? '');
+            if (!$task->rewardType || !in_array($rewardTypeName, ['course access', 'courseaccess', 'course_access'])) {
+                Log::warning('Invalid reward type for course access claim', [
+                    'reward_type' => $task->rewardType ? $task->rewardType->name : 'null',
+                    'reward_type_lowercase' => $rewardTypeName
+                ]);
                 throw new \Exception('This task does not have a course access reward.');
             }
             
             if (!$task->course) {
+                Log::warning('No course assigned to reward', [
+                    'task_id' => $task->id,
+                    'reward_type' => $task->rewardType ? $task->rewardType->name : 'null'
+                ]);
                 throw new \Exception('No course assigned to this reward.');
             }
 
             // Check if the task reward has already been claimed
             if ($userTask->claimed) {
+                Log::info('Task already claimed', [
+                    'user_task_id' => $userTask->id,
+                    'claimed_at' => $userTask->claimed_at,
+                    'course_id' => $task->course->id
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'This reward has already been claimed.',
@@ -448,7 +532,34 @@ class RewardConversionController extends Controller
                 ->where('course_id', $task->course->id)
                 ->first();
 
+            Log::info('Checking existing enrollment', [
+                'user_id' => $user->id,
+                'course_id' => $task->course->id,
+                'existing_enrollment' => $existingEnrollment ? 'yes' : 'no',
+                'enrollment_id' => $existingEnrollment ? $existingEnrollment->id : 'null'
+            ]);
+
             if ($existingEnrollment) {
+                Log::info('User already enrolled in course', [
+                    'user_id' => $user->id,
+                    'course_id' => $task->course->id,
+                    'enrollment_id' => $existingEnrollment->id,
+                    'enrollment_created_at' => $existingEnrollment->created_at
+                ]);
+                
+                // Mark the task as claimed since user already has access
+                if (!$userTask->claimed) {
+                    $userTask->update([
+                        'claimed' => true,
+                        'claimed_at' => now()
+                    ]);
+                    
+                    Log::info('Task marked as claimed for already enrolled user', [
+                        'user_task_id' => $userTask->id,
+                        'claimed_at' => now()
+                    ]);
+                }
+                
                 return response()->json([
                     'success' => false,
                     'message' => 'You are already enrolled in this course.',
@@ -462,12 +573,29 @@ class RewardConversionController extends Controller
             }
 
             // Use the enrollment service to enroll user for free
+            Log::info('Attempting to enroll user in course', [
+                'user_id' => $user->id,
+                'course_id' => $task->course->id,
+                'course_title' => $task->course->title
+            ]);
+            
             $enrollmentService = new \App\Services\EnrollmentService();
             $enrollment = $enrollmentService->enrollUserInCourseForReward($user, $task->course);
+
+            Log::info('User enrolled successfully', [
+                'user_id' => $user->id,
+                'course_id' => $task->course->id,
+                'enrollment_id' => $enrollment->id
+            ]);
 
             // Mark the task as claimed
             $userTask->update([
                 'claimed' => true,
+                'claimed_at' => now()
+            ]);
+
+            Log::info('Task marked as claimed', [
+                'user_task_id' => $userTask->id,
                 'claimed_at' => now()
             ]);
 
@@ -484,7 +612,8 @@ class RewardConversionController extends Controller
             Log::error('Course access claim failed', [
                 'user_id' => $user->id,
                 'user_conversion_task_id' => $userConversionTaskId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([

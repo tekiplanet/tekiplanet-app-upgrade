@@ -10,7 +10,7 @@ import {
   CheckCircle, AlertCircle, PlayCircle, Zap, Star,
   TrendingUp, Award, BookOpen, Users, Calendar
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,12 +23,112 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useAuthStore } from '@/store/useAuthStore';
+import { formatAmountInUserCurrencySync } from '@/lib/currency';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export default function RewardsTasksPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [isConverting, setIsConverting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [activeTask, setActiveTask] = useState<any>(null);
+  const [taskInstructions, setTaskInstructions] = useState<any>(null);
+  const [loadingInstructions, setLoadingInstructions] = useState(false);
+  const [showRewardDialog, setShowRewardDialog] = useState(false);
+  const [taskReward, setTaskReward] = useState<any>(null);
+  const [loadingReward, setLoadingReward] = useState(false);
+  const [claimingCourseAccess, setClaimingCourseAccess] = useState(false);
+  const [claimingCashReward, setClaimingCashReward] = useState(false);
+  const [claimingDiscountReward, setClaimingDiscountReward] = useState(false);
+  const [downloadingSlip, setDownloadingSlip] = useState(false);
+  const [claimingCourseCompletionReward, setClaimingCourseCompletionReward] = useState(false);
+  const [currencySymbol, setCurrencySymbol] = useState<string>('₦');
+
+  // Fetch user currency symbol
+  useEffect(() => {
+    const fetchUserCurrencySymbol = async () => {
+      if (!user?.currency_code) {
+        setCurrencySymbol('₦'); // Default to NGN
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/currency/${user.currency_code}/symbol`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const symbol = data.data?.symbol || data.symbol || '$';
+          setCurrencySymbol(symbol);
+        } else {
+          console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+          setCurrencySymbol(user.currency_code === 'NGN' ? '₦' : '$');
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch currency symbol for ${user.currency_code}, using default`);
+        setCurrencySymbol(user.currency_code === 'NGN' ? '₦' : '$');
+      }
+    };
+
+    fetchUserCurrencySymbol();
+  }, [user?.currency_code]);
+
+  // CurrencyDisplay component that handles conversion properly
+  const CurrencyDisplay = ({ 
+    amount, 
+    userCurrencyCode,
+    currencySymbol 
+  }: { 
+    amount: number, 
+    userCurrencyCode?: string,
+    currencySymbol?: string 
+  }) => {
+    const [formattedAmount, setFormattedAmount] = useState<string>('0');
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+      const formatAmount = async () => {
+        try {
+          setIsLoading(true);
+          if (currencySymbol && currencySymbol !== '₦') {
+            // Use provided symbol to avoid API call
+            const formatted = formatAmountInUserCurrencySync(amount, userCurrencyCode, currencySymbol);
+            setFormattedAmount(formatted);
+          } else {
+            // Do full conversion with API call
+            const { formatAmountInUserCurrency } = await import('@/lib/currency');
+            const formatted = await formatAmountInUserCurrency(amount, userCurrencyCode);
+            setFormattedAmount(formatted);
+          }
+        } catch (error) {
+          console.error('Error formatting currency:', error);
+          // Fallback to sync version with default symbol
+          const fallbackSymbol = userCurrencyCode === 'NGN' ? '₦' : '$';
+          setFormattedAmount(formatAmountInUserCurrencySync(amount, userCurrencyCode, fallbackSymbol));
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      formatAmount();
+    }, [amount, userCurrencyCode, currencySymbol]);
+
+    if (isLoading) {
+      return <span>...</span>;
+    }
+
+    return <span>{formattedAmount}</span>;
+  };
 
   // Fetch user tasks and rewards
   const { data, isLoading, refetch } = useQuery({
@@ -102,6 +202,50 @@ export default function RewardsTasksPage() {
       case 'assigned': return <Clock className="h-4 w-4" />;
       case 'failed': return <AlertCircle className="h-4 w-4" />;
       default: return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const handleStartTask = async (task: any) => {
+    setActiveTask(task);
+    setShowTaskDialog(true);
+    setLoadingInstructions(true);
+    try {
+      const instructions = await rewardService.getTaskInstructions(task.id);
+      setTaskInstructions(instructions);
+    } catch (e) {
+      toast.error('Failed to load task instructions.');
+      setTaskInstructions(null);
+    } finally {
+      setLoadingInstructions(false);
+    }
+  };
+
+  const handleCopyReferralLink = () => {
+    if (taskInstructions?.referral_link) {
+      navigator.clipboard.writeText(taskInstructions.referral_link);
+      toast.success('Referral link copied!');
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    if (taskInstructions?.share_link) {
+      navigator.clipboard.writeText(taskInstructions.share_link);
+      toast.success('Share link copied!');
+    }
+  };
+
+  const handleViewReward = async (task: any) => {
+    setActiveTask(task);
+    setShowRewardDialog(true);
+    setLoadingReward(true);
+    try {
+      const reward = await rewardService.getTaskReward(task.id);
+      setTaskReward(reward);
+    } catch (e) {
+      toast.error('Failed to load reward details.');
+      setTaskReward(null);
+    } finally {
+      setLoadingReward(false);
     }
   };
 
@@ -405,9 +549,20 @@ export default function RewardsTasksPage() {
                         <Button 
                           size="sm" 
                           className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                          onClick={() => handleStartTask(task)}
                         >
                           <PlayCircle className="h-4 w-4 mr-2" />
                           Start Task
+                        </Button>
+                      )}
+                      {task.status === 'completed' && (
+                        <Button 
+                          size="sm" 
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                          onClick={() => handleViewReward(task)}
+                        >
+                          <Award className="h-4 w-4 mr-2" />
+                          View Reward
                         </Button>
                       )}
                     </div>
@@ -434,6 +589,859 @@ export default function RewardsTasksPage() {
           </div>
         )}
       </div>
+
+      {/* Task Instructions Dialog */}
+      <Dialog open={showTaskDialog} onOpenChange={setShowTaskDialog}>
+        <DialogContent className="max-w-lg w-full max-h-[80vh] flex flex-col">
+          <DialogTitle>Task Instructions</DialogTitle>
+          {loadingInstructions ? (
+            <div className="py-8 flex justify-center items-center">
+              <span className="text-muted-foreground">Loading...</span>
+            </div>
+          ) : taskInstructions ? (
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+              <DialogDescription>
+                {taskInstructions.instructions}
+              </DialogDescription>
+              {taskInstructions.referral_link && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">Your Referral Link</label>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={taskInstructions.referral_link}
+                      readOnly
+                      className="flex-1 bg-muted/30 text-xs sm:text-sm"
+                      onFocus={e => e.target.select()}
+                    />
+                    <Button size="icon" variant="outline" onClick={handleCopyReferralLink}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h8m-2 8v2a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
+                    </Button>
+                  </div>
+                  {taskInstructions.progress && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} referrals
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Product Share Section */}
+              {taskInstructions.product && taskInstructions.share_link && (
+                <div className="space-y-4">
+                  {/* Product Details */}
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-3">Product to Share</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        {taskInstructions.product.image && (
+                          <img 
+                            src={taskInstructions.product.image} 
+                            alt={taskInstructions.product.name}
+                            className="w-16 h-16 object-cover rounded-lg border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{taskInstructions.product.name}</h5>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {taskInstructions.product.description}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                              <CurrencyDisplay 
+                                amount={taskInstructions.product.price || 0} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Share Link */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Share Link</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Share this link with others. When someone purchases this product through your link, it will count towards your task.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={taskInstructions.share_link}
+                        readOnly
+                        className="flex-1 bg-muted/30 text-xs sm:text-sm"
+                        onFocus={e => e.target.select()}
+                      />
+                      <Button size="icon" variant="outline" onClick={handleCopyShareLink}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h8m-2 8v2a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
+                      </Button>
+                    </div>
+                    {taskInstructions.progress && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} purchases
+                      </div>
+                    )}
+                  </div>
+
+                  {/* How It Works */}
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
+                    <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2 text-xs">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      How It Works
+                    </h4>
+                    <div className="space-y-1 text-xs text-yellow-800 dark:text-yellow-200">
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">1</span>
+                        <p>Copy the share link above and share it with your friends, family, or on social media.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">2</span>
+                        <p>When someone clicks your link and purchases this product, it will be tracked automatically.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">3</span>
+                        <p>Your progress will update in real-time. Once you reach the target number of purchases, your task will be completed.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">4</span>
+                        <p>Note: Share links expire after 7 days. You'll need to create a new link if the current one expires.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Course Share Section */}
+              {taskInstructions.course && taskInstructions.share_link && (
+                <div className="space-y-4">
+                  {/* Course Details */}
+                  <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                    <h4 className="font-medium text-green-700 dark:text-green-300 mb-3">Course to Share</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        {taskInstructions.course.image_url && (
+                          <img 
+                            src={taskInstructions.course.image_url} 
+                            alt={taskInstructions.course.title}
+                            className="w-16 h-16 object-cover rounded-lg border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{taskInstructions.course.title}</h5>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {taskInstructions.course.description}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                              <CurrencyDisplay 
+                                amount={taskInstructions.course.price || 0} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Share Link */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Share Link</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Share this link with others. When someone enrolls in this course through your link, it will count towards your task.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={taskInstructions.share_link}
+                        readOnly
+                        className="flex-1 bg-muted/30 text-xs sm:text-sm"
+                        onFocus={e => e.target.select()}
+                      />
+                      <Button size="icon" variant="outline" onClick={handleCopyShareLink}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h8m-2 8v2a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
+                      </Button>
+                    </div>
+                    {taskInstructions.progress && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} enrollments
+                      </div>
+                    )}
+                  </div>
+
+                  {/* How It Works */}
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
+                    <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2 text-xs">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      How It Works
+                    </h4>
+                    <div className="space-y-1 text-xs text-yellow-800 dark:text-yellow-200">
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">1</span>
+                        <p>Copy the share link above and share it with your friends, family, or on social media.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">2</span>
+                        <p>When someone clicks your link and enrolls in this course, it will be tracked automatically.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">3</span>
+                        <p>Your progress will update in real-time. Once you reach the target number of enrollments, your task will be completed.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">4</span>
+                        <p>Note: Share links expire after 7 days. You'll need to create a new link if the current one expires.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Course Completion Section */}
+              {taskInstructions.course && taskInstructions.progress && taskInstructions.progress.status && (
+                <div className="space-y-4">
+                  {/* Course Details */}
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-3">Course to Complete</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        {taskInstructions.course.image_url && (
+                          <img 
+                            src={taskInstructions.course.image_url} 
+                            alt={taskInstructions.course.title}
+                            className="w-16 h-16 object-cover rounded-lg border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{taskInstructions.course.title}</h5>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {taskInstructions.course.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Section */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Your Progress</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span>Completion Progress</span>
+                        <span className="font-medium">
+                          {Math.round(taskInstructions.progress.completed)}% / {Math.round(taskInstructions.progress.needed)}%
+                        </span>
+                      </div>
+                      <Progress 
+                        value={Math.round(taskInstructions.progress.completed)} 
+                        className="h-2"
+                      />
+                      {taskInstructions.progress.status === 'completed' ? (
+                        <div className="p-3 bg-green-50 dark:bg-green-500/10 rounded-lg border border-green-200 dark:border-green-500/20">
+                          <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm font-medium">Course completed! Your task is ready to be claimed.</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
+                          <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                            <Clock className="h-4 w-4" />
+                            <span className="text-sm">Continue learning to reach {taskInstructions.progress.needed}% completion.</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    {taskInstructions.progress.status === 'completed' ? (
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        disabled={claimingCourseCompletionReward}
+                        onClick={async () => {
+                          setClaimingCourseCompletionReward(true);
+                          try {
+                            // Get the reward details to determine the claim method
+                            const rewardDetails = await rewardService.getTaskReward(activeTask.id);
+                            
+                            if (rewardDetails.reward_details?.type === 'course_access') {
+                              const result = await rewardService.claimCourseAccess(activeTask.id);
+                              toast.success('Course access claimed successfully!');
+                              navigate(`/dashboard/academy/course/${result.course.id}/manage`);
+                            } else if (rewardDetails.reward_details?.type === 'cash') {
+                              const result = await rewardService.claimCashReward(activeTask.id);
+                              toast.success('Cash reward claimed successfully!');
+                              navigate('/dashboard/wallet');
+                            } else if (rewardDetails.reward_details?.type === 'discount_code') {
+                              const result = await rewardService.claimDiscountReward(activeTask.id);
+                              toast.success('Discount code claimed successfully!');
+                              // Stay on current page or navigate to appropriate location
+                            } else if (rewardDetails.reward_details?.type === 'coupon') {
+                              // For coupon rewards, just show success message since they don't need claiming
+                              toast.success('Coupon reward is ready! Check the reward details to copy your coupon code.');
+                              // Stay on current page since coupon codes are automatically assigned
+                            } else {
+                              toast.error('Unknown reward type');
+                            }
+                            
+                            setShowTaskDialog(false);
+                            // Refresh the tasks list
+                            refetch();
+                          } catch (error: any) {
+                            console.error('Error claiming reward:', error);
+                            
+                            // Check if user is already enrolled in the course
+                            if (error.response?.status === 400 && error.response?.data?.data?.already_enrolled) {
+                              // User is already enrolled, mark task as claimed and show success message
+                              toast.success('You already have access to this course! Task marked as completed.');
+                              setShowTaskDialog(false);
+                              refetch();
+                            } else if (error.response?.status === 400 && error.response?.data?.data?.already_claimed) {
+                              // Task already claimed
+                              toast.info('This reward has already been claimed.');
+                              setShowTaskDialog(false);
+                              refetch();
+                            } else {
+                              // Other errors
+                              toast.error('Failed to claim reward. Please try again.');
+                            }
+                          } finally {
+                            setClaimingCourseCompletionReward(false);
+                          }
+                        }}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {claimingCourseCompletionReward ? 'Claiming Reward...' : 'Claim Your Reward'}
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="w-full"
+                        onClick={() => {
+                          setShowTaskDialog(false);
+                          // Navigate to course to continue learning
+                          navigate(`/dashboard/academy/course/${taskInstructions.course.id}`);
+                        }}
+                      >
+                        <PlayCircle className="h-4 w-4 mr-2" />
+                        Continue Learning
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* How It Works */}
+                  <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-500/20">
+                    <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2 text-xs">
+                      <BookOpen className="h-4 w-4" />
+                      How It Works
+                    </h4>
+                    <div className="space-y-1 text-xs text-blue-800 dark:text-blue-200">
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">1</span>
+                        <p>Complete lessons in this course to increase your completion percentage.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">2</span>
+                        <p>Your progress is tracked automatically as you complete lessons.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">3</span>
+                        <p>Once you reach the required completion percentage, your task will be marked as completed.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">4</span>
+                        <p>Once you reach the required completion percentage, click "Claim Your Reward" to receive your reward.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-destructive">Failed to load instructions.</div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTaskDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Task Reward Dialog */}
+      <Dialog open={showRewardDialog} onOpenChange={setShowRewardDialog}>
+        <DialogContent className="max-w-lg w-full max-h-[80vh] flex flex-col">
+          <DialogTitle>Task Reward</DialogTitle>
+          {loadingReward ? (
+            <div className="py-8 flex justify-center items-center">
+              <span className="text-muted-foreground">Loading reward details...</span>
+            </div>
+          ) : taskReward ? (
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                  <Award className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-green-600">Congratulations!</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You've successfully completed this task
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="p-4 bg-muted/30 rounded-lg">
+                  <h4 className="font-medium mb-2">Your Reward</h4>
+                  <p className="text-lg font-semibold text-green-600">
+                    {taskReward.reward_details?.description || 'Reward details not available'}
+                  </p>
+                </div>
+                
+                {taskReward.reward_details?.type === 'coupon' && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                    <h4 className="font-medium mb-2">Coupon Code</h4>
+                    {taskReward.reward_details?.coupon ? (
+                      <div className="flex gap-2 items-center">
+                        <code className="flex-1 bg-white dark:bg-gray-800 px-3 py-2 rounded border text-sm font-mono">
+                          {taskReward.reward_details.coupon.code}
+                        </code>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            navigator.clipboard.writeText(taskReward.reward_details.coupon.code);
+                            toast.success('Coupon code copied!');
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        <p>Your coupon code will be assigned soon. Please check back later or contact support.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {taskReward.reward_details?.type === 'course_access' && taskReward.reward_details?.course && (
+                  <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                    <h4 className="font-medium mb-2">Course Access</h4>
+                    <div className="space-y-3">
+                      <div className="text-sm">
+                        <p className="font-medium text-purple-700 dark:text-purple-300">
+                          {taskReward.reward_details.course.title}
+                        </p>
+                        <p className="text-muted-foreground mt-1">
+                          You have been granted free access to this paid course!
+                        </p>
+                      </div>
+                      
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Original Tuition Fee:</span>
+                          <span className="line-through text-red-500">
+                            <CurrencyDisplay 
+                              amount={taskReward.reward_details.course.price || 0} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Original Enrollment Fee:</span>
+                          <span className="line-through text-red-500">
+                            <CurrencyDisplay 
+                              amount={taskReward.reward_details.course.enrollment_fee || 0} 
+                              userCurrencyCode={user?.currency_code}
+                              currencySymbol={currencySymbol}
+                            />
+                          </span>
+                        </div>
+                        <div className="border-t pt-2">
+                          <div className="flex justify-between text-sm font-medium">
+                            <span className="text-green-600">Your Cost:</span>
+                            <span className="text-green-600">
+                              <CurrencyDisplay 
+                                amount={0} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              /> (Fully Covered)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {taskReward.claimed ? (
+                        <div className="space-y-3">
+                          <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                            <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="text-sm font-medium">Reward Claimed</span>
+                            </div>
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Claimed on {taskReward.claimed_at ? new Date(taskReward.claimed_at).toLocaleDateString() : 'Unknown date'}
+                            </p>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => {
+                              setShowRewardDialog(false);
+                              navigate(`/dashboard/academy/course/${taskReward.reward_details.course.id}/manage`);
+                            }}
+                          >
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Go to Course
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                          disabled={claimingCourseAccess}
+                          onClick={async () => {
+                            try {
+                              setClaimingCourseAccess(true);
+                              const result = await rewardService.claimCourseAccess(activeTask.id);
+                              toast.success('Course access claimed successfully! You are now enrolled.');
+                              setShowRewardDialog(false);
+                              // Navigate to course management
+                              navigate(result.course_management_url);
+                            } catch (error: any) {
+                              // Check if it's an axios error with response data
+                              if (error.response?.data?.data?.already_enrolled) {
+                                // User is already enrolled, offer to go to course management
+                                toast.info('You are already enrolled in this course!');
+                                setShowRewardDialog(false);
+                                navigate(error.response.data.data.course_management_url);
+                              } else if (error.response?.data?.data?.already_claimed) {
+                                // Reward already claimed
+                                toast.info('This reward has already been claimed.');
+                                setShowRewardDialog(false);
+                                navigate(error.response.data.data.course_management_url);
+                              } else if (error.response?.data?.message) {
+                                // Show the specific error message from the backend
+                                toast.error(error.response.data.message);
+                              } else {
+                                toast.error(error.message || 'Failed to claim course access.');
+                              }
+                            } finally {
+                              setClaimingCourseAccess(false);
+                            }
+                          }}
+                        >
+                          {claimingCourseAccess ? (
+                            <>
+                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Claiming Access...
+                            </>
+                          ) : (
+                            <>
+                              <BookOpen className="h-4 w-4 mr-2" />
+                              Claim Course Access
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {taskReward.reward_details?.type === 'cash' && (
+                  <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                    <h4 className="font-medium mb-2">Cash Reward</h4>
+                    <div className="space-y-3">
+                      <div className="text-sm">
+                        <p className="font-medium text-green-700 dark:text-green-300">
+                          <CurrencyDisplay 
+                            amount={taskReward.reward_details.amount || 0} 
+                            userCurrencyCode={user?.currency_code}
+                            currencySymbol={currencySymbol}
+                          />
+                        </p>
+                        <p className="text-muted-foreground mt-1">
+                          This amount will be added to your wallet balance!
+                        </p>
+                      </div>
+                      
+                      {taskReward.claimed ? (
+                        <div className="space-y-3">
+                          <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                            <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="text-sm font-medium">Reward Claimed</span>
+                            </div>
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Claimed on {taskReward.claimed_at ? new Date(taskReward.claimed_at).toLocaleDateString() : 'Unknown date'}
+                            </p>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => {
+                              setShowRewardDialog(false);
+                              navigate('/dashboard/wallet');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            View Wallet
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                          disabled={claimingCashReward}
+                          onClick={async () => {
+                            try {
+                              setClaimingCashReward(true);
+                              const result = await rewardService.claimCashReward(activeTask.id);
+                              toast.success(`Cash reward claimed successfully! ${result.amount} added to your wallet.`);
+                              setShowRewardDialog(false);
+                              // Navigate to wallet
+                              navigate('/dashboard/wallet');
+                            } catch (error: any) {
+                              // Check if it's an axios error with response data
+                              if (error.response?.data?.data?.already_claimed) {
+                                // Reward already claimed
+                                toast.info('This reward has already been claimed.');
+                                setShowRewardDialog(false);
+                                navigate('/dashboard/wallet');
+                              } else if (error.response?.data?.message) {
+                                // Show the specific error message from the backend
+                                toast.error(error.response.data.message);
+                              } else {
+                                toast.error(error.message || 'Failed to claim cash reward.');
+                              }
+                            } finally {
+                              setClaimingCashReward(false);
+                            }
+                          }}
+                        >
+                          {claimingCashReward ? (
+                            <>
+                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Claiming Cash...
+                            </>
+                          ) : (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                              </svg>
+                              Claim Cash Reward
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {taskReward.reward_details?.type === 'discount_code' && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                    <h4 className="font-medium mb-2">Discount Reward</h4>
+                    <div className="space-y-3">
+                      <div className="text-sm">
+                        <p className="font-medium text-blue-700 dark:text-blue-300">
+                          {taskReward.reward_details.percentage}% discount on {taskReward.reward_details.service}
+                        </p>
+                        <p className="text-muted-foreground mt-1">
+                          Generate a discount slip that you can use for {taskReward.reward_details.service} services!
+                        </p>
+                      </div>
+                      
+                      {taskReward.claimed ? (
+                        <div className="space-y-3">
+                          <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                            <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="text-sm font-medium">Reward Claimed</span>
+                            </div>
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Claimed on {taskReward.claimed_at ? new Date(taskReward.claimed_at).toLocaleDateString() : 'Unknown date'}
+                            </p>
+                          </div>
+                          
+                          {/* Show discount slip details if available */}
+                          {taskReward.discount_slip && (
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Discount Code:</span>
+                                  <span className="text-sm font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                    {taskReward.discount_slip.discount_code}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">Service:</span>
+                                  <span className="text-sm">{taskReward.discount_slip.service_name}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">Discount:</span>
+                                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                    {taskReward.discount_slip.discount_percent}%
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">Status:</span>
+                                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                    taskReward.discount_slip.is_used 
+                                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' 
+                                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  }`}>
+                                    {taskReward.discount_slip.is_used ? 'Used' : 'Active'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">Valid Until:</span>
+                                  <span className="text-sm">
+                                    {new Date(taskReward.discount_slip.expires_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                {taskReward.discount_slip.is_used && taskReward.discount_slip.used_at && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm">Used On:</span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      {new Date(taskReward.discount_slip.used_at).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="w-full mt-3"
+                                disabled={downloadingSlip}
+                                onClick={async () => {
+                                  try {
+                                    setDownloadingSlip(true);
+                                    const result = await rewardService.downloadDiscountSlip(activeTask.id);
+                                    
+                                    // Check if we're in a Capacitor environment (mobile)
+                                    const isCapacitor = window.Capacitor?.isNative;
+                                    
+                                    if (isCapacitor) {
+                                      // Mobile: Use Capacitor Filesystem
+                                      const fileName = result.filename || `discount_slip_${Date.now()}.pdf`;
+                                      
+                                      const savedFile = await Filesystem.writeFile({
+                                        path: `Download/${fileName}`,
+                                        data: result.pdf_content,
+                                        directory: Directory.ExternalStorage,
+                                        recursive: true
+                                      });
+                                      
+                                      toast.success('Discount slip downloaded successfully!', {
+                                        description: 'File saved to Download folder'
+                                      });
+                                    } else {
+                                      // Web: Use browser download
+                                      const pdfBlob = new Blob([Uint8Array.from(atob(result.pdf_content), c => c.charCodeAt(0))], { type: 'application/pdf' });
+                                      const url = URL.createObjectURL(pdfBlob);
+                                      const link = document.createElement('a');
+                                      link.href = url;
+                                      link.download = result.filename || 'discount_slip.pdf';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                      URL.revokeObjectURL(url);
+                                      toast.success('Discount slip downloaded successfully!');
+                                    }
+                                  } catch (error: any) {
+                                    console.error('Download error:', error);
+                                    toast.error('Failed to download discount slip.');
+                                  } finally {
+                                    setDownloadingSlip(false);
+                                  }
+                                }}
+                              >
+                                {downloadingSlip ? (
+                                  <>
+                                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                    Downloading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Download Slip
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+                          disabled={claimingDiscountReward}
+                          onClick={async () => {
+                            try {
+                              setClaimingDiscountReward(true);
+                              const result = await rewardService.claimDiscountReward(activeTask.id);
+                              toast.success('Discount reward claimed successfully! Your discount slip has been generated.');
+                              setShowRewardDialog(false);
+                              // Refresh the reward details to show the discount slip
+                              const updatedReward = await rewardService.getTaskReward(activeTask.id);
+                              setTaskReward(updatedReward);
+                              setShowRewardDialog(true);
+                            } catch (error: any) {
+                              // Check if it's an axios error with response data
+                              if (error.response?.data?.data?.already_claimed) {
+                                // Reward already claimed
+                                toast.info('This reward has already been claimed.');
+                                setShowRewardDialog(false);
+                              } else if (error.response?.data?.message) {
+                                // Show the specific error message from the backend
+                                toast.error(error.response.data.message);
+                              } else {
+                                toast.error(error.message || 'Failed to claim discount reward.');
+                              }
+                            } finally {
+                              setClaimingDiscountReward(false);
+                            }
+                          }}
+                        >
+                          {claimingDiscountReward ? (
+                            <>
+                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                              Generating Slip...
+                            </>
+                          ) : (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Generate Discount Slip
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-destructive">Failed to load reward details.</div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRewardDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="sm:max-w-md">

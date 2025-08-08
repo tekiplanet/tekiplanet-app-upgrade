@@ -864,7 +864,7 @@ export default function TasksPage() {
                             // Get the reward details to determine the claim method
                             const rewardDetails = await rewardService.getTaskReward(activeTask.id);
                             
-                            if (rewardDetails.reward_details?.type === 'course access') {
+                            if (rewardDetails.reward_details?.type === 'course_access') {
                               const result = await rewardService.claimCourseAccess(activeTask.id);
                               toast.success('Course access claimed successfully!');
                               navigate(`/dashboard/academy/course/${result.course.id}/manage`);
@@ -872,7 +872,7 @@ export default function TasksPage() {
                               const result = await rewardService.claimCashReward(activeTask.id);
                               toast.success('Cash reward claimed successfully!');
                               navigate('/dashboard/wallet');
-                            } else if (rewardDetails.reward_details?.type === 'discount code') {
+                            } else if (rewardDetails.reward_details?.type === 'discount_code') {
                               const result = await rewardService.claimDiscountReward(activeTask.id);
                               toast.success('Discount code claimed successfully!');
                               // Stay on current page or navigate to appropriate location
@@ -887,9 +887,24 @@ export default function TasksPage() {
                             setShowTaskDialog(false);
                             // Refresh the tasks list
                             refetch();
-                          } catch (error) {
+                          } catch (error: any) {
                             console.error('Error claiming reward:', error);
-                            toast.error('Failed to claim reward. Please try again.');
+                            
+                            // Check if user is already enrolled in the course
+                            if (error.response?.status === 400 && error.response?.data?.data?.already_enrolled) {
+                              // User is already enrolled, mark task as claimed and show success message
+                              toast.success('You already have access to this course! Task marked as completed.');
+                              setShowTaskDialog(false);
+                              refetch();
+                            } else if (error.response?.status === 400 && error.response?.data?.data?.already_claimed) {
+                              // Task already claimed
+                              toast.info('This reward has already been claimed.');
+                              setShowTaskDialog(false);
+                              refetch();
+                            } else {
+                              // Other errors
+                              toast.error('Failed to claim reward. Please try again.');
+                            }
                           } finally {
                             setClaimingCourseCompletionReward(false);
                           }
