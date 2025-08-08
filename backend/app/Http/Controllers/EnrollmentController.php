@@ -31,7 +31,8 @@ class EnrollmentController extends Controller
     public function enroll(Request $request)
     {
         $request->validate([
-            'course_id' => 'required|exists:courses,id'
+            'course_id' => 'required|exists:courses,id',
+            'course_share_id' => 'nullable|string'
         ]);
 
         try {
@@ -48,6 +49,33 @@ class EnrollmentController extends Controller
             }
 
             $enrollment = $this->enrollmentService->enrollUserInCourse($user, $course);
+
+            // Track course share enrollment if share ID is provided
+            if ($request->course_share_id) {
+                try {
+                    $courseShareService = app(\App\Services\CourseShareService::class);
+                    $courseShareService->recordEnrollment(
+                        $request->course_share_id,
+                        $enrollment->id,
+                        $user->id,
+                        $course->price + ($course->enrollment_fee ?? 0)
+                    );
+                    
+                    Log::info('Course share enrollment tracked', [
+                        'course_share_id' => $request->course_share_id,
+                        'enrollment_id' => $enrollment->id,
+                        'user_id' => $user->id,
+                        'course_id' => $course->id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to track course share enrollment', [
+                        'course_share_id' => $request->course_share_id,
+                        'enrollment_id' => $enrollment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't fail the enrollment if tracking fails
+                }
+            }
 
             return response()->json([
                 'success' => true,

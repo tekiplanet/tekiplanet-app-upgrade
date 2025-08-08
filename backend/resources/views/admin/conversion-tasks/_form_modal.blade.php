@@ -60,8 +60,17 @@
                     </select>
                 </div>
                 <div class="mb-4 hidden" id="course-field">
-                    <label for="course_id" class="block text-gray-700">Select Course</label>
+                    <label for="course_id" class="block text-gray-700">Select Course (Reward)</label>
                     <select name="course_id" id="course_id" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">Select Course</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}">{{ $course->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-4 hidden" id="task-course-field">
+                    <label for="task_course_id" class="block text-gray-700">Select Course (Task)</label>
+                    <select name="task_course_id" id="task_course_id" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                         <option value="">Select Course</option>
                         @foreach($courses as $course)
                             <option value="{{ $course->id }}">{{ $course->title }}</option>
@@ -86,6 +95,10 @@
                     <label for="share_target" class="block text-gray-700">Number of Purchases Required</label>
                     <input type="number" name="share_target" id="share_target" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1" value="1">
                 </div>
+                <div class="mb-4 hidden" id="enrollment-target-field">
+                    <label for="enrollment_target" class="block text-gray-700">Number of Enrollments Required</label>
+                    <input type="number" name="enrollment_target" id="enrollment_target" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1" value="1">
+                </div>
             </div>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
@@ -102,10 +115,12 @@
         document.getElementById('product-field').classList.add('hidden');
         document.getElementById('coupon-field').classList.add('hidden');
         document.getElementById('course-field').classList.add('hidden');
+        document.getElementById('task-course-field').classList.add('hidden');
         document.getElementById('cash-field').classList.add('hidden');
         document.getElementById('discount-field').classList.add('hidden');
         document.getElementById('referral-target-field').classList.add('hidden');
         document.getElementById('share-target-field').classList.add('hidden');
+        document.getElementById('enrollment-target-field').classList.add('hidden');
     }
     function showReferralTargetIfNeeded() {
         var taskTypeSelect = document.getElementById('task_type_id');
@@ -121,6 +136,13 @@
             document.getElementById('share-target-field').classList.remove('hidden');
         } else {
             document.getElementById('share-target-field').classList.add('hidden');
+        }
+        
+        // Show enrollment target for refer to enroll course tasks
+        if (selectedText.includes('enroll course')) {
+            document.getElementById('enrollment-target-field').classList.remove('hidden');
+        } else {
+            document.getElementById('enrollment-target-field').classList.add('hidden');
         }
     }
     document.getElementById('reward_type_id').addEventListener('change', function() {
@@ -150,6 +172,11 @@
             document.getElementById('product-field').classList.remove('hidden');
         }
         
+        // Show task course field for refer to enroll course tasks
+        if (selectedText.includes('enroll course')) {
+            document.getElementById('task-course-field').classList.remove('hidden');
+        }
+        
         showReferralTargetIfNeeded();
     });
     // Hide all on load
@@ -171,6 +198,15 @@
                 document.getElementById('cash-field').classList.remove('hidden');
             } else if (selected.includes('discount')) {
                 document.getElementById('discount-field').classList.remove('hidden');
+            }
+        }
+        
+        // Initialize task-specific fields
+        var taskTypeSelect = document.getElementById('task_type_id');
+        if (taskTypeSelect && taskTypeSelect.value) {
+            var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+            if (selectedText.includes('enroll course')) {
+                document.getElementById('task-course-field').classList.remove('hidden');
             }
         }
     }

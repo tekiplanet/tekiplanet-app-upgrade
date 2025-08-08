@@ -23,6 +23,7 @@ class UserConversionTask extends Model
         'completed_at',
         'referral_count',
         'share_count',
+        'enrollment_count',
     ];
 
     public function user()
@@ -54,11 +55,28 @@ class UserConversionTask extends Model
     }
 
     /**
+     * Get the course share record for this task.
+     */
+    public function courseShare()
+    {
+        return $this->hasOne(UserCourseShare::class, 'user_conversion_task_id');
+    }
+
+    /**
      * Generate a unique share link for a product task.
      */
     public function generateProductShareLink($productId)
     {
         $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
         return $baseUrl . '/dashboard#/dashboard/store/product/' . $productId . '?share=' . $this->id;
+    }
+
+    /**
+     * Generate a unique share link for a course task.
+     */
+    public function generateCourseShareLink($courseId)
+    {
+        $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
+        return $baseUrl . '/dashboard#/dashboard/academy/course/' . $courseId . '?share=' . $this->id;
     }
 }

@@ -59,8 +59,19 @@ export const enrollmentService = {
         };
       }
 
+      // Get course share link ID from localStorage if available
+      const courseShareId = localStorage.getItem(`course_share_${courseId}`);
+      
       // Proceed with enrollment if not already enrolled
-      const response = await api.post('/enrollments/enroll', { course_id: courseId });
+      const response = await api.post('/enrollments/enroll', { 
+        course_id: courseId,
+        course_share_id: courseShareId || null
+      });
+      
+      // Clean up localStorage after successful enrollment
+      if (courseShareId) {
+        localStorage.removeItem(`course_share_${courseId}`);
+      }
       
       return {
         success: true,

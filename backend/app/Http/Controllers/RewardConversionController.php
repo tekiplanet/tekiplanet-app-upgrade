@@ -154,7 +154,7 @@ class RewardConversionController extends Controller
         $user = Auth::user();
         $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
             ->where('user_id', $user->id)
-            ->with(['task.type', 'task.product'])
+            ->with(['task.type', 'task.product', 'task.taskCourse'])
             ->firstOrFail();
 
         $task = $userTask->task;
@@ -190,6 +190,23 @@ class RewardConversionController extends Controller
             } else {
                 $instructions = 'This task requires sharing a product, but no product has been assigned. Please contact support.';
             }
+        } elseif ($task && strtolower($task->type->name) === 'refer to enroll course') {
+            if ($task->taskCourse) {
+                $course = $task->taskCourse;
+                $instructions = "Share the course link below. When someone enrolls in this course through your link, it will count towards your task.";
+                
+                // Generate share link using CourseShareService
+                $courseShareService = app(\App\Services\CourseShareService::class);
+                $shareLink = $courseShareService->generateShareLink($userTask, $course);
+                
+                $target = $task->enrollment_target ?? 1;
+                $progress = [
+                    'needed' => $target,
+                    'completed' => $userTask->enrollment_count ?? 0,
+                ];
+            } else {
+                $instructions = 'This task requires sharing a course, but no course has been assigned. Please contact support.';
+            }
         } else {
             $instructions = 'Complete the assigned task as described.';
         }
@@ -202,6 +219,7 @@ class RewardConversionController extends Controller
                 'share_link' => $shareLink,
                 'progress' => $progress,
                 'product' => $product,
+                'course' => $course ?? null,
                 'task' => $task,
             ]
         ]);
@@ -216,7 +234,7 @@ class RewardConversionController extends Controller
         $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
             ->where('user_id', $user->id)
             ->where('status', 'completed')
-            ->with(['task.type', 'task.rewardType', 'task.product', 'task.coupon', 'task.course'])
+            ->with(['task.type', 'task.rewardType', 'task.product', 'task.coupon', 'task.course', 'task.taskCourse'])
             ->firstOrFail();
 
         $task = $userTask->task;
@@ -365,7 +383,7 @@ class RewardConversionController extends Controller
             $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
                 ->where('user_id', $user->id)
                 ->where('status', 'completed')
-                ->with(['task.type', 'task.rewardType', 'task.course'])
+                ->with(['task.type', 'task.rewardType', 'task.course', 'task.taskCourse'])
                 ->firstOrFail();
 
             $task = $userTask->task;

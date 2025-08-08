@@ -131,6 +131,7 @@ window.openEditModal = function(task) {
     if (task.product_id) form.elements['product_id'].value = task.product_id;
     if (task.coupon_id) form.elements['coupon_id'].value = task.coupon_id;
     if (task.course_id) form.elements['course_id'].value = task.course_id;
+    if (task.task_course_id) form.elements['task_course_id'].value = task.task_course_id;
     if (task.cash_amount) form.elements['cash_amount'].value = task.cash_amount;
     if (task.discount_percent) form.elements['discount_percent'].value = task.discount_percent;
     if (task.service_name) form.elements['service_name'].value = task.service_name;
@@ -181,6 +182,9 @@ window.openEditModal = function(task) {
             document.getElementById('share-target-field').classList.remove('hidden');
             // Also show product field for share tasks regardless of reward type
             document.getElementById('product-field').classList.remove('hidden');
+        }
+        if (selectedText.includes('enroll course')) {
+            document.getElementById('task-course-field').classList.remove('hidden');
         }
     }, 100);
 }

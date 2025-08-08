@@ -23,11 +23,13 @@ class ConversionTask extends Model
         'product_id',
         'coupon_id',
         'course_id',
+        'task_course_id',
         'cash_amount',
         'discount_percent',
         'service_name',
         'referral_target',
         'share_target',
+        'enrollment_target',
     ];
 
     public function type()
@@ -63,5 +65,10 @@ class ConversionTask extends Model
     public function course()
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function taskCourse()
+    {
+        return $this->belongsTo(Course::class, 'task_course_id');
     }
 }

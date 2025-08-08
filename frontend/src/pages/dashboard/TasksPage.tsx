@@ -647,10 +647,14 @@ export default function TasksPage() {
                   </div>
 
                   {/* Share Link */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium">Your Share Link</label>
-                    <div className="flex gap-2 items-center">
-                      <Input
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Share Link</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Share this link with others. When someone purchases this product through your link, it will count towards your task.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
                         value={taskInstructions.share_link}
                         readOnly
                         className="flex-1 bg-muted/30 text-xs sm:text-sm"
@@ -667,20 +671,119 @@ export default function TasksPage() {
                     )}
                   </div>
 
-                  {/* Instructions */}
-                  <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <div className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {/* How It Works */}
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
+                    <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2 text-xs">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <div className="text-sm">
-                        <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">How to complete this task:</p>
-                        <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1">
-                          <li>• Share the link above on social media, messaging apps, or any platform</li>
-                          <li>• When someone clicks your link and purchases the product, it counts towards your goal</li>
-                          <li>• You need {taskInstructions.progress?.needed || 1} purchase(s) to complete this task</li>
-                          <li>• Only purchases made through your unique link will be counted</li>
-                        </ul>
+                      How It Works
+                    </h4>
+                    <div className="space-y-1 text-xs text-yellow-800 dark:text-yellow-200">
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">1</span>
+                        <p>Copy the share link above and share it with your friends, family, or on social media.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">2</span>
+                        <p>When someone clicks your link and purchases this product, it will be tracked automatically.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">3</span>
+                        <p>Your progress will update in real-time. Once you reach the target number of purchases, your task will be completed.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">4</span>
+                        <p>Note: Share links expire after 7 days. You'll need to create a new link if the current one expires.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Course Share Section */}
+              {taskInstructions.course && taskInstructions.share_link && (
+                <div className="space-y-4">
+                  {/* Course Details */}
+                  <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                    <h4 className="font-medium text-green-700 dark:text-green-300 mb-3">Course to Share</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        {taskInstructions.course.image_url && (
+                          <img 
+                            src={taskInstructions.course.image_url} 
+                            alt={taskInstructions.course.title}
+                            className="w-16 h-16 object-cover rounded-lg border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{taskInstructions.course.title}</h5>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {taskInstructions.course.description}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                              <CurrencyDisplay 
+                                amount={taskInstructions.course.price || 0} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Share Link */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Share Link</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Share this link with others. When someone enrolls in this course through your link, it will count towards your task.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={taskInstructions.share_link}
+                        readOnly
+                        className="flex-1 bg-muted/30 text-xs sm:text-sm"
+                        onFocus={e => e.target.select()}
+                      />
+                      <Button size="icon" variant="outline" onClick={handleCopyShareLink}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h8m-2 8v2a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
+                      </Button>
+                    </div>
+                    {taskInstructions.progress && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} enrollments
+                      </div>
+                    )}
+                  </div>
+
+                  {/* How It Works */}
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
+                    <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2 text-xs">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      How It Works
+                    </h4>
+                    <div className="space-y-1 text-xs text-yellow-800 dark:text-yellow-200">
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">1</span>
+                        <p>Copy the share link above and share it with your friends, family, or on social media.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">2</span>
+                        <p>When someone clicks your link and enrolls in this course, it will be tracked automatically.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">3</span>
+                        <p>Your progress will update in real-time. Once you reach the target number of enrollments, your task will be completed.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-yellow-200 dark:bg-yellow-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-800 dark:text-yellow-200">4</span>
+                        <p>Note: Share links expire after 7 days. You'll need to create a new link if the current one expires.</p>
                       </div>
                     </div>
                   </div>

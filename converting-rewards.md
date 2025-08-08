@@ -52,7 +52,7 @@ Enable users to convert their learning rewards into various benefits, with the c
 
 ### conversion_task_types
 - id (uuid, primary)
-- name (string) — e.g., "Refer to Register", "Complete Course", "Share Product", "Refer to Buy Course"
+- name (string) — e.g., "Refer to Register", "Complete Course", "Share Product", "Refer to Enroll Course"
 - description (text, nullable)
 
 ### conversion_reward_types
@@ -318,7 +318,8 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
   - [x] Referral registration tracking (backend endpoint for instructions/referral link implemented)
   - [x] Product link sharing tracking (COMPLETED - comprehensive implementation with analytics, expiration, and self-referral prevention)
   - [ ] Course completion tracking
-  - [ ] Referral purchase tracking
+- [x] Referral purchase tracking (COMPLETED - comprehensive implementation with analytics, expiration, and self-referral prevention)
+- [x] Course sharing tracking (COMPLETED - comprehensive implementation with analytics, expiration, and self-referral prevention)
 - [x] Implement reward granting logic after task completion (referral registration only)
 - [x] Integrate with wallet, coupon, course access, and discount systems
 - [x] Create a user_referrals table to track each referral event:
@@ -346,6 +347,17 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
   - [x] Robust error handling and logging
   - [x] Frontend integration with localStorage management
   - [x] Backend API endpoints for analytics and tracking
+- [x] **COMPLETED: Course Sharing Task Tracking System (FULLY IMPLEMENTED)**
+  - [x] Database schema updates: added enrollment_target, enrollment_count, user_course_shares, course_share_enrollments, course_share_visits tables
+  - [x] Backend models: UserCourseShare, CourseShareEnrollment, CourseShareVisit with relationships and methods
+  - [x] CourseShareService with comprehensive methods for link generation, tracking, and analytics
+  - [x] Updated ConversionTask and UserConversionTask models with new fields and relationships
+  - [x] Admin panel updates: added enrollment_target field and course selection for "Refer to Enroll Course" tasks
+  - [x] Backend API updates: CourseShareController with visit tracking and analytics endpoints
+  - [x] Updated RewardConversionController to handle "Refer to Enroll Course" task instructions and course share links
+  - [x] Frontend integration: CourseDetails component tracks course share visits, TasksPage displays course information
+  - [x] Enrollment tracking: enrollmentService includes course share ID tracking, localStorage management
+  - [x] Backend enrollment tracking: EnrollmentController integrates course share tracking with enrollment process
 - [ ] Testing and QA
 
 ---
@@ -581,7 +593,7 @@ The enhanced share link tracking system is now complete and fully operational:
 | Refer to Register       | User must refer someone to register on the platform.              |
 | Complete Course         | User must complete a specified course.                            |
 | Share Product           | User must share a product link and someone must purchase through the link. |
-| Refer to Buy Course     | User must refer someone to purchase a course.                     |
+| Refer to Enroll Course  | User must refer someone to enroll in a course.                    |
 
 ### Reward Types
 | Name           | Description                                                      |
@@ -600,11 +612,11 @@ Below are recommended example tasks you should create to cover all main scenario
 | Refer a Friend to Register  | Refer to Register    | Coupon          | 100-200     | Select a store coupon         | User must refer a new user who completes registration |
 | Complete Any Paid Course    | Complete Course      | Cash            | 300-500     | ₦1,000 cash                   | User must complete a paid course |
 | Share a Product Link        | Share Product        | Discount Code   | 50-100      | 10% off on a service          | User must share a product link and someone must purchase through it (7-day expiration) |
-| Refer to Buy a Course       | Refer to Buy Course  | Course Access   | 400-600     | Select a paid course          | User must refer someone who purchases a course |
+| Refer to Enroll a Course    | Refer to Enroll Course  | Course Access   | 400-600     | Select a paid course          | User must refer someone who enrolls in a course |
 | Complete a Specific Course  | Complete Course      | Coupon          | 200-400     | Select a store coupon         | User must complete a specific course (select course) |
 | Refer to Buy a Product      | Refer to Register    | Cash            | 250-350     | ₦500 cash                     | User must refer someone who buys a product (if supported) |
 | Share a Service Link        | Share Product        | Discount Code   | 80-150      | 15% off on a service          | User must share a service link and someone must purchase through it (7-day expiration) |
-| Refer to Buy a Course       | Refer to Buy Course  | Coupon          | 350-500     | Select a store coupon         | User must refer someone who purchases a course |
+| Refer to Enroll a Course    | Refer to Enroll Course  | Coupon          | 350-500     | Select a store coupon         | User must refer someone who enrolls in a course |
 | Complete Any Course         | Complete Course      | Course Access   | 150-300     | Select a paid course          | User must complete any course (select course) |
 
 - Adjust the points, reward details, and notes as needed for your business logic.

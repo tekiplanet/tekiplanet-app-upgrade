@@ -147,6 +147,13 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
                 Route::get('/overall-analytics', [App\Http\Controllers\ShareLinkController::class, 'getOverallAnalytics']);
             });
             
+            // Course share analytics routes (protected)
+            Route::prefix('course-shares')->group(function () {
+                // Note: track-visit is public and defined below outside auth
+                Route::get('/analytics/{shareId}', [App\Http\Controllers\CourseShareController::class, 'getShareAnalytics']);
+                Route::get('/overall-analytics', [App\Http\Controllers\CourseShareController::class, 'getOverallAnalytics']);
+            });
+            
             // Workstation routes
             Route::prefix('workstation')->group(function () {
                 Route::get('/plans', [WorkstationController::class, 'getPlans']);
@@ -179,6 +186,11 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
 // Public route for tracking share link visits (allow anonymous visitors)
 Route::prefix('share-links')->group(function () {
     Route::post('/track-visit', [App\Http\Controllers\ShareLinkController::class, 'trackVisit']);
+});
+
+// Public route for tracking course share link visits (allow anonymous visitors)
+Route::prefix('course-shares')->group(function () {
+    Route::post('/track-visit', [App\Http\Controllers\CourseShareController::class, 'trackVisit']);
 });
 
 // User Preferences Route

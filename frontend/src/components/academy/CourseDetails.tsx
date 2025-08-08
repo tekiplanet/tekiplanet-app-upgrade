@@ -28,6 +28,7 @@ import PagePreloader from "@/components/ui/PagePreloader";
 import { formatAmountInUserCurrencySync } from '@/lib/currency';
 import { useState, useEffect } from 'react';
 import { lessonService } from '@/services/lessonService';
+import { storeService } from '@/services/storeService';
 
 interface EnrollmentResponse {
   success: boolean;
@@ -163,6 +164,39 @@ export default function CourseDetails() {
   // console.log('Enrollment Fee:', ENROLLMENT_FEE);
   // console.log('User Wallet Balance:', walletBalance);
   // console.log('User Currency:', user?.currency_code);
+
+  // Track course share visits
+  useEffect(() => {
+    const trackCourseShareVisit = async () => {
+      try {
+        // Check for share parameter in URL (both query string and hash)
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+        
+        const shareParam = urlParams.get('share') || hashParams.get('share');
+        
+        if (shareParam && courseId) {
+          // Construct the full share link
+          const shareLink = `${window.location.origin}/dashboard#/dashboard/academy/course/${courseId}?share=${shareParam}`;
+          
+          // Track the visit
+          await storeService.trackCourseShareVisit(shareLink);
+          
+          // Store share link ID in localStorage for enrollment tracking
+          localStorage.setItem(`course_share_${courseId}`, shareParam);
+          
+          console.log('Course share visit tracked:', shareLink);
+        }
+      } catch (error) {
+        console.error('Error tracking course share visit:', error);
+        // Silent fail - don't disrupt user experience
+      }
+    };
+
+    if (courseId) {
+      trackCourseShareVisit();
+    }
+  }, [courseId]);
 
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = React.useState(false);
   const [showConfirmEnrollmentModal, setShowConfirmEnrollmentModal] = React.useState(false);
