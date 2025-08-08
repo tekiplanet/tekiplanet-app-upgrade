@@ -90,6 +90,7 @@ window.hideAllDynamicFields = function() {
     document.getElementById('cash-field').classList.add('hidden');
     document.getElementById('discount-field').classList.add('hidden');
     document.getElementById('referral-target-field').classList.add('hidden');
+    document.getElementById('share-target-field').classList.add('hidden');
 }
 window.showReferralTargetIfNeeded = function() {
     var taskTypeSelect = document.getElementById('task_type_id');
@@ -98,6 +99,13 @@ window.showReferralTargetIfNeeded = function() {
         document.getElementById('referral-target-field').classList.remove('hidden');
     } else {
         document.getElementById('referral-target-field').classList.add('hidden');
+    }
+    
+    // Show share target for share product tasks
+    if (selectedText.includes('share')) {
+        document.getElementById('share-target-field').classList.remove('hidden');
+    } else {
+        document.getElementById('share-target-field').classList.add('hidden');
     }
 }
 window.openCreateModal = function() {
@@ -132,6 +140,12 @@ window.openEditModal = function(task) {
     } else if (document.getElementById('referral_target')) {
         document.getElementById('referral_target').value = '';
     }
+    
+    if ('share_target' in task && document.getElementById('share_target')) {
+        document.getElementById('share_target').value = task.share_target ?? '';
+    } else if (document.getElementById('share_target')) {
+        document.getElementById('share_target').value = '';
+    }
     form.action = `/admin/conversion-tasks/${task.id}`;
     form.querySelector('input[name="_method"]').value = 'PUT';
     document.getElementById('modalTitle').textContent = 'Edit Task';
@@ -157,11 +171,16 @@ window.openEditModal = function(task) {
             }
         }
         
-        // Show referral field if needed
+        // Show task-specific fields based on task type
         var taskTypeSelect = document.getElementById('task_type_id');
         var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
         if (selectedText.includes('refer')) {
             document.getElementById('referral-target-field').classList.remove('hidden');
+        }
+        if (selectedText.includes('share')) {
+            document.getElementById('share-target-field').classList.remove('hidden');
+            // Also show product field for share tasks regardless of reward type
+            document.getElementById('product-field').classList.remove('hidden');
         }
     }, 100);
 }

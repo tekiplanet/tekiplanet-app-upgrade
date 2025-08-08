@@ -46,6 +46,8 @@ Enable users to convert their learning rewards into various benefits, with the c
 - cash_amount (decimal, nullable) — for cash rewards
 - discount_percent (integer, nullable) — for discount code rewards
 - service_name (string, nullable) — for discount code rewards
+- referral_target (integer, default 1) — for referral tasks
+- share_target (integer, default 1) — for share tasks
 - created_at, updated_at
 
 ### conversion_task_types
@@ -68,6 +70,34 @@ Enable users to convert their learning rewards into various benefits, with the c
 - assigned_at (timestamp)
 - completed_at (timestamp, nullable)
 - referral_count (integer, default 0) — for referral tasks
+- share_count (integer, default 0) — for share tasks
+
+### user_referrals
+- id (uuid, primary)
+- referrer_user_id (uuid, foreign key to users)
+- referred_user_id (uuid, foreign key to users)
+- user_conversion_task_id (uuid, foreign key to user_conversion_tasks)
+- registered_at (timestamp)
+- status (string: e.g., pending, completed)
+
+### user_product_shares (NEW)
+- id (uuid, primary)
+- user_id (uuid, foreign key to users)
+- user_conversion_task_id (uuid, foreign key to user_conversion_tasks)
+- product_id (uuid, foreign key to products)
+- share_link (string) — unique tracking link
+- shared_at (timestamp)
+- purchase_count (integer, default 0) — tracks purchases made through this share link
+- status (string: active, completed, expired)
+
+### product_share_purchases (NEW)
+- id (uuid, primary)
+- user_product_share_id (uuid, foreign key to user_product_shares)
+- order_id (uuid, foreign key to orders)
+- purchaser_user_id (uuid, foreign key to users) — who made the purchase
+- purchased_at (timestamp)
+- order_amount (decimal) — total order amount
+- status (string: pending, completed, cancelled)
 
 ## Admin Conversion Rewards Menu (How It Works)
 
@@ -117,8 +147,8 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - [x] API endpoints for conversion initiation, user task listing, and debug are available
 - [x] Implement tracking for each task type:
   - [x] Referral registration tracking (backend endpoint for instructions/referral link implemented)
-  - [ ] Course completion tracking
   - [ ] Product link sharing tracking
+  - [ ] Course completion tracking
   - [ ] Referral purchase tracking
 - [x] Implement reward granting logic after task completion (referral registration only)
 - [x] Integrate with wallet, coupon, course access, and discount systems
@@ -139,6 +169,160 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - [x] Add claimed tracking system to prevent duplicate claims
 - [x] Implement cash reward functionality with currency conversion
 - [ ] Testing and QA
+
+---
+
+## Product Link Sharing Tracking Implementation Plan
+
+### Phase 1: Database Schema Updates
+
+#### 1.1 Update conversion_tasks table
+- Add `share_target` column (integer, default 1) for share tasks
+- Add `product_id` column (uuid, nullable) for product-specific share tasks
+
+#### 1.2 Create user_product_shares table
+```sql
+CREATE TABLE user_product_shares (
+    id uuid PRIMARY KEY,
+    user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+    user_conversion_task_id uuid REFERENCES user_conversion_tasks(id) ON DELETE CASCADE,
+    product_id uuid REFERENCES products(id) ON DELETE CASCADE,
+    share_link varchar(500) NOT NULL,
+    shared_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    purchase_count integer DEFAULT 0,
+    status varchar(50) DEFAULT 'active',
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 1.3 Create product_share_purchases table
+```sql
+CREATE TABLE product_share_purchases (
+    id uuid PRIMARY KEY,
+    user_product_share_id uuid REFERENCES user_product_shares(id) ON DELETE CASCADE,
+    order_id uuid REFERENCES orders(id) ON DELETE CASCADE,
+    purchaser_user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+    purchased_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    order_amount decimal(10,2) NOT NULL,
+    status varchar(50) DEFAULT 'pending',
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 1.4 Update user_conversion_tasks table
+- Add `share_count` column (integer, default 0) for tracking share progress
+
+### Phase 2: Backend Implementation
+
+#### 2.1 Create Eloquent Models
+- **UserProductShare**: Model for tracking user's product shares
+- **ProductSharePurchase**: Model for tracking purchases made through share links
+
+#### 2.2 Update ConversionTask Model
+- Add relationship to Product model
+- Add validation for product_id when task type is "Share Product"
+
+#### 2.3 Update UserConversionTask Model
+- Add `share_count` to fillable array
+- Add method to generate unique share links
+- Add relationship to UserProductShare model
+
+#### 2.4 Update RewardConversionController
+- Extend `getTaskInstructions()` method to handle "Share Product" tasks:
+  - Generate unique share link for the specific product
+  - Return product details and share instructions
+  - Return progress tracking (current shares vs target)
+- Add method to track share link clicks
+- Add method to track purchases made through share links
+
+#### 2.5 Create Share Tracking Service
+- **ProductShareService**: Handle share link generation, tracking, and purchase detection
+- Methods:
+  - `generateShareLink(UserConversionTask $userTask, Product $product)`
+  - `trackShareClick(string $shareLink)`
+  - `trackPurchase(string $shareLink, Order $order, User $purchaser)`
+  - `checkTaskCompletion(UserConversionTask $userTask)`
+
+#### 2.6 Update Order Processing
+- Modify `OrderController::store()` to detect share links in the request
+- Track purchases made through share links
+- Update share counts and mark tasks as completed when targets are met
+
+### Phase 3: Frontend Implementation
+
+#### 3.1 Update Task Instructions Display
+- Modify TasksPage.tsx to show product details and share link for "Share Product" tasks
+- Add copy-to-clipboard functionality for share links
+- Display progress tracking (shares needed vs completed)
+
+#### 3.2 Add Share Link Generation
+- Update rewardService to fetch product details and share instructions
+- Handle share link display and copying
+- Show product information (name, image, price) in the task modal
+
+#### 3.3 Update Product Details Page
+- Add share tracking parameters to product URLs when accessed through share links
+- Preserve share link information during the purchase flow
+
+### Phase 4: Admin Panel Updates
+
+#### 4.1 Update Task Creation Form
+- Add product selection dropdown for "Share Product" tasks
+- Add share target input field
+- Validate that product is selected when task type is "Share Product"
+
+#### 4.2 Add Share Analytics
+- Display share statistics in admin dashboard
+- Show which products are being shared most
+- Track conversion rates from shares to purchases
+
+### Phase 5: Testing and Integration
+
+#### 5.1 Test Share Link Generation
+- Verify unique share links are generated for each user/task combination
+- Test share link format and parameters
+
+#### 5.2 Test Purchase Tracking
+- Test purchase detection through share links
+- Verify share counts are incremented correctly
+- Test task completion when share targets are met
+
+#### 5.3 Test Frontend Integration
+- Test share link display and copying
+- Test progress tracking display
+- Test task completion notifications
+
+### Implementation Steps
+
+1. **Database Migrations**
+   - Create migration for user_product_shares table
+   - Create migration for product_share_purchases table
+   - Add share_target and share_count columns to existing tables
+
+2. **Backend Models**
+   - Create UserProductShare and ProductSharePurchase models
+   - Update existing models with new relationships
+   - Add share link generation methods
+
+3. **Backend Controllers**
+   - Update RewardConversionController for share task instructions
+   - Add share tracking endpoints
+   - Update OrderController for purchase tracking
+
+4. **Frontend Updates**
+   - Update TasksPage for share task display
+   - Add share link functionality
+   - Update product details page for share tracking
+
+5. **Admin Panel**
+   - Update task creation form for product selection
+   - Add share analytics dashboard
+
+6. **Testing**
+   - Test complete share-to-purchase flow
+   - Verify task completion and reward claiming
 
 ---
 
@@ -177,6 +361,7 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
   - Cash rewards are added to user's wallet balance with proper transaction records
   - Frontend displays converted cash amounts and provides claim functionality
   - Loading states and claimed status tracking for cash rewards
+- **2024-12-19:** Created comprehensive implementation plan for product link sharing tracking system
 
 ---
 
@@ -203,33 +388,35 @@ A new "Conversion Rewards" group is available in the admin sidebar. It contains:
 - **Transaction Records**: Proper transaction records are created when cash rewards are claimed.
 - **UI Integration**: Cash rewards have their own UI section with claim functionality and loading states.
 
-## Next Step: Actionable Task Instructions & Tracking
+## Next Step: Product Link Sharing Tracking Implementation
 
-Currently, when a user starts a task, the system does not yet display actionable instructions or links (such as referral links, share links, or course links) tailored to the task type. Nor does it track user actions (such as link clicks, registrations, or course completions) for task completion.
+Currently, when a user starts a "Share Product" task, the system does not yet display actionable instructions or generate unique share links for products. Nor does it track user actions (such as link clicks or purchases made through share links) for task completion.
 
 ### What Needs to Be Implemented
-- When a user starts a task, the UI should display:
-  - For referral tasks: a unique referral link to copy/share. (Backend endpoint implemented)
-  - For share product/service tasks: a unique share link (with tracking) for the product/service.
-  - For course completion tasks: a direct link to the course the user must complete.
-  - For purchase referral tasks: a referral link and instructions.
-  - For any other task: clear, actionable instructions and any relevant links.
+- When a user starts a "Share Product" task, the UI should display:
+  - Product details (name, image, price, description)
+  - A unique share link for the specific product with tracking parameters
+  - Clear instructions on how to share and what counts as completion
+  - Progress tracking (current shares vs target)
 - The backend should:
-  - Generate and return unique links for each user/task. (Referral registration done)
-  - Track usage of these links (clicks, registrations, purchases, etc.).
-  - Track course progress/completion.
+  - Generate unique share links for each user/task/product combination
+  - Track usage of these share links (clicks, purchases, etc.)
+  - Detect purchases made through share links
+  - Mark tasks as completed when purchase targets are met
 - The API should:
-  - Provide endpoints to get actionable instructions/links for a user's task. (Referral registration done)
-  - Provide endpoints/events to track completion.
+  - Provide endpoints to get product details and share instructions for a user's task
+  - Provide endpoints to track share link usage and purchases
+  - Update task progress and completion status
 
 **This is the next milestone for the project.**
 
-We will implement this one task type at a time, starting with the most common or critical type.
+We will implement this step by step, starting with the database schema updates and backend models.
 
 ## Next Step
 
-- Implement frontend logic to fetch and display referral link with copy feature for referral tasks.
-- Update Rewards & Tasks page to show actionable instructions for referral tasks.
+- Implement database migrations for product sharing tracking tables
+- Create UserProductShare and ProductSharePurchase models
+- Update ConversionTask and UserConversionTask models with new relationships
 
 ## Recommended Task Types and Reward Types to Add
 
@@ -238,7 +425,7 @@ We will implement this one task type at a time, starting with the most common or
 |-------------------------|------------------------------------------------------------------|
 | Refer to Register       | User must refer someone to register on the platform.              |
 | Complete Course         | User must complete a specified course.                            |
-| Share Product           | User must share a product link.                                   |
+| Share Product           | User must share a product link and someone must purchase through the link. |
 | Refer to Buy Course     | User must refer someone to purchase a course.                     |
 
 ### Reward Types
@@ -257,11 +444,11 @@ Below are recommended example tasks you should create to cover all main scenario
 |-----------------------------|----------------------|-----------------|-------------|-------------------------------|-------|
 | Refer a Friend to Register  | Refer to Register    | Coupon          | 100-200     | Select a store coupon         | User must refer a new user who completes registration |
 | Complete Any Paid Course    | Complete Course      | Cash            | 300-500     | ₦1,000 cash                   | User must complete a paid course |
-| Share a Product Link        | Share Product        | Discount Code   | 50-100      | 10% off on a service          | User must share a product link (track share) |
+| Share a Product Link        | Share Product        | Discount Code   | 50-100      | 10% off on a service          | User must share a product link and someone must purchase through it |
 | Refer to Buy a Course       | Refer to Buy Course  | Course Access   | 400-600     | Select a paid course          | User must refer someone who purchases a course |
 | Complete a Specific Course  | Complete Course      | Coupon          | 200-400     | Select a store coupon         | User must complete a specific course (select course) |
 | Refer to Buy a Product      | Refer to Register    | Cash            | 250-350     | ₦500 cash                     | User must refer someone who buys a product (if supported) |
-| Share a Service Link        | Share Product        | Discount Code   | 80-150      | 15% off on a service          | User must share a service link (track share) |
+| Share a Service Link        | Share Product        | Discount Code   | 80-150      | 15% off on a service          | User must share a service link and someone must purchase through it |
 | Refer to Buy a Course       | Refer to Buy Course  | Coupon          | 350-500     | Select a store coupon         | User must refer someone who purchases a course |
 | Complete Any Course         | Complete Course      | Course Access   | 150-300     | Select a paid course          | User must complete any course (select course) |
 

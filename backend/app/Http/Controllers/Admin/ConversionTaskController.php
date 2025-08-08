@@ -42,6 +42,7 @@ class ConversionTaskController extends Controller
             'max_points' => 'required|integer|min:0|gte:min_points',
             'reward_type_id' => 'required|exists:conversion_reward_types,id',
             'referral_target' => 'nullable|integer|min:1',
+            'share_target' => 'nullable|integer|min:1',
             // Reward-specific fields
             'product_id' => 'nullable|exists:products,id',
             'coupon_id' => 'nullable|exists:coupons,id',
@@ -76,6 +77,7 @@ class ConversionTaskController extends Controller
             'max_points' => 'required|integer|min:0|gte:min_points',
             'reward_type_id' => 'required|exists:conversion_reward_types,id',
             'referral_target' => 'nullable|integer|min:1',
+            'share_target' => 'nullable|integer|min:1',
             // Reward-specific fields
             'product_id' => 'nullable|exists:products,id',
             'coupon_id' => 'nullable|exists:coupons,id',

@@ -22,6 +22,7 @@ class UserConversionTask extends Model
         'assigned_at',
         'completed_at',
         'referral_count',
+        'share_count',
     ];
 
     public function user()
@@ -42,5 +43,22 @@ class UserConversionTask extends Model
         // Use the frontend URL for referral links
         $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
         return $baseUrl . '/register?ref=' . $this->user_id . '&task=' . $this->id;
+    }
+
+    /**
+     * Get the product share record for this task.
+     */
+    public function productShare()
+    {
+        return $this->hasOne(UserProductShare::class, 'user_conversion_task_id');
+    }
+
+    /**
+     * Generate a unique share link for a product task.
+     */
+    public function generateProductShareLink($productId)
+    {
+        $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
+        return $baseUrl . '/products/' . $productId . '?share=' . $this->id;
     }
 }

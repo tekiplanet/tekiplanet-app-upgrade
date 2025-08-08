@@ -154,15 +154,17 @@ class RewardConversionController extends Controller
         $user = Auth::user();
         $userTask = \App\Models\UserConversionTask::where('id', $userConversionTaskId)
             ->where('user_id', $user->id)
-            ->with('task')
+            ->with(['task.type', 'task.product'])
             ->firstOrFail();
 
         $task = $userTask->task;
         $instructions = '';
         $referralLink = null;
+        $shareLink = null;
         $progress = null;
+        $product = null;
 
-        // Example: Only for referral registration tasks
+        // Handle different task types
         if ($task && strtolower($task->type->name) === 'refer to register') {
             $instructions = 'Share your referral link. When someone registers using your link, it will count towards your task.';
             $referralLink = $userTask->getReferralLink();
@@ -171,6 +173,23 @@ class RewardConversionController extends Controller
                 'needed' => $target,
                 'completed' => $userTask->referral_count ?? 0,
             ];
+        } elseif ($task && strtolower($task->type->name) === 'share product') {
+            if ($task->product) {
+                $product = $task->product;
+                $instructions = "Share the product link below. When someone purchases this product through your link, it will count towards your task.";
+                
+                // Generate share link using ProductShareService
+                $productShareService = app(\App\Services\ProductShareService::class);
+                $shareLink = $productShareService->generateShareLink($userTask, $product);
+                
+                $target = $task->share_target ?? 1;
+                $progress = [
+                    'needed' => $target,
+                    'completed' => $userTask->share_count ?? 0,
+                ];
+            } else {
+                $instructions = 'This task requires sharing a product, but no product has been assigned. Please contact support.';
+            }
         } else {
             $instructions = 'Complete the assigned task as described.';
         }
@@ -180,7 +199,9 @@ class RewardConversionController extends Controller
             'data' => [
                 'instructions' => $instructions,
                 'referral_link' => $referralLink,
+                'share_link' => $shareLink,
                 'progress' => $progress,
+                'product' => $product,
                 'task' => $task,
             ]
         ]);

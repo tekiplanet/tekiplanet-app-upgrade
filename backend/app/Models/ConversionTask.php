@@ -27,6 +27,7 @@ class ConversionTask extends Model
         'discount_percent',
         'service_name',
         'referral_target',
+        'share_target',
     ];
 
     public function type()

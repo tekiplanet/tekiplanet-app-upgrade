@@ -82,6 +82,10 @@
                     <label for="referral_target" class="block text-gray-700">Number of Referrals Required</label>
                     <input type="number" name="referral_target" id="referral_target" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1">
                 </div>
+                <div class="mb-4 hidden" id="share-target-field">
+                    <label for="share_target" class="block text-gray-700">Number of Purchases Required</label>
+                    <input type="number" name="share_target" id="share_target" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1" value="1">
+                </div>
             </div>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
@@ -101,6 +105,7 @@
         document.getElementById('cash-field').classList.add('hidden');
         document.getElementById('discount-field').classList.add('hidden');
         document.getElementById('referral-target-field').classList.add('hidden');
+        document.getElementById('share-target-field').classList.add('hidden');
     }
     function showReferralTargetIfNeeded() {
         var taskTypeSelect = document.getElementById('task_type_id');
@@ -109,6 +114,13 @@
             document.getElementById('referral-target-field').classList.remove('hidden');
         } else {
             document.getElementById('referral-target-field').classList.add('hidden');
+        }
+        
+        // Show share target for share product tasks
+        if (selectedText.includes('share')) {
+            document.getElementById('share-target-field').classList.remove('hidden');
+        } else {
+            document.getElementById('share-target-field').classList.add('hidden');
         }
     }
     document.getElementById('reward_type_id').addEventListener('change', function() {
@@ -127,7 +139,17 @@
         }
         showReferralTargetIfNeeded();
     });
+    
+    // Handle task type changes
     document.getElementById('task_type_id').addEventListener('change', function() {
+        var taskTypeSelect = this;
+        var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+        
+        // Show product field for share product tasks
+        if (selectedText.includes('share')) {
+            document.getElementById('product-field').classList.remove('hidden');
+        }
+        
         showReferralTargetIfNeeded();
     });
     // Hide all on load
