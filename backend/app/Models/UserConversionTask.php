@@ -77,6 +77,6 @@ class UserConversionTask extends Model
     public function generateCourseShareLink($courseId)
     {
         $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
-        return $baseUrl . '/dashboard#/dashboard/academy/course/' . $courseId . '?share=' . $this->id;
+        return $baseUrl . '/#/dashboard/academy/' . $courseId . '?share=' . $this->id;
     }
 }

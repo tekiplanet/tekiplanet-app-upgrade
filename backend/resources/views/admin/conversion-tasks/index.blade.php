@@ -95,7 +95,9 @@ window.hideAllDynamicFields = function() {
 window.showReferralTargetIfNeeded = function() {
     var taskTypeSelect = document.getElementById('task_type_id');
     var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
-    if (selectedText.includes('refer')) {
+    
+    // Show referral target for "Refer to Register" tasks only
+    if (selectedText.includes('refer to register')) {
         document.getElementById('referral-target-field').classList.remove('hidden');
     } else {
         document.getElementById('referral-target-field').classList.add('hidden');
@@ -106,6 +108,13 @@ window.showReferralTargetIfNeeded = function() {
         document.getElementById('share-target-field').classList.remove('hidden');
     } else {
         document.getElementById('share-target-field').classList.add('hidden');
+    }
+    
+    // Show enrollment target for refer to enroll course tasks
+    if (selectedText.includes('enroll course')) {
+        document.getElementById('enrollment-target-field').classList.remove('hidden');
+    } else {
+        document.getElementById('enrollment-target-field').classList.add('hidden');
     }
 }
 window.openCreateModal = function() {
@@ -147,6 +156,12 @@ window.openEditModal = function(task) {
     } else if (document.getElementById('share_target')) {
         document.getElementById('share_target').value = '';
     }
+    
+    if ('enrollment_target' in task && document.getElementById('enrollment_target')) {
+        document.getElementById('enrollment_target').value = task.enrollment_target ?? '';
+    } else if (document.getElementById('enrollment_target')) {
+        document.getElementById('enrollment_target').value = '';
+    }
     form.action = `/admin/conversion-tasks/${task.id}`;
     form.querySelector('input[name="_method"]').value = 'PUT';
     document.getElementById('modalTitle').textContent = 'Edit Task';
@@ -175,7 +190,7 @@ window.openEditModal = function(task) {
         // Show task-specific fields based on task type
         var taskTypeSelect = document.getElementById('task_type_id');
         var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
-        if (selectedText.includes('refer')) {
+        if (selectedText.includes('refer to register')) {
             document.getElementById('referral-target-field').classList.remove('hidden');
         }
         if (selectedText.includes('share')) {
@@ -185,6 +200,7 @@ window.openEditModal = function(task) {
         }
         if (selectedText.includes('enroll course')) {
             document.getElementById('task-course-field').classList.remove('hidden');
+            document.getElementById('enrollment-target-field').classList.remove('hidden');
         }
     }, 100);
 }

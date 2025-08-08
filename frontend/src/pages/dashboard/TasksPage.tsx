@@ -495,8 +495,10 @@ export default function TasksPage() {
                               <span className="font-medium">
                                 {task.task?.type?.name?.toLowerCase().includes('share') && task.share_count !== undefined ? (
                                   `${task.share_count} / ${task.task?.share_target || 1}`
-                                ) : task.task?.type?.name?.toLowerCase().includes('refer') && task.referral_count !== undefined ? (
+                                ) : task.task?.type?.name?.toLowerCase().includes('refer to register') && task.referral_count !== undefined ? (
                                   `${task.referral_count} / ${task.task?.referral_target || 1}`
+                                ) : task.task?.type?.name?.toLowerCase().includes('enroll course') && task.enrollment_count !== undefined ? (
+                                  `${task.enrollment_count} / ${task.task?.enrollment_target || 1}`
                                 ) : (
                                   '75%'
                                 )}
@@ -506,8 +508,10 @@ export default function TasksPage() {
                               value={
                                 task.task?.type?.name?.toLowerCase().includes('share') && task.share_count !== undefined ? (
                                   Math.min((task.share_count / (task.task?.share_target || 1)) * 100, 100)
-                                ) : task.task?.type?.name?.toLowerCase().includes('refer') && task.referral_count !== undefined ? (
+                                ) : task.task?.type?.name?.toLowerCase().includes('refer to register') && task.referral_count !== undefined ? (
                                   Math.min((task.referral_count / (task.task?.referral_target || 1)) * 100, 100)
+                                ) : task.task?.type?.name?.toLowerCase().includes('enroll course') && task.enrollment_count !== undefined ? (
+                                  Math.min((task.enrollment_count / (task.task?.enrollment_target || 1)) * 100, 100)
                                 ) : 75
                               } 
                               className="h-2" 

@@ -53,6 +53,14 @@ class EnrollmentController extends Controller
             // Track course share enrollment if share ID is provided
             if ($request->course_share_id) {
                 try {
+                    Log::info('Attempting to track course share enrollment', [
+                        'course_share_id' => $request->course_share_id,
+                        'enrollment_id' => $enrollment->id,
+                        'user_id' => $user->id,
+                        'course_id' => $course->id,
+                        'enrollment_amount' => $course->price + ($course->enrollment_fee ?? 0)
+                    ]);
+                    
                     $courseShareService = app(\App\Services\CourseShareService::class);
                     $courseShareService->recordEnrollment(
                         $request->course_share_id,

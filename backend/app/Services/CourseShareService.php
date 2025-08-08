@@ -52,8 +52,21 @@ class CourseShareService
     public function trackShareClick(string $shareLink, string $visitorIp = null, string $userAgent = null, string $referrer = null): bool
     {
         try {
+            // Add debug logging
+            Log::info('Course share tracking attempt', [
+                'share_link' => $shareLink,
+                'visitor_ip' => $visitorIp,
+                'user_agent' => $userAgent,
+                'referrer' => $referrer
+            ]);
+
             // Extract share ID from the URL
             $shareId = $this->extractShareIdFromUrl($shareLink);
+            
+            Log::info('Share ID extraction result', [
+                'share_id' => $shareId,
+                'share_link' => $shareLink
+            ]);
             
             if (!$shareId) {
                 Log::warning('Could not extract share ID from URL', ['share_link' => $shareLink]);
@@ -109,12 +122,15 @@ class CourseShareService
     public function recordEnrollment(string $shareLinkId, string $enrollmentId, string $enrolledUserId, float $enrollmentAmount): bool
     {
         try {
-            $courseShare = UserCourseShare::find($shareLinkId);
+            // The shareLinkId is actually the user_conversion_task_id, not the user_course_share_id
+            // So we need to find the UserCourseShare record by user_conversion_task_id
+            $courseShare = UserCourseShare::where('user_conversion_task_id', $shareLinkId)->first();
             
             if (!$courseShare) {
                 Log::warning('Course share link not found for enrollment tracking', [
                     'share_link_id' => $shareLinkId,
-                    'enrollment_id' => $enrollmentId
+                    'enrollment_id' => $enrollmentId,
+                    'search_field' => 'user_conversion_task_id'
                 ]);
                 return false;
             }
@@ -156,6 +172,7 @@ class CourseShareService
 
             Log::info('Course share enrollment recorded', [
                 'share_id' => $courseShare->id,
+                'user_conversion_task_id' => $courseShare->user_conversion_task_id,
                 'course_id' => $courseShare->course_id,
                 'enrollment_id' => $enrollmentId,
                 'enrolled_user_id' => $enrolledUserId,
@@ -178,24 +195,53 @@ class CourseShareService
      */
     private function extractShareIdFromUrl(string $shareLink): ?string
     {
-        // Try to extract from query parameter
-        $parsedUrl = parse_url($shareLink);
-        if (isset($parsedUrl['query'])) {
-            parse_str($parsedUrl['query'], $queryParams);
+        // Add debug logging
+        Log::info('Extracting share ID from URL', ['share_link' => $shareLink]);
+
+        // Try to extract from query parameter (including hash fragment)
+        $parsedUrl = parse_url($shareLink, PHP_URL_QUERY);
+        Log::info('Parsed URL query', ['parsed_url' => $parsedUrl]);
+        
+        if ($parsedUrl) {
+            parse_str($parsedUrl, $queryParams);
+            Log::info('Query parameters', ['query_params' => $queryParams]);
             if (isset($queryParams['share'])) {
+                Log::info('Found share ID in query params', ['share_id' => $queryParams['share']]);
                 return $queryParams['share'];
             }
         }
 
+        // Try to extract from hash fragment query parameters
+        $hashFragment = parse_url($shareLink, PHP_URL_FRAGMENT);
+        Log::info('Hash fragment', ['hash_fragment' => $hashFragment]);
+        
+        if ($hashFragment) {
+            // Extract query parameters from hash fragment
+            $hashParts = explode('?', $hashFragment);
+            Log::info('Hash parts', ['hash_parts' => $hashParts]);
+            
+            if (count($hashParts) > 1) {
+                parse_str($hashParts[1], $hashQueryParams);
+                Log::info('Hash query parameters', ['hash_query_params' => $hashQueryParams]);
+                if (isset($hashQueryParams['share'])) {
+                    Log::info('Found share ID in hash query params', ['share_id' => $hashQueryParams['share']]);
+                    return $hashQueryParams['share'];
+                }
+            }
+        }
+
         // Try to extract from path (legacy format)
-        $pathParts = explode('/', trim($parsedUrl['path'] ?? '', '/'));
+        $pathParts = explode('/', trim(parse_url($shareLink, PHP_URL_PATH) ?? '', '/'));
         $lastPart = end($pathParts);
+        Log::info('Path parts', ['path_parts' => $pathParts, 'last_part' => $lastPart]);
         
         // Check if it's a valid UUID
         if (Str::isUuid($lastPart)) {
+            Log::info('Found share ID in path', ['share_id' => $lastPart]);
             return $lastPart;
         }
 
+        Log::warning('No share ID found in URL');
         return null;
     }
 

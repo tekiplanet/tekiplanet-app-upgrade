@@ -125,7 +125,9 @@
     function showReferralTargetIfNeeded() {
         var taskTypeSelect = document.getElementById('task_type_id');
         var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
-        if (selectedText.includes('refer')) {
+        
+        // Show referral target for "Refer to Register" tasks only
+        if (selectedText.includes('refer to register')) {
             document.getElementById('referral-target-field').classList.remove('hidden');
         } else {
             document.getElementById('referral-target-field').classList.add('hidden');
@@ -216,7 +218,7 @@
         initializeRewardFields();
     });
 
-    // Patch openEditModal to populate referral_target
+    // Patch openEditModal to populate referral_target and enrollment_target
     if (typeof openEditModal === 'function') {
         const oldOpenEditModal = openEditModal;
         window.openEditModal = function(task) {
@@ -227,6 +229,13 @@
             } else {
                 document.getElementById('referral_target').value = '';
                 document.getElementById('referral-target-field').classList.add('hidden');
+            }
+            if (task.enrollment_target !== undefined && task.enrollment_target !== null) {
+                document.getElementById('enrollment_target').value = task.enrollment_target;
+                document.getElementById('enrollment-target-field').classList.remove('hidden');
+            } else {
+                document.getElementById('enrollment_target').value = '';
+                document.getElementById('enrollment-target-field').classList.add('hidden');
             }
             // Initialize reward fields after populating the form
             setTimeout(initializeRewardFields, 100);

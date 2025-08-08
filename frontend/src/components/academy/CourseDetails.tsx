@@ -177,10 +177,19 @@ export default function CourseDetails() {
         
         if (shareParam && courseId) {
           // Construct the full share link
-          const shareLink = `${window.location.origin}/dashboard#/dashboard/academy/course/${courseId}?share=${shareParam}`;
+          const shareLink = `${window.location.origin}/#/dashboard/academy/${courseId}?share=${shareParam}`;
+          
+          console.log('Attempting to track course share visit:', {
+            shareParam,
+            courseId,
+            shareLink,
+            urlParams: window.location.search,
+            hashParams: window.location.hash
+          });
           
           // Track the visit
-          await storeService.trackCourseShareVisit(shareLink);
+          const result = await storeService.trackCourseShareVisit(shareLink);
+          console.log('Course share tracking result:', result);
           
           // Store share link ID in localStorage for enrollment tracking
           localStorage.setItem(`course_share_${courseId}`, shareParam);
