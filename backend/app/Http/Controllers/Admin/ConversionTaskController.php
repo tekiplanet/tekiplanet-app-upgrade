@@ -44,6 +44,7 @@ class ConversionTaskController extends Controller
             'referral_target' => 'nullable|integer|min:1',
             'share_target' => 'nullable|integer|min:1',
             'enrollment_target' => 'nullable|integer|min:1',
+            'completion_percentage' => 'nullable|integer|min:1|max:100',
             // Reward-specific fields
             'product_id' => 'nullable|exists:products,id',
             'coupon_id' => 'nullable|exists:coupons,id',
@@ -81,6 +82,7 @@ class ConversionTaskController extends Controller
             'referral_target' => 'nullable|integer|min:1',
             'share_target' => 'nullable|integer|min:1',
             'enrollment_target' => 'nullable|integer|min:1',
+            'completion_percentage' => 'nullable|integer|min:1|max:100',
             // Reward-specific fields
             'product_id' => 'nullable|exists:products,id',
             'coupon_id' => 'nullable|exists:coupons,id',

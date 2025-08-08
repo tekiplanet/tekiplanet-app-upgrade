@@ -126,6 +126,9 @@ class LessonController extends Controller
             // Calculate updated progress
             $progressPercentage = $this->calculateCourseProgress($user->id, $course->id);
             
+            // Check for course completion tasks
+            $this->checkCourseCompletionTasks($user, $course);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Lesson marked as complete',
@@ -475,6 +478,42 @@ class LessonController extends Controller
             ->count();
         
         return $totalLessons > 0 ? ($completedLessons / $totalLessons) * 100 : 0;
+    }
+    
+    /**
+     * Check and complete course completion tasks for a user
+     */
+    private function checkCourseCompletionTasks($user, $course)
+    {
+        try {
+            // Get all pending course completion tasks for this user and course
+            $pendingTasks = \App\Models\UserConversionTask::where('user_id', $user->id)
+                ->where('status', 'assigned')
+                ->whereHas('task', function ($query) use ($course) {
+                    $query->where('task_course_id', $course->id)
+                          ->whereHas('type', function ($typeQuery) {
+                              $typeQuery->where('name', 'Complete Course');
+                          });
+                })
+                ->get();
+            
+            if ($pendingTasks->isEmpty()) {
+                return;
+            }
+            
+            $courseCompletionService = app(\App\Services\CourseCompletionService::class);
+            
+            foreach ($pendingTasks as $userTask) {
+                $courseCompletionService->checkAndCompleteTask($userTask);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error checking course completion tasks: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     /**

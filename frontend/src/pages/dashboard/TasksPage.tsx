@@ -793,6 +793,120 @@ export default function TasksPage() {
                   </div>
                 </div>
               )}
+
+              {/* Course Completion Section */}
+              {taskInstructions.course && taskInstructions.progress && taskInstructions.progress.status && (
+                <div className="space-y-4">
+                  {/* Course Details */}
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-3">Course to Complete</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        {taskInstructions.course.image_url && (
+                          <img 
+                            src={taskInstructions.course.image_url} 
+                            alt={taskInstructions.course.title}
+                            className="w-16 h-16 object-cover rounded-lg border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{taskInstructions.course.title}</h5>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {taskInstructions.course.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Section */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Your Progress</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span>Completion Progress</span>
+                        <span className="font-medium">
+                          {Math.round(taskInstructions.progress.completed)}% / {Math.round(taskInstructions.progress.needed)}%
+                        </span>
+                      </div>
+                      <Progress 
+                        value={Math.round(taskInstructions.progress.completed)} 
+                        className="h-2"
+                      />
+                      {taskInstructions.progress.status === 'completed' ? (
+                        <div className="p-3 bg-green-50 dark:bg-green-500/10 rounded-lg border border-green-200 dark:border-green-500/20">
+                          <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm font-medium">Course completed! Your task is ready to be claimed.</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
+                          <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                            <Clock className="h-4 w-4" />
+                            <span className="text-sm">Continue learning to reach {taskInstructions.progress.needed}% completion.</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    {taskInstructions.progress.status === 'completed' ? (
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          setShowTaskDialog(false);
+                          // Navigate to course management to claim reward
+                          navigate(`/dashboard/academy/course/${taskInstructions.course.id}/manage`);
+                        }}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Claim Your Reward
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="w-full"
+                        onClick={() => {
+                          setShowTaskDialog(false);
+                          // Navigate to course to continue learning
+                          navigate(`/dashboard/academy/course/${taskInstructions.course.id}`);
+                        }}
+                      >
+                        <PlayCircle className="h-4 w-4 mr-2" />
+                        Continue Learning
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* How It Works */}
+                  <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-500/20">
+                    <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2 text-xs">
+                      <BookOpen className="h-4 w-4" />
+                      How It Works
+                    </h4>
+                    <div className="space-y-1 text-xs text-blue-800 dark:text-blue-200">
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">1</span>
+                        <p>Complete lessons in this course to increase your completion percentage.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">2</span>
+                        <p>Your progress is tracked automatically as you complete lessons.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">3</span>
+                        <p>Once you reach the required completion percentage, your task will be marked as completed.</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-200 dark:bg-blue-500/30 rounded-full flex items-center justify-center text-xs font-semibold text-blue-800 dark:text-blue-200">4</span>
+                        <p>You can then claim your reward from the task management page.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="py-8 text-center text-destructive">Failed to load instructions.</div>

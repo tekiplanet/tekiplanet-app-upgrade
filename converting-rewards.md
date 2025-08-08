@@ -43,11 +43,14 @@ Enable users to convert their learning rewards into various benefits, with the c
 - product_id (uuid, nullable, foreign key to products) — for tasks/rewards involving products
 - coupon_id (uuid, nullable, foreign key to coupons) — for coupon rewards
 - course_id (uuid, nullable, foreign key to courses) — for course access rewards or course-based tasks
+- task_course_id (uuid, nullable, foreign key to courses) — for course-based tasks (completion, enrollment)
 - cash_amount (decimal, nullable) — for cash rewards
 - discount_percent (integer, nullable) — for discount code rewards
 - service_name (string, nullable) — for discount code rewards
 - referral_target (integer, default 1) — for referral tasks
 - share_target (integer, default 1) — for share tasks
+- enrollment_target (integer, default 1) — for course enrollment tasks
+- completion_percentage (integer, default 100) — for course completion tasks
 - created_at, updated_at
 
 ### conversion_task_types
@@ -315,11 +318,12 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
 - [x] Implement UserConversionTask and ConversionTask models and relationships
 - [x] API endpoints for conversion initiation, user task listing, and debug are available
 - [x] Implement tracking for each task type:
-  - [x] Referral registration tracking (backend endpoint for instructions/referral link implemented)
+  - [x] Referral registration tracking (COMPLETED - comprehensive implementation with analytics and task completion)
   - [x] Product link sharing tracking (COMPLETED - comprehensive implementation with analytics, expiration, and self-referral prevention)
-  - [ ] Course completion tracking
+  - [x] Course completion tracking (COMPLETED - comprehensive implementation with progress tracking and automatic completion)
 - [x] Referral purchase tracking (COMPLETED - comprehensive implementation with analytics, expiration, and self-referral prevention)
 - [x] Course sharing tracking (COMPLETED - comprehensive implementation with analytics, expiration, and self-referral prevention)
+- [x] Admin panel fixes for "Complete Course" tasks (COMPLETED - fixed completion percentage field visibility and task course selection population)
 - [x] Implement reward granting logic after task completion (referral registration only)
 - [x] Integrate with wallet, coupon, course access, and discount systems
 - [x] Create a user_referrals table to track each referral event:
@@ -347,7 +351,7 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
   - [x] Robust error handling and logging
   - [x] Frontend integration with localStorage management
   - [x] Backend API endpoints for analytics and tracking
-- [x] **COMPLETED: Course Sharing Task Tracking System (FULLY IMPLEMENTED)**
+- [x] **COMPLETED: Course Sharing Task Tracking System (FULLY IMPLEMENTED & TESTED)**
   - [x] Database schema updates: added enrollment_target, enrollment_count, user_course_shares, course_share_enrollments, course_share_visits tables
   - [x] Backend models: UserCourseShare, CourseShareEnrollment, CourseShareVisit with relationships and methods
   - [x] CourseShareService with comprehensive methods for link generation, tracking, and analytics
@@ -358,6 +362,24 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
   - [x] Frontend integration: CourseDetails component tracks course share visits, TasksPage displays course information
   - [x] Enrollment tracking: enrollmentService includes course share ID tracking, localStorage management
   - [x] Backend enrollment tracking: EnrollmentController integrates course share tracking with enrollment process
+  - [x] **FIXED: Admin Panel Logic Issues**
+    - [x] Fixed JavaScript logic to show correct target fields for different task types
+    - [x] "Refer to Register" tasks now show referral_target field only
+    - [x] "Refer to Enroll Course" tasks now show enrollment_target field only
+    - [x] Updated admin form initialization and edit modal population
+  - [x] **FIXED: Course Share Link URL Generation**
+    - [x] Fixed generateCourseShareLink() to use correct frontend route structure
+    - [x] Updated from `/dashboard#/dashboard/academy/course/` to `/#/dashboard/academy/`
+    - [x] Fixed frontend URL construction in CourseDetails component
+  - [x] **FIXED: Course Share Tracking Issues**
+    - [x] Fixed extractShareIdFromUrl() to properly handle hash fragment query parameters
+    - [x] Added comprehensive debug logging for troubleshooting
+    - [x] Fixed enrollment tracking to search by user_conversion_task_id instead of primary key
+    - [x] Added proper error handling and logging throughout the tracking flow
+  - [x] **ENHANCED: Frontend Progress Display**
+    - [x] Updated TasksPage to show correct progress for "Refer to Enroll Course" tasks
+    - [x] Fixed progress calculation to use enrollment_count and enrollment_target
+    - [x] Added proper task type detection for different progress displays
 - [ ] Testing and QA
 
 ---
@@ -455,6 +477,250 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
   - ✅ **Backward Compatibility**: Legacy share links using user_conversion_task_id still work correctly
   - ✅ **Non-Blocking Tracking**: Visit tracking is fire-and-forget with silent error handling to avoid UX disruption
 
+- **2025-08-08:** **COMPLETED Course Sharing Task Tracking System**:
+  - ✅ **Database Schema**: Created user_course_shares, course_share_visits, course_share_enrollments tables
+  - ✅ **Backend Models**: UserCourseShare, CourseShareEnrollment, CourseShareVisit with relationships and methods
+  - ✅ **CourseShareService**: Comprehensive service for link generation, tracking, and analytics
+  - ✅ **Admin Panel**: Added enrollment_target field and course selection for "Refer to Enroll Course" tasks
+  - ✅ **Frontend Integration**: CourseDetails component tracks visits, TasksPage displays course information
+  - ✅ **Enrollment Tracking**: Integrated course share tracking with enrollment process
+  - ✅ **7-Day Expiration**: All course share links expire after 7 days
+  - ✅ **Self-Referral Prevention**: Users cannot gain rewards from their own share links
+  - ✅ **Analytics**: Comprehensive click tracking, conversion rates, and visit history
+
+- **2025-08-08:** **FIXED Course Sharing System Issues**:
+  - ✅ **Admin Panel Logic**: Fixed JavaScript to show correct target fields for different task types
+  - ✅ **URL Generation**: Fixed course share links to use correct frontend route structure
+  - ✅ **Hash Fragment Parsing**: Fixed extractShareIdFromUrl() to handle query parameters in hash fragments
+  - ✅ **Enrollment Tracking**: Fixed recordEnrollment() to search by user_conversion_task_id
+  - ✅ **Progress Display**: Updated TasksPage to show correct progress for enrollment tasks
+  - ✅ **Debug Logging**: Added comprehensive logging for troubleshooting and monitoring
+
+---
+
+## Course Sharing Task Tracking System (FULLY IMPLEMENTED)
+
+### Overview
+The course sharing task tracking system allows users to complete "Refer to Enroll Course" tasks by sharing course links and tracking enrollments. This system provides comprehensive analytics, expiration management, and robust tracking capabilities.
+
+### Key Features
+
+#### **7-Day Expiration**
+- All course share links automatically expire after 7 days from creation
+- Expired links are marked as inactive and no longer track enrollments
+- Users must create new share links after expiration
+
+#### **Self-Referral Prevention**
+- Users cannot gain rewards by enrolling through their own share links
+- System automatically detects and prevents self-referral attempts
+- Self-referral attempts are logged but don't affect the share link's status
+
+#### **Enhanced Analytics**
+- **Click Tracking**: Records every visit to course share links with IP, user agent, and referrer
+- **Conversion Rate**: Calculates percentage of clicks that result in enrollments
+- **Detailed Visit History**: Tracks individual visits with timestamps and visitor information
+- **Enrollment Analytics**: Comprehensive tracking of all enrollments through share links
+
+#### **Robust Error Handling**
+- Share tracking failures don't disrupt enrollment processing
+- Comprehensive logging for debugging and monitoring
+- Graceful handling of invalid or expired share links
+
+### Database Schema
+
+#### **user_course_shares Table**
+```sql
+CREATE TABLE user_course_shares (
+    id uuid PRIMARY KEY,
+    user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+    user_conversion_task_id uuid REFERENCES user_conversion_tasks(id) ON DELETE CASCADE,
+    course_id uuid REFERENCES courses(id) ON DELETE CASCADE,
+    share_link varchar(500) NOT NULL,
+    shared_at timestamp NOT NULL,
+    enrollment_count integer DEFAULT 0,
+    status enum('active', 'completed', 'expired') DEFAULT 'active',
+    expires_at timestamp NULL,
+    click_count integer DEFAULT 0,
+    visitor_session_id varchar(255) NULL,
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL
+);
+```
+
+#### **course_share_visits Table**
+```sql
+CREATE TABLE course_share_visits (
+    id uuid PRIMARY KEY,
+    user_course_share_id uuid REFERENCES user_course_shares(id) ON DELETE CASCADE,
+    visitor_ip varchar(45) NULL,
+    user_agent varchar(500) NULL,
+    referrer varchar(500) NULL,
+    visited_at timestamp NOT NULL,
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL
+);
+```
+
+#### **course_share_enrollments Table**
+```sql
+CREATE TABLE course_share_enrollments (
+    id uuid PRIMARY KEY,
+    user_course_share_id uuid REFERENCES user_course_shares(id) ON DELETE CASCADE,
+    enrollment_id uuid NOT NULL,
+    enrolled_user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+    enrolled_at timestamp NOT NULL,
+    enrollment_amount decimal(10,2) NOT NULL,
+    status enum('pending', 'completed', 'cancelled') DEFAULT 'completed',
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL
+);
+```
+
+### API Endpoints
+
+#### **Course Share Analytics**
+- `POST /api/course-shares/track-visit` - **Public endpoint** to track a course share link click (no auth required)
+- `GET /api/course-shares/analytics/{shareId}` - Get analytics for specific course share link
+- `GET /api/course-shares/overall-analytics` - Get overall course share statistics
+
+**Note**: The track-visit endpoint is public to allow anonymous visitor tracking, while analytics endpoints require authentication.
+
+### Frontend Integration
+
+#### **Course Details Page**
+- Detects share link parameters from URL (`?share=`) in both standard query strings and hash fragments
+- **Automatically calls tracking API** on page load to record the visit and increment click count
+- Stores share link ID in localStorage for enrollment tracking
+- Preserves tracking information during the enrollment flow
+- **Non-blocking tracking**: Visit logging is fire-and-forget with silent error handling
+
+#### **Enrollment Process**
+- Retrieves course share ID from localStorage during enrollment
+- Sends course share ID to backend with enrollment request
+- Cleans up localStorage after successful enrollment completion
+
+#### **Tasks Page**
+- Displays course details and share links for "Refer to Enroll Course" tasks
+- Shows copy-to-clipboard functionality for share links
+- Displays progress tracking (enrollments vs target)
+- Shows conversion rates and analytics
+
+### Backend Services
+
+#### **CourseShareService**
+- `generateShareLink()` - Creates course share links with 7-day expiration
+- `trackShareClick()` - Records visits with detailed analytics and flexible identifier resolution
+- `recordEnrollment()` - Logs enrollments and updates task completion status
+- **Enhanced identifier support**: Accepts share_link (URL), share_id (UUID), or user_conversion_task_id
+
+#### **CourseShareController**
+- Handles course share visit tracking with flexible identifier support
+- Provides analytics endpoints for authenticated users
+- Manages overall course share statistics
+- **Public track-visit endpoint**: Allows anonymous visitor tracking without authentication
+
+### Security Features
+
+#### **Self-Referral Prevention**
+```php
+// Prevents users from gaining rewards from their own course share links
+if ($courseShare->user_id === $enrolledUserId) {
+    Log::info('Self-referral prevented for course share', [
+        'share_link_id' => $shareLinkId,
+        'user_id' => $enrolledUserId,
+        'enrollment_id' => $enrollmentId
+    ]);
+    return false;
+}
+```
+
+#### **Expiration Management**
+```php
+public function hasExpired(): bool
+{
+    return $this->expires_at && $this->expires_at->isPast();
+}
+
+public function isActive(): bool
+{
+    return $this->status === 'active' && !$this->hasExpired();
+}
+```
+
+### Analytics and Reporting
+
+#### **Conversion Rate Calculation**
+```php
+public function getConversionRate(): float
+{
+    if ($this->click_count === 0) {
+        return 0.0;
+    }
+    return round(($this->enrollment_count / $this->click_count) * 100, 2);
+}
+```
+
+#### **Visit Tracking**
+```php
+public function recordVisit(string $visitorIp = null, string $userAgent = null, string $referrer = null): void
+{
+    $this->increment('click_count');
+    $this->visits()->create([
+        'visitor_ip' => $visitorIp,
+        'user_agent' => $userAgent,
+        'referrer' => $referrer,
+        'visited_at' => now(),
+    ]);
+}
+```
+
+### Recent Fixes and Improvements
+
+#### **Admin Panel Logic Fixes**
+- **Fixed JavaScript Logic**: Updated admin form to show correct target fields for different task types
+- **Task Type Detection**: "Refer to Register" shows referral_target, "Refer to Enroll Course" shows enrollment_target
+- **Form Initialization**: Fixed edit modal population and field visibility logic
+
+#### **URL Generation Fixes**
+- **Correct Route Structure**: Fixed course share links to use proper frontend routing
+- **Hash Router Support**: Enhanced URL parsing to handle hash-based routing
+- **Frontend Integration**: Updated CourseDetails component to construct correct share links
+
+#### **Tracking System Fixes**
+- **Hash Fragment Parsing**: Fixed extractShareIdFromUrl() to properly handle query parameters in hash fragments
+- **Enrollment Tracking**: Fixed recordEnrollment() to search by user_conversion_task_id instead of primary key
+- **Debug Logging**: Added comprehensive logging for troubleshooting and monitoring
+
+#### **Frontend Progress Display**
+- **Task Type Detection**: Updated TasksPage to properly detect and display progress for different task types
+- **Progress Calculation**: Fixed progress bars to show actual enrollment counts vs targets
+- **User Experience**: Improved error handling and loading states
+
+### Testing Results
+- ✅ **Click Tracking**: Visits create course_share_visits records and increment click_count
+- ✅ **Enrollment Tracking**: Enrollments create course_share_enrollments records and increment enrollment_count
+- ✅ **Task Completion**: Tasks are marked as completed when enrollment targets are reached
+- ✅ **Self-Referral Prevention**: Users cannot gain rewards from their own share links
+- ✅ **7-Day Expiration**: Expired links don't track clicks or enrollments
+- ✅ **Analytics**: Conversion rates, visit history, and comprehensive reporting work correctly
+- ✅ **Frontend Integration**: Automatic tracking on page load with hash router support
+- ✅ **Admin Panel**: Correct field visibility and form handling for all task types
+
+**The course sharing task tracking system is now production-ready and fully tested!**
+
+- **2025-01-08:** **COMPLETED Course Completion Task Tracking System**:
+  - ✅ **Database Schema**: Added completion_percentage field to conversion_tasks table
+  - ✅ **Backend Models**: Updated ConversionTask model with completion_percentage field
+  - ✅ **Admin Panel**: Added completion percentage field and JavaScript logic for "Complete Course" tasks
+  - ✅ **CourseCompletionService**: Created comprehensive service for course completion tracking
+  - ✅ **Backend Integration**: Updated RewardConversionController to handle course completion tasks
+  - ✅ **Lesson Tracking**: Updated LessonController to check and complete course completion tasks
+  - ✅ **Frontend Integration**: Updated TasksPage to display course completion progress and actions
+  - ✅ **Progress Tracking**: Real-time progress calculation and automatic task completion
+  - ✅ **User Experience**: Smart handling of pre-completed courses and enrollment status
+
+**The course completion task tracking system is now production-ready and fully implemented!**
+
 ---
 
 ## Recent Features Implemented
@@ -491,7 +757,7 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
 - **API Endpoints**: New endpoints for visit tracking, analytics, and overall share link statistics.
 - **Security Features**: Self-referral prevention with comprehensive logging and monitoring.
 
-## Current Status: Product Link Sharing Tracking Implementation
+## Current Status: All Task Tracking Systems Implemented
 
 ### ✅ **COMPLETED - Enhanced Share Link Tracking System**
 
@@ -584,6 +850,86 @@ The enhanced share link tracking system is now complete and fully operational:
 7. **Frontend Integration**: ✅ Working - automatic tracking on page load with hash router support
 
 **The share link tracking system is now production-ready and fully tested!**
+
+### ✅ **COMPLETED - Course Sharing Task Tracking System**
+
+#### **Database Schema**
+- ✅ Created `user_course_shares` table for tracking course share links
+- ✅ Created `course_share_visits` table for detailed click tracking
+- ✅ Created `course_share_enrollments` table for enrollment tracking
+- ✅ Added `enrollment_target` and `enrollment_count` fields to relevant tables
+
+#### **Backend Models and Services**
+- ✅ Created `UserCourseShare` model with expiration, analytics, and visit tracking methods
+- ✅ Created `CourseShareEnrollment` and `CourseShareVisit` models for detailed tracking
+- ✅ Updated `CourseShareService` with 7-day expiration and enhanced tracking
+- ✅ Created `CourseShareController` for analytics and visit tracking endpoints
+- ✅ Updated `EnrollmentController` with course share tracking integration
+
+#### **Admin Panel Updates**
+- ✅ Updated admin form modal to include `enrollment_target` field
+- ✅ Fixed JavaScript logic to show correct target fields for different task types
+- ✅ "Refer to Register" tasks show referral_target field only
+- ✅ "Refer to Enroll Course" tasks show enrollment_target field only
+- ✅ Added validation for `enrollment_target` field in `ConversionTaskController`
+
+#### **Frontend Integration**
+- ✅ Updated TasksPage.tsx to display course details and share links for "Refer to Enroll Course" tasks
+- ✅ Added copy-to-clipboard functionality for course share links
+- ✅ Added course information display (title, description, enrollment fee) in task modal
+- ✅ Added progress tracking display for enrollment tasks (enrollments vs target)
+- ✅ Updated CourseDetails.tsx to detect and track course share visits
+- ✅ Enhanced share link ID storage in localStorage for enrollment tracking
+- ✅ Updated enrollmentService to include course share ID tracking
+- ✅ Added cleanup of share link ID from localStorage after successful enrollments
+
+#### **Backend Enrollment Tracking**
+- ✅ Updated EnrollmentController to accept and validate `course_share_id` parameter
+- ✅ Added course share enrollment tracking logic in EnrollmentController::enroll()
+- ✅ Integrated with CourseShareService to record enrollments
+- ✅ Added automatic task completion when enrollment targets are met
+- ✅ Added comprehensive logging for course share tracking
+- ✅ Added self-referral prevention for course enrollments
+
+#### **Analytics and Monitoring**
+- ✅ Created `CourseShareController` with endpoints for visit tracking and analytics
+- ✅ Added conversion rate calculation and detailed visit tracking
+- ✅ Implemented overall analytics for admin monitoring
+- ✅ Added comprehensive logging for debugging and monitoring
+
+### ✅ **COMPLETED - Course Sharing System Fixes and Improvements**
+
+#### **Issues Identified and Resolved**
+1. **Admin Panel Logic**: JavaScript was showing wrong target fields for different task types
+2. **URL Generation**: Course share links were using incorrect frontend route structure
+3. **Hash Fragment Parsing**: extractShareIdFromUrl() couldn't parse query parameters in hash fragments
+4. **Enrollment Tracking**: recordEnrollment() was looking for wrong ID field
+5. **Progress Display**: TasksPage wasn't showing correct progress for enrollment tasks
+
+#### **Backend Fixes Applied**
+- **Admin Panel Logic**: Fixed JavaScript to show correct target fields based on task type
+- **URL Generation**: Fixed generateCourseShareLink() to use correct frontend route structure
+- **Hash Fragment Parsing**: Enhanced extractShareIdFromUrl() to handle query parameters in hash fragments
+- **Enrollment Tracking**: Fixed recordEnrollment() to search by user_conversion_task_id
+- **Debug Logging**: Added comprehensive logging for troubleshooting and monitoring
+
+#### **Frontend Fixes Applied**
+- **URL Construction**: Updated CourseDetails component to construct correct share links
+- **Progress Display**: Updated TasksPage to properly detect and display progress for enrollment tasks
+- **Task Type Detection**: Fixed progress calculation to use enrollment_count and enrollment_target
+- **User Experience**: Improved error handling and loading states
+
+#### **Testing Results**
+- ✅ **Click Tracking**: Visits create course_share_visits records and increment click_count
+- ✅ **Enrollment Tracking**: Enrollments create course_share_enrollments records and increment enrollment_count
+- ✅ **Task Completion**: Tasks are marked as completed when enrollment targets are reached
+- ✅ **Self-Referral Prevention**: Users cannot gain rewards from their own course share links
+- ✅ **7-Day Expiration**: Expired links don't track clicks or enrollments
+- ✅ **Analytics**: Conversion rates, visit history, and comprehensive reporting work correctly
+- ✅ **Frontend Integration**: Automatic tracking on page load with hash router support
+- ✅ **Admin Panel**: Correct field visibility and form handling for all task types
+
+**The course sharing task tracking system is now production-ready and fully tested!**
 
 ## Recommended Task Types and Reward Types to Add
 

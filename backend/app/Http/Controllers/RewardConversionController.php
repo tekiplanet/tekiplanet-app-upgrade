@@ -207,6 +207,38 @@ class RewardConversionController extends Controller
             } else {
                 $instructions = 'This task requires sharing a course, but no course has been assigned. Please contact support.';
             }
+        } elseif ($task && strtolower($task->type->name) === 'complete course') {
+            if ($task->taskCourse) {
+                $course = $task->taskCourse;
+                $courseCompletionService = app(\App\Services\CourseCompletionService::class);
+                
+                // Get course progress
+                $courseProgress = $courseCompletionService->getCourseProgress($user, $course);
+                $isEnrolled = $courseCompletionService->isEnrolledInCourse($user, $course);
+                $requiredPercentage = $task->completion_percentage ?? 100;
+                
+                // Check if already completed
+                if ($courseCompletionService->hasCompletedCourse($user, $course, $requiredPercentage)) {
+                    $instructions = "Congratulations! You have already completed this course to the required {$requiredPercentage}%. Your task is ready to be completed.";
+                    $progress = [
+                        'needed' => $requiredPercentage,
+                        'completed' => $courseProgress['completion_percentage'],
+                        'status' => 'completed'
+                    ];
+                } else {
+                    $instructions = "Complete this course to {$requiredPercentage}% to earn your reward. Continue learning to reach the required completion percentage.";
+                    $progress = [
+                        'needed' => $requiredPercentage,
+                        'completed' => $courseProgress['completion_percentage'],
+                        'status' => 'in_progress'
+                    ];
+                }
+                
+                // Add course details
+                $course = $task->taskCourse;
+            } else {
+                $instructions = 'This task requires completing a course, but no course has been assigned. Please contact support.';
+            }
         } else {
             $instructions = 'Complete the assigned task as described.';
         }

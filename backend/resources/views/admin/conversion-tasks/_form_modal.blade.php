@@ -99,6 +99,10 @@
                     <label for="enrollment_target" class="block text-gray-700">Number of Enrollments Required</label>
                     <input type="number" name="enrollment_target" id="enrollment_target" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1" value="1">
                 </div>
+                <div class="mb-4 hidden" id="completion-percentage-field">
+                    <label for="completion_percentage" class="block text-gray-700">Course Completion Percentage Required</label>
+                    <input type="number" name="completion_percentage" id="completion_percentage" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" min="1" max="100" value="100">
+                </div>
             </div>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
@@ -121,6 +125,7 @@
         document.getElementById('referral-target-field').classList.add('hidden');
         document.getElementById('share-target-field').classList.add('hidden');
         document.getElementById('enrollment-target-field').classList.add('hidden');
+        document.getElementById('completion-percentage-field').classList.add('hidden');
     }
     function showReferralTargetIfNeeded() {
         var taskTypeSelect = document.getElementById('task_type_id');
@@ -145,6 +150,13 @@
             document.getElementById('enrollment-target-field').classList.remove('hidden');
         } else {
             document.getElementById('enrollment-target-field').classList.add('hidden');
+        }
+        
+        // Show completion percentage for complete course tasks
+        if (selectedText.includes('complete course')) {
+            document.getElementById('completion-percentage-field').classList.remove('hidden');
+        } else {
+            document.getElementById('completion-percentage-field').classList.add('hidden');
         }
     }
     document.getElementById('reward_type_id').addEventListener('change', function() {
@@ -179,6 +191,11 @@
             document.getElementById('task-course-field').classList.remove('hidden');
         }
         
+        // Show task course field for complete course tasks
+        if (selectedText.includes('complete course')) {
+            document.getElementById('task-course-field').classList.remove('hidden');
+        }
+        
         showReferralTargetIfNeeded();
     });
     // Hide all on load
@@ -210,6 +227,9 @@
             if (selectedText.includes('enroll course')) {
                 document.getElementById('task-course-field').classList.remove('hidden');
             }
+            if (selectedText.includes('complete course')) {
+                document.getElementById('task-course-field').classList.remove('hidden');
+            }
         }
     }
     
@@ -236,6 +256,13 @@
             } else {
                 document.getElementById('enrollment_target').value = '';
                 document.getElementById('enrollment-target-field').classList.add('hidden');
+            }
+            if (task.completion_percentage !== undefined && task.completion_percentage !== null) {
+                document.getElementById('completion_percentage').value = task.completion_percentage;
+                document.getElementById('completion-percentage-field').classList.remove('hidden');
+            } else {
+                document.getElementById('completion_percentage').value = '';
+                document.getElementById('completion-percentage-field').classList.add('hidden');
             }
             // Initialize reward fields after populating the form
             setTimeout(initializeRewardFields, 100);

@@ -87,10 +87,13 @@ window.hideAllDynamicFields = function() {
     document.getElementById('product-field').classList.add('hidden');
     document.getElementById('coupon-field').classList.add('hidden');
     document.getElementById('course-field').classList.add('hidden');
+    document.getElementById('task-course-field').classList.add('hidden');
     document.getElementById('cash-field').classList.add('hidden');
     document.getElementById('discount-field').classList.add('hidden');
     document.getElementById('referral-target-field').classList.add('hidden');
     document.getElementById('share-target-field').classList.add('hidden');
+    document.getElementById('enrollment-target-field').classList.add('hidden');
+    document.getElementById('completion-percentage-field').classList.add('hidden');
 }
 window.showReferralTargetIfNeeded = function() {
     var taskTypeSelect = document.getElementById('task_type_id');
@@ -115,6 +118,13 @@ window.showReferralTargetIfNeeded = function() {
         document.getElementById('enrollment-target-field').classList.remove('hidden');
     } else {
         document.getElementById('enrollment-target-field').classList.add('hidden');
+    }
+    
+    // Show completion percentage for complete course tasks
+    if (selectedText.includes('complete course')) {
+        document.getElementById('completion-percentage-field').classList.remove('hidden');
+    } else {
+        document.getElementById('completion-percentage-field').classList.add('hidden');
     }
 }
 window.openCreateModal = function() {
@@ -162,6 +172,12 @@ window.openEditModal = function(task) {
     } else if (document.getElementById('enrollment_target')) {
         document.getElementById('enrollment_target').value = '';
     }
+    
+    if ('completion_percentage' in task && document.getElementById('completion_percentage')) {
+        document.getElementById('completion_percentage').value = task.completion_percentage ?? '';
+    } else if (document.getElementById('completion_percentage')) {
+        document.getElementById('completion_percentage').value = '';
+    }
     form.action = `/admin/conversion-tasks/${task.id}`;
     form.querySelector('input[name="_method"]').value = 'PUT';
     document.getElementById('modalTitle').textContent = 'Edit Task';
@@ -202,6 +218,10 @@ window.openEditModal = function(task) {
             document.getElementById('task-course-field').classList.remove('hidden');
             document.getElementById('enrollment-target-field').classList.remove('hidden');
         }
+        if (selectedText.includes('complete course')) {
+            document.getElementById('task-course-field').classList.remove('hidden');
+            document.getElementById('completion-percentage-field').classList.remove('hidden');
+        }
     }, 100);
 }
 window.closeModal = function() {
@@ -224,6 +244,14 @@ document.getElementById('reward_type_id').addEventListener('change', function() 
     window.showReferralTargetIfNeeded();
 });
 document.getElementById('task_type_id').addEventListener('change', function() {
+    var taskTypeSelect = this;
+    var selectedText = taskTypeSelect.options[taskTypeSelect.selectedIndex]?.text?.toLowerCase() || '';
+    
+    // Show task course field for complete course tasks
+    if (selectedText.includes('complete course')) {
+        document.getElementById('task-course-field').classList.remove('hidden');
+    }
+    
     window.showReferralTargetIfNeeded();
 });
 // Hide all on load

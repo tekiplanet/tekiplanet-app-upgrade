@@ -30,6 +30,7 @@ class ConversionTask extends Model
         'referral_target',
         'share_target',
         'enrollment_target',
+        'completion_percentage',
     ];
 
     public function type()
