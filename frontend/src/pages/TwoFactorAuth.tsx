@@ -5,23 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/useAuthStore";
 import { authService } from "@/services/authService";
+import { returnUrlUtils } from "@/utils/returnUrlUtils";
 
 const TwoFactorAuth = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
+    if (isAuthenticated && !isVerifying) {
+      returnUrlUtils.redirectToReturnUrlOrDashboard(navigate);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, isVerifying]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setIsVerifying(true);
 
     try {
       const pendingEmail = localStorage.getItem('pending_2fa_email');
@@ -42,12 +45,15 @@ const TwoFactorAuth = () => {
         });
         
         toast.success('Authentication successful');
-        navigate('/dashboard');
+        
+        // Check for return URL and redirect there if available
+        returnUrlUtils.redirectToReturnUrlOrDashboard(navigate);
       }
     } catch (error: any) {
       toast.error(error.message || 'Invalid authentication code');
     } finally {
       setLoading(false);
+      setIsVerifying(false);
     }
   };
 

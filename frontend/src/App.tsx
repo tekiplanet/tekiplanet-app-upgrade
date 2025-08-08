@@ -46,6 +46,7 @@ import { Toast } from '@capacitor/toast';
 import { Capacitor } from '@capacitor/core';
 import RewardsTasksPage from '@/pages/dashboard/RewardsTasksPage';
 import TasksPage from '@/pages/dashboard/TasksPage';
+import { returnUrlUtils } from '@/utils/returnUrlUtils';
 
 // Lazy load pages
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
@@ -109,9 +110,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     token: localStorage.getItem('token')
   });
   
+  // Check if this is a share link (contains ?share= parameter)
+  const isShareLink = window.location.href.includes('?share=');
+  
   if (!isAuthenticated) {
     console.log('🛡️ ProtectedRoute: Not authenticated, redirecting to login');
+    // Save the current URL to redirect back after login
+    returnUrlUtils.saveReturnUrl();
     return <Navigate to="/login" />;
+  }
+
+  // If authenticated but this is a share link, save the return URL for potential redirects
+  if (isAuthenticated && isShareLink && !localStorage.getItem('returnUrl')) {
+    returnUrlUtils.saveReturnUrl();
   }
 
   if (requiresVerification && location.pathname !== '/verify-email') {
@@ -162,6 +173,10 @@ const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!isChecking && shouldRedirect) {
       console.log('🔍 OnboardingGuard: Redirecting to onboarding...');
+      // Save current URL as return URL if not already saved
+      if (!localStorage.getItem('returnUrl')) {
+        returnUrlUtils.saveReturnUrl();
+      }
       navigate('/onboarding');
     }
   }, [isChecking, shouldRedirect, navigate]);

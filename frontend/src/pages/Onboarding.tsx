@@ -8,6 +8,7 @@ import AccountTypeStep from '@/components/onboarding/AccountTypeStep';
 import ProfileStep from '@/components/onboarding/ProfileStep';
 import CountryCurrencyStep from '@/components/onboarding/CountryCurrencyStep';
 import { Loader2 } from 'lucide-react';
+import { returnUrlUtils } from '@/utils/returnUrlUtils';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -27,8 +28,27 @@ const Onboarding: React.FC = () => {
       setOnboardingStatus(status);
       
       if (status.is_complete) {
-        // Onboarding is complete, redirect to dashboard
-        navigate('/dashboard', { replace: true });
+        // Check for return URL first
+        const returnUrl = returnUrlUtils.getAndClearReturnUrl();
+        if (returnUrl) {
+          console.log('🔗 Onboarding: Redirecting to return URL:', returnUrl);
+          // Use navigate for internal routes, window.location for external
+          if (returnUrl.includes(window.location.origin)) {
+            const url = new URL(returnUrl);
+            // For hash routing, we need to handle the path differently
+            if (url.hash) {
+              const path = url.hash.substring(1); // Remove the # from the hash
+              navigate(path, { replace: true });
+            } else {
+              navigate(url.pathname, { replace: true });
+            }
+          } else {
+            window.location.href = returnUrl;
+          }
+        } else {
+          // Onboarding is complete, redirect to dashboard
+          navigate('/dashboard', { replace: true });
+        }
         return;
       }
       
@@ -87,10 +107,29 @@ const Onboarding: React.FC = () => {
       toast.success('Location and currency preferences updated successfully');
       setCurrentStep('complete');
       
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 1500);
+      // Check for return URL and redirect there if available
+      const returnUrl = returnUrlUtils.getAndClearReturnUrl();
+      if (returnUrl) {
+        console.log('🔗 Onboarding: Redirecting to return URL after completion:', returnUrl);
+        // Use navigate for internal routes, window.location for external
+        if (returnUrl.includes(window.location.origin)) {
+          const url = new URL(returnUrl);
+          // For hash routing, we need to handle the path differently
+          if (url.hash) {
+            const path = url.hash.substring(1); // Remove the # from the hash
+            navigate(path, { replace: true });
+          } else {
+            navigate(url.pathname, { replace: true });
+          }
+        } else {
+          window.location.href = returnUrl;
+        }
+      } else {
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 1500);
+      }
     } catch (error: any) {
       console.error('Failed to update country and currency:', error);
       toast.error(error.message || 'Failed to update preferences');

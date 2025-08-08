@@ -73,6 +73,14 @@ export default function ProductDetails() {
     const shareParam = getShareParam();
     if (shareParam) {
       setShareLinkId(shareParam);
+      
+      // Clear return URL since we've successfully reached the intended destination
+      const returnUrl = localStorage.getItem('returnUrl');
+      if (returnUrl && returnUrl.includes('?share=')) {
+        localStorage.removeItem('returnUrl');
+        console.log('🔗 ProductDetails: Cleared return URL, successfully reached share link destination');
+      }
+      
       // Fire-and-forget tracking of the visit
       storeService
         .trackShareVisit(shareParam)

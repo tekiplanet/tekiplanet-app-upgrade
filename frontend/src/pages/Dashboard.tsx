@@ -95,6 +95,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
     // console.log('Dashboard unread count:', unreadCount);
   }, [notifications, unreadCount]);
 
+  // Check for return URL when dashboard loads
+  useEffect(() => {
+    // Remove this logic since it's now handled by the centralized returnUrlUtils
+    // The return URL should be handled by the authentication components, not the dashboard
+  }, []);
+
   const handleLogout = () => {
     useAuthStore.getState().logout();
     

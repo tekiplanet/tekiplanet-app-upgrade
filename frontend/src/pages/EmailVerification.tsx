@@ -4,12 +4,14 @@ import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/useAuthStore";
+import { returnUrlUtils } from "@/utils/returnUrlUtils";
 
 const EmailVerification = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [isVerifying, setIsVerifying] = useState(false);
   const navigate = useNavigate();
   const authStore = useAuthStore();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -25,13 +27,13 @@ const EmailVerification = () => {
       }
 
       // Only redirect to dashboard if explicitly verified
-      if (isAuthenticated && requiresVerification === false) {
-        navigate('/dashboard');
+      if (isAuthenticated && requiresVerification === false && !isVerifying) {
+        returnUrlUtils.redirectToReturnUrlOrDashboard(navigate);
       }
     };
 
     checkAuth();
-  }, [isAuthenticated, requiresVerification, navigate]);
+  }, [isAuthenticated, requiresVerification, navigate, isVerifying]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -46,11 +48,33 @@ const EmailVerification = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setIsVerifying(true);
 
     try {
       await authStore.verifyEmail(code);
       await authStore.initialize();
       toast.success('Email verified successfully');
+      
+      // Check for return URL first
+      const returnUrl = localStorage.getItem('returnUrl');
+      if (returnUrl) {
+        localStorage.removeItem('returnUrl');
+        console.log('🔗 EmailVerification: Redirecting to return URL:', returnUrl);
+        // Use navigate for internal routes, window.location for external
+        if (returnUrl.includes(window.location.origin)) {
+          const url = new URL(returnUrl);
+          // For hash routing, we need to handle the path differently
+          if (url.hash) {
+            const path = url.hash.substring(1); // Remove the # from the hash
+            navigate(path, { replace: true });
+          } else {
+            navigate(url.pathname, { replace: true });
+          }
+        } else {
+          window.location.href = returnUrl;
+        }
+        return;
+      }
       
       // Check onboarding status after email verification
       try {
@@ -71,6 +95,8 @@ const EmailVerification = () => {
     } catch (error: any) {
       toast.error(error.message || 'Failed to verify email');
       setLoading(false);
+    } finally {
+      setIsVerifying(false);
     }
   };
 

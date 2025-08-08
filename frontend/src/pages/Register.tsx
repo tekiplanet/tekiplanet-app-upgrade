@@ -3,10 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RegisterForm, RegisterFormData } from "@/components/auth/RegisterForm";
 import { useAuthStore } from "@/store/useAuthStore";
+import { returnUrlUtils } from "@/utils/returnUrlUtils";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isRegistering, setIsRegistering] = useState(false);
   
   // Parse URL parameters from the full URL to handle hash routing
   const fullUrl = window.location.href;
@@ -30,14 +32,15 @@ const Register: React.FC = () => {
 
   // Redirect to dashboard if already authenticated and verified
   useEffect(() => {
-    if (isAuthenticated && !requiresVerification) {
-      navigate('/dashboard', { replace: true });
+    if (isAuthenticated && !requiresVerification && !isRegistering) {
+      returnUrlUtils.redirectToReturnUrlOrDashboard(navigate);
     }
-  }, [isAuthenticated, requiresVerification, navigate]);
+  }, [isAuthenticated, requiresVerification, navigate, isRegistering]);
 
   const handleRegister = async (data: RegisterFormData) => {
     try {
       console.log('🚀 Starting registration...');
+      setIsRegistering(true);
       // Pass referral params to register function
       const response = await register({ ...data, ref, task });
       console.log('✅ Registration response:', response);
@@ -62,6 +65,8 @@ const Register: React.FC = () => {
       const errorMessage = error.message || 'Registration failed';
       toast.error(errorMessage);
       throw error; // Re-throw to be caught by the form
+    } finally {
+      setIsRegistering(false);
     }
   };
 
