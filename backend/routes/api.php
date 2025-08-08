@@ -140,6 +140,13 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
             Route::get('/orders/{id}/tracking', [OrderController::class, 'tracking']);
             Route::get('/orders/{id}/invoice', [OrderController::class, 'downloadInvoice']);
             
+            // Share link analytics routes
+            Route::prefix('share-links')->group(function () {
+                Route::post('/track-visit', [App\Http\Controllers\ShareLinkController::class, 'trackVisit']);
+                Route::get('/analytics/{shareId}', [App\Http\Controllers\ShareLinkController::class, 'getAnalytics']);
+                Route::get('/overall-analytics', [App\Http\Controllers\ShareLinkController::class, 'getOverallAnalytics']);
+            });
+            
             // Workstation routes
             Route::prefix('workstation')->group(function () {
                 Route::get('/plans', [WorkstationController::class, 'getPlans']);

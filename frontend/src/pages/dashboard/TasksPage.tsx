@@ -215,6 +215,13 @@ export default function TasksPage() {
     }
   };
 
+  const handleCopyShareLink = () => {
+    if (taskInstructions?.share_link) {
+      navigator.clipboard.writeText(taskInstructions.share_link);
+      toast.success('Share link copied!');
+    }
+  };
+
   const handleViewReward = async (task: any) => {
     setActiveTask(task);
     setShowRewardDialog(true);
@@ -485,9 +492,26 @@ export default function TasksPage() {
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-muted-foreground">Progress</span>
-                              <span className="font-medium">75%</span>
+                              <span className="font-medium">
+                                {task.task?.type?.name?.toLowerCase().includes('share') && task.share_count !== undefined ? (
+                                  `${task.share_count} / ${task.task?.share_target || 1}`
+                                ) : task.task?.type?.name?.toLowerCase().includes('refer') && task.referral_count !== undefined ? (
+                                  `${task.referral_count} / ${task.task?.referral_target || 1}`
+                                ) : (
+                                  '75%'
+                                )}
+                              </span>
                             </div>
-                            <Progress value={75} className="h-2" />
+                            <Progress 
+                              value={
+                                task.task?.type?.name?.toLowerCase().includes('share') && task.share_count !== undefined ? (
+                                  Math.min((task.share_count / (task.task?.share_target || 1)) * 100, 100)
+                                ) : task.task?.type?.name?.toLowerCase().includes('refer') && task.referral_count !== undefined ? (
+                                  Math.min((task.referral_count / (task.task?.referral_target || 1)) * 100, 100)
+                                ) : 75
+                              } 
+                              className="h-2" 
+                            />
                           </div>
                         )}
 
@@ -585,6 +609,81 @@ export default function TasksPage() {
                       Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} referrals
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Product Share Section */}
+              {taskInstructions.product && taskInstructions.share_link && (
+                <div className="space-y-4">
+                  {/* Product Details */}
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-3">Product to Share</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        {taskInstructions.product.image && (
+                          <img 
+                            src={taskInstructions.product.image} 
+                            alt={taskInstructions.product.name}
+                            className="w-16 h-16 object-cover rounded-lg border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-sm">{taskInstructions.product.name}</h5>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {taskInstructions.product.description}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                              <CurrencyDisplay 
+                                amount={taskInstructions.product.price || 0} 
+                                userCurrencyCode={user?.currency_code}
+                                currencySymbol={currencySymbol}
+                              />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Share Link */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium">Your Share Link</label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        value={taskInstructions.share_link}
+                        readOnly
+                        className="flex-1 bg-muted/30 text-xs sm:text-sm"
+                        onFocus={e => e.target.select()}
+                      />
+                      <Button size="icon" variant="outline" onClick={handleCopyShareLink}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h8m-2 8v2a2 2 0 002 2h4a2 2 0 002-2V6a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
+                      </Button>
+                    </div>
+                    {taskInstructions.progress && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Progress: {taskInstructions.progress.completed} / {taskInstructions.progress.needed} purchases
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-start gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-sm">
+                        <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">How to complete this task:</p>
+                        <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1">
+                          <li>• Share the link above on social media, messaging apps, or any platform</li>
+                          <li>• When someone clicks your link and purchases the product, it counts towards your goal</li>
+                          <li>• You need {taskInstructions.progress?.needed || 1} purchase(s) to complete this task</li>
+                          <li>• Only purchases made through your unique link will be counted</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

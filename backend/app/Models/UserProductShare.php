@@ -17,13 +17,18 @@ class UserProductShare extends Model
         'product_id',
         'share_link',
         'shared_at',
+        'expires_at',
         'purchase_count',
+        'click_count',
+        'visitor_session_id',
         'status'
     ];
 
     protected $casts = [
         'shared_at' => 'datetime',
+        'expires_at' => 'datetime',
         'purchase_count' => 'integer',
+        'click_count' => 'integer',
     ];
 
     public function user(): BelongsTo
@@ -46,13 +51,18 @@ class UserProductShare extends Model
         return $this->hasMany(ProductSharePurchase::class);
     }
 
+    public function visits(): HasMany
+    {
+        return $this->hasMany(ShareLinkVisit::class);
+    }
+
     /**
      * Generate a unique share link for this product share.
      */
     public function generateShareLink(): string
     {
         $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
-        return $baseUrl . '/products/' . $this->product_id . '?share=' . $this->id;
+        return $baseUrl . '/dashboard#/dashboard/store/product/' . $this->product_id . '?share=' . $this->id;
     }
 
     /**
@@ -62,6 +72,50 @@ class UserProductShare extends Model
     {
         $target = $this->userConversionTask->task->share_target ?? 1;
         return $this->purchase_count >= $target;
+    }
+
+    /**
+     * Check if this share link has expired.
+     */
+    public function hasExpired(): bool
+    {
+        return $this->expires_at && $this->expires_at->isPast();
+    }
+
+    /**
+     * Check if this share link is still active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active' && !$this->hasExpired();
+    }
+
+    /**
+     * Get the conversion rate for this share link.
+     */
+    public function getConversionRate(): float
+    {
+        if ($this->click_count === 0) {
+            return 0.0;
+        }
+        
+        return round(($this->purchase_count / $this->click_count) * 100, 2);
+    }
+
+    /**
+     * Record a visit to this share link.
+     */
+    public function recordVisit(string $visitorIp = null, string $userAgent = null, string $referrer = null): void
+    {
+        $this->increment('click_count');
+        
+        // Create visit record
+        $this->visits()->create([
+            'visitor_ip' => $visitorIp,
+            'user_agent' => $userAgent,
+            'referrer' => $referrer,
+            'visited_at' => now(),
+        ]);
     }
 
     /**
@@ -82,5 +136,14 @@ class UserProductShare extends Model
             $userTask->share_count = $this->purchase_count;
             $userTask->save();
         }
+    }
+
+    /**
+     * Set expiration date for this share link (default 30 days).
+     */
+    public function setExpiration(int $days = 30): void
+    {
+        $this->expires_at = now()->addDays($days);
+        $this->save();
     }
 }

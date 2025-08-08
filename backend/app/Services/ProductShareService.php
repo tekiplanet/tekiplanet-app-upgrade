@@ -36,23 +36,32 @@ class ProductShareService
             'status' => 'active'
         ]);
 
+        // Set expiration date (7 days from now)
+        $share->setExpiration(7);
+
         return $share->share_link;
     }
 
     /**
-     * Track a share link click.
+     * Track a share link click with detailed analytics.
      */
-    public function trackShareClick(string $shareLink): ?UserProductShare
+    public function trackShareClick(string $shareLink, string $visitorIp = null, string $userAgent = null, string $referrer = null): ?UserProductShare
     {
         $share = UserProductShare::where('share_link', $shareLink)
             ->where('status', 'active')
             ->first();
 
-        if ($share) {
+        if ($share && $share->isActive()) {
+            // Record the visit with analytics
+            $share->recordVisit($visitorIp, $userAgent, $referrer);
+            
             Log::info('Share link clicked', [
                 'share_id' => $share->id,
                 'user_id' => $share->user_id,
-                'product_id' => $share->product_id
+                'product_id' => $share->product_id,
+                'visitor_ip' => $visitorIp,
+                'click_count' => $share->click_count,
+                'conversion_rate' => $share->getConversionRate()
             ]);
         }
 

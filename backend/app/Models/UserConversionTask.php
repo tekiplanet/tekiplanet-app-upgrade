@@ -59,6 +59,6 @@ class UserConversionTask extends Model
     public function generateProductShareLink($productId)
     {
         $baseUrl = config('app.frontend_url', 'https://app.tekiplanet.org');
-        return $baseUrl . '/products/' . $productId . '?share=' . $this->id;
+        return $baseUrl . '/dashboard#/dashboard/store/product/' . $productId . '?share=' . $this->id;
     }
 }

@@ -44,6 +44,19 @@ export default function ProductDetails() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
+  
+  // Share link tracking
+  const [shareLinkId, setShareLinkId] = useState<string | null>(null);
+
+  // Detect share link parameters from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareParam = urlParams.get('share');
+    if (shareParam) {
+      setShareLinkId(shareParam);
+      console.log('Share link detected:', shareParam);
+    }
+  }, []);
 
   // Fetch product details
   const { data: productData, isLoading } = useQuery({
@@ -68,10 +81,22 @@ export default function ProductDetails() {
     
     setIsAddingToCart(true);
     try {
+      // Store share link ID in localStorage for later use during checkout
+      if (shareLinkId) {
+        // Store with product ID to handle multiple products
+        const shareData = {
+          shareLinkId,
+          productId: product.id,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(`share_link_${product.id}`, JSON.stringify(shareData));
+        console.log('Share link ID stored for checkout:', shareLinkId);
+      }
+      
       await storeService.addToCart(product.id, quantity);
       
       // Invalidate cart query to refresh cart data
-      queryClient.invalidateQueries(['cart']);
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
       
       toast.success('Added to cart', {
         description: `${product.name} x ${quantity} added to your cart`
@@ -98,7 +123,7 @@ export default function ProductDetails() {
     try {
       const response = await storeService.toggleWishlist(product.id);
       setIsWishlisted(response.is_wishlisted);
-      queryClient.invalidateQueries(['wishlistCount']);
+      queryClient.invalidateQueries({ queryKey: ['wishlistCount'] });
       toast.success(response.message);
     } catch (error) {
       toast.error('Failed to update wishlist');
@@ -112,8 +137,21 @@ export default function ProductDetails() {
     
     setIsBuyingNow(true);
     try {
+      // Store share link ID in localStorage for later use during checkout
+      if (shareLinkId) {
+        // Store with product ID to handle multiple products
+        const shareData = {
+          shareLinkId,
+          productId: product.id,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(`share_link_${product.id}`, JSON.stringify(shareData));
+        console.log('Share link ID stored for checkout:', shareLinkId);
+      }
+      
       await storeService.addToCart(product.id, quantity);
-      queryClient.invalidateQueries(['cart', 'cartCount']);
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['cartCount'] });
       navigate('/dashboard/cart');
     } catch (error: any) {
       if (error.response?.status === 422) {

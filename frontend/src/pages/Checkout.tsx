@@ -138,17 +138,54 @@ export default function Checkout() {
 
     setIsProcessing(true);
     try {
-      const response = await storeService.createOrder({
+      // Get share link IDs from localStorage for all products in cart
+      const shareLinkIds: string[] = [];
+      const cartItems = cart?.items || [];
+      
+      for (const item of cartItems) {
+        const shareDataKey = `share_link_${item.product_id}`;
+        const shareData = localStorage.getItem(shareDataKey);
+        if (shareData) {
+          try {
+            const parsedData = JSON.parse(shareData);
+            if (parsedData.shareLinkId) {
+              shareLinkIds.push(parsedData.shareLinkId);
+              console.log('Found share link ID for product:', item.product_id, parsedData.shareLinkId);
+            }
+          } catch (e) {
+            console.error('Failed to parse share data:', e);
+          }
+        }
+      }
+      
+      const orderData: any = {
         shipping_address_id: selectedAddressId!,
         shipping_method_id: selectedShippingMethodId!,
         payment_method: 'wallet',
         coupon_code: appliedCoupon?.code,
         subtotal: subtotal,
         discount_amount: appliedCoupon ? (subtotal - total) : 0
-      });
+      };
+
+      // Include share link IDs if available
+      if (shareLinkIds.length > 0) {
+        orderData.share_link_ids = shareLinkIds;
+        console.log('Including share link IDs in order:', shareLinkIds);
+      }
+
+      const response = await storeService.createOrder(orderData);
 
       setOrderData(response.order);
       setCurrentStep('confirmation');
+      
+      // Clear share link IDs from localStorage after successful order
+      if (shareLinkIds.length > 0) {
+        for (const item of cartItems) {
+          const shareDataKey = `share_link_${item.product_id}`;
+          localStorage.removeItem(shareDataKey);
+        }
+        console.log('Share link IDs cleared from localStorage');
+      }
       
       queryClient.invalidateQueries(['cart']);
       queryClient.invalidateQueries(['wallet']);

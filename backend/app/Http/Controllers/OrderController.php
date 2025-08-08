@@ -30,14 +30,17 @@ class OrderController extends Controller
             'shipping_address_id' => 'required|exists:shipping_addresses,id',
             'shipping_method_id' => 'required|exists:shipping_methods,id',
             'payment_method' => 'required|in:wallet',
-            'coupon_code' => 'nullable|string'
+            'coupon_code' => 'nullable|string',
+            'share_link_ids' => 'nullable|array',
+        'share_link_ids.*' => 'string|exists:user_product_shares,id'
         ], [
             'shipping_address_id.required' => 'Shipping address is required',
             'shipping_address_id.exists' => 'Invalid shipping address',
             'shipping_method_id.required' => 'Shipping method is required',
             'shipping_method_id.exists' => 'Invalid shipping method',
             'payment_method.required' => 'Payment method is required',
-            'payment_method.in' => 'Invalid payment method'
+            'payment_method.in' => 'Invalid payment method',
+            'share_link_ids.*.exists' => 'Invalid share link'
         ]);
     
         DB::beginTransaction();
@@ -186,6 +189,61 @@ class OrderController extends Controller
                 'location' => 'System'
             ]);
     
+            // Track share link purchases if share_link_ids are provided
+            if ($request->share_link_ids && is_array($request->share_link_ids)) {
+                foreach ($request->share_link_ids as $shareLinkId) {
+                    try {
+                        $shareLink = \App\Models\UserProductShare::find($shareLinkId);
+                        if ($shareLink && $shareLink->isActive()) {
+                            // Prevent self-referral: user cannot gain rewards from their own share link
+                            if ($shareLink->user_id === auth()->id()) {
+                                \Log::info('Self-referral prevented', [
+                                    'share_link_id' => $shareLinkId,
+                                    'user_id' => auth()->id(),
+                                    'order_id' => $order->id
+                                ]);
+                                continue; // Skip this share link
+                            }
+                            
+                            // Check if this order already has a purchase record for this share link
+                            $existingPurchase = \App\Models\ProductSharePurchase::where('order_id', $order->id)
+                                ->where('user_product_share_id', $shareLink->id)
+                                ->first();
+                            
+                            if (!$existingPurchase) {
+                                // Create purchase record
+                                \App\Models\ProductSharePurchase::create([
+                                    'user_product_share_id' => $shareLink->id,
+                                    'order_id' => $order->id,
+                                    'purchaser_user_id' => auth()->id(),
+                                    'purchased_at' => now(),
+                                    'order_amount' => $total,
+                                    'status' => 'completed'
+                                ]);
+
+                                // Increment purchase count and check if task is completed
+                                $shareLink->incrementPurchaseCount();
+
+                                \Log::info('Share link purchase tracked', [
+                                    'share_link_id' => $shareLinkId,
+                                    'order_id' => $order->id,
+                                    'purchaser_user_id' => auth()->id(),
+                                    'order_amount' => $total,
+                                    'conversion_rate' => $shareLink->getConversionRate()
+                                ]);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to track share link purchase', [
+                            'share_link_id' => $shareLinkId,
+                            'order_id' => $order->id,
+                            'error' => $e->getMessage()
+                        ]);
+                        // Don't fail the order if share tracking fails
+                    }
+                }
+            }
+
             // Clear cart
             $cart->items()->delete();
             $cart->delete();
