@@ -140,9 +140,9 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
             Route::get('/orders/{id}/tracking', [OrderController::class, 'tracking']);
             Route::get('/orders/{id}/invoice', [OrderController::class, 'downloadInvoice']);
             
-            // Share link analytics routes
+            // Share link analytics routes (protected)
             Route::prefix('share-links')->group(function () {
-                Route::post('/track-visit', [App\Http\Controllers\ShareLinkController::class, 'trackVisit']);
+                // Note: track-visit is public and defined below outside auth
                 Route::get('/analytics/{shareId}', [App\Http\Controllers\ShareLinkController::class, 'getAnalytics']);
                 Route::get('/overall-analytics', [App\Http\Controllers\ShareLinkController::class, 'getOverallAnalytics']);
             });
@@ -174,6 +174,11 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
             });
         });
     });
+});
+
+// Public route for tracking share link visits (allow anonymous visitors)
+Route::prefix('share-links')->group(function () {
+    Route::post('/track-visit', [App\Http\Controllers\ShareLinkController::class, 'trackVisit']);
 });
 
 // User Preferences Route

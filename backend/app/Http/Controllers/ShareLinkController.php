@@ -22,18 +22,24 @@ class ShareLinkController extends Controller
      */
     public function trackVisit(Request $request): JsonResponse
     {
-        $request->validate([
-            'share_link' => 'required|string',
-        ]);
+        // Accept either full share link URL in 'share_link' or the share id in 'share_id'
+        $shareLink = $request->input('share_link');
+        $shareId = $request->input('share_id');
 
-        $shareLink = $request->share_link;
+        if (!$shareLink && !$shareId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'share_link or share_id is required'
+            ], 422);
+        }
         $visitorIp = $request->ip();
         $userAgent = $request->userAgent();
         $referrer = $request->header('referer');
 
         try {
-            // Track the visit
-            $share = $this->productShareService->trackShareClick($shareLink, $visitorIp, $userAgent, $referrer);
+            // Track the visit using either identifier
+            $identifier = $shareId ?: $shareLink;
+            $share = $this->productShareService->trackShareClick($identifier, $visitorIp, $userAgent, $referrer);
 
             if (!$share) {
                 return response()->json([
@@ -62,7 +68,7 @@ class ShareLinkController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Failed to track share link visit', [
-                'share_link' => $shareLink,
+                'identifier' => $shareId ?: $shareLink,
                 'error' => $e->getMessage()
             ]);
 

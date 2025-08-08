@@ -48,13 +48,40 @@ export default function ProductDetails() {
   // Share link tracking
   const [shareLinkId, setShareLinkId] = useState<string | null>(null);
 
-  // Detect share link parameters from URL
+  // Detect share link parameter from URL and track visit
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const shareParam = urlParams.get('share');
+    // Because we use hash routing, the query string can be before or after the hash
+    // Example: https://app.tekiplanet.org/dashboard#/dashboard/store/product/PRODUCT_ID?share=SHARE_ID
+    const getShareParam = (): string | null => {
+      // Try standard search first
+      const searchParams = new URLSearchParams(window.location.search);
+      const fromSearch = searchParams.get('share');
+      if (fromSearch) return fromSearch;
+
+      // Then try hash part
+      const hash = window.location.hash || '';
+      const idx = hash.indexOf('?');
+      if (idx !== -1) {
+        const hashQuery = hash.substring(idx + 1);
+        const hashParams = new URLSearchParams(hashQuery);
+        const fromHash = hashParams.get('share');
+        if (fromHash) return fromHash;
+      }
+      return null;
+    };
+
+    const shareParam = getShareParam();
     if (shareParam) {
       setShareLinkId(shareParam);
-      console.log('Share link detected:', shareParam);
+      // Fire-and-forget tracking of the visit
+      storeService
+        .trackShareVisit(shareParam)
+        .then(() => {
+          // console.log('Share visit tracked');
+        })
+        .catch(() => {
+          // Silent fail to avoid impacting UX
+        });
     }
   }, []);
 

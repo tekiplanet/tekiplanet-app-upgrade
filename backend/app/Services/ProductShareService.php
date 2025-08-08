@@ -31,10 +31,14 @@ class ProductShareService
             'user_id' => $userTask->user_id,
             'user_conversion_task_id' => $userTask->id,
             'product_id' => $product->id,
-            'share_link' => $userTask->generateProductShareLink($product->id),
+            'share_link' => '', // will be set after we have the share id
             'shared_at' => now(),
             'status' => 'active'
         ]);
+
+        // Now that we have the share id, generate the correct link that uses the share's id
+        $share->share_link = $share->generateShareLink();
+        $share->save();
 
         // Set expiration date (7 days from now)
         $share->setExpiration(7);
@@ -45,11 +49,27 @@ class ProductShareService
     /**
      * Track a share link click with detailed analytics.
      */
-    public function trackShareClick(string $shareLink, string $visitorIp = null, string $userAgent = null, string $referrer = null): ?UserProductShare
+    public function trackShareClick(string $identifier, string $visitorIp = null, string $userAgent = null, string $referrer = null): ?UserProductShare
     {
-        $share = UserProductShare::where('share_link', $shareLink)
-            ->where('status', 'active')
-            ->first();
+        // Identifier can be the full share_link URL or the share id
+        $query = UserProductShare::query()->where('status', 'active');
+
+        if (str_contains($identifier, '/')) {
+            // Looks like a URL; match by share_link
+            $query->where('share_link', $identifier);
+        } else {
+            // Treat as the UUID id
+            $query->where('id', $identifier);
+        }
+
+        $share = $query->first();
+
+        // Fallback: older links used user_conversion_task_id in the share param
+        if (!$share && !str_contains($identifier, '/')) {
+            $share = UserProductShare::where('user_conversion_task_id', $identifier)
+                ->where('status', 'active')
+                ->first();
+        }
 
         if ($share && $share->isActive()) {
             // Record the visit with analytics

@@ -133,6 +133,15 @@ export const storeService = {
     return response.data;
   },
 
+  // Track a share link visit (public endpoint, no auth required)
+  trackShareVisit: async (shareLink: string) => {
+    // Use a raw axios call without the auth header, but via same baseURL
+    const response = await axiosInstance.post('/share-links/track-visit', {
+      share_link: shareLink,
+    });
+    return response.data;
+  },
+
   getCart: async (): Promise<CartResponse> => {
     const response = await axiosInstance.get('/cart');
     return response.data;
