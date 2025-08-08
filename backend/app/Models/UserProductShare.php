@@ -125,15 +125,18 @@ class UserProductShare extends Model
     {
         $this->increment('purchase_count');
         
+        // Always update the share_count in user_conversion_task to match purchase_count
+        $userTask = $this->userConversionTask;
+        $userTask->share_count = $this->purchase_count;
+        $userTask->save();
+        
         if ($this->hasReachedTarget()) {
             $this->status = 'completed';
             $this->save();
             
             // Mark the user conversion task as completed
-            $userTask = $this->userConversionTask;
             $userTask->status = 'completed';
             $userTask->completed_at = now();
-            $userTask->share_count = $this->purchase_count;
             $userTask->save();
         }
     }
