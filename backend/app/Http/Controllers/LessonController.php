@@ -944,6 +944,158 @@ class LessonController extends Controller
     }
 
     /**
+     * Serve PDF file for a lesson (public route)
+     */
+    public function servePDFPublic($lessonId)
+    {
+        try {
+            $lesson = CourseLesson::with(['module.course'])->findOrFail($lessonId);
+            $course = $lesson->module->course;
+            
+            // Check if lesson has a PDF resource URL
+            if (!$lesson->resource_url || $lesson->content_type !== 'pdf') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'PDF not available for this lesson'
+                ], 404);
+            }
+            
+            // For public access, we'll allow preview lessons and basic validation
+            // You might want to add additional validation here based on your requirements
+            
+            // Fetch the PDF from external URL
+            $pdfUrl = $lesson->resource_url;
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'header' => [
+                        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    ]
+                ]
+            ]);
+            
+            $pdfContent = file_get_contents($pdfUrl, false, $context);
+            
+            if ($pdfContent === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch PDF content'
+                ], 500);
+            }
+            
+            // Return the PDF with inline disposition to prevent download
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $lesson->title . '.pdf"')
+                ->header('Cache-Control', 'public, max-age=3600')
+                ->header('Access-Control-Allow-Origin', config('app.frontend_url'))
+                ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+                ->header('Access-Control-Allow-Credentials', 'true')
+                ->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Request-With');
+                
+        } catch (\Exception $e) {
+            \Log::error('Public PDF serving failed:', [
+                'lesson_id' => $lessonId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to serve PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Serve PDF file for a lesson
+     */
+    public function servePDF($lessonId)
+    {
+        try {
+            $user = Auth::user();
+            $lesson = CourseLesson::with(['module.course'])->findOrFail($lessonId);
+            $course = $lesson->module->course;
+            
+            // Check if user has access to this lesson
+            $enrollment = Enrollment::where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->first();
+            
+            // Allow access to preview lessons regardless of enrollment
+            if (!$lesson->is_preview) {
+                // Check lesson progression
+                $hasAccess = $this->checkLessonAccess($user->id, $course->id, $lesson);
+                
+                if (!$hasAccess['allowed']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $hasAccess['message']
+                    ], 403);
+                }
+                
+                // Check if user is enrolled in the course
+                if (!$enrollment) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You must be enrolled in this course to access this lesson'
+                    ], 403);
+                }
+            }
+            
+            // Check if lesson has a PDF resource URL
+            if (!$lesson->resource_url || $lesson->content_type !== 'pdf') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'PDF not available for this lesson'
+                ], 404);
+            }
+            
+            // Fetch the PDF from external URL
+            $pdfUrl = $lesson->resource_url;
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'header' => [
+                        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    ]
+                ]
+            ]);
+            
+            $pdfContent = file_get_contents($pdfUrl, false, $context);
+            
+            if ($pdfContent === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch PDF content'
+                ], 500);
+            }
+            
+            // Return the PDF with inline disposition to prevent download
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $lesson->title . '.pdf"')
+                ->header('Cache-Control', 'public, max-age=3600')
+                ->header('Access-Control-Allow-Origin', config('app.frontend_url'))
+                ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+                ->header('Access-Control-Allow-Credentials', 'true')
+                ->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Request-With');
+                
+        } catch (\Exception $e) {
+            \Log::error('PDF serving failed:', [
+                'lesson_id' => $lessonId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to serve PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Helper to check if a lesson is the first lesson in a course.
      */
     private function isFirstLesson($courseId, $lessonId)

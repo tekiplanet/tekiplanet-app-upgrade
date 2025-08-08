@@ -25,6 +25,7 @@ import { useLessonAccess } from '@/hooks/useLessonAccess';
 import { toast } from "sonner";
 import PagePreloader from "@/components/ui/PagePreloader";
 import QuizPlayer from "./QuizPlayer";
+import PDFViewer from "./PDFViewer";
 
 interface Lesson extends BaseLesson {
   moduleTitle?: string;
@@ -307,16 +308,42 @@ export default function LessonPlayer() {
 
       case 'pdf':
         return (
-          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+          <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
             {currentLesson.resource_url ? (
-              <iframe
-                src={currentLesson.resource_url}
-                className="w-full h-[80vh] min-h-[400px] rounded"
-                title="PDF Viewer"
-                frameBorder="0"
-              />
+              <div className="flex flex-col">
+                {/* PDF Header */}
+                <div className="bg-gray-50 border-b px-4 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <span className="font-medium text-sm">PDF Document</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`${import.meta.env.VITE_API_URL}/lessons/${currentLesson.id}/pdf/public`, '_blank')}
+                      className="text-xs hidden md:inline-flex"
+                    >
+                      Open in New Tab
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* PDF Viewer */}
+                <div className="relative">
+                  {/* Desktop PDF Viewer */}
+                  <div className="hidden md:block">
+                    <PDFViewer lessonId={currentLesson.id} />
+                  </div>
+                  
+                  {/* Mobile PDF Viewer */}
+                  <div className="md:hidden">
+                    <PDFViewer lessonId={currentLesson.id} />
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="text-center text-muted-foreground">
+              <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
                 <p>PDF not available</p>
               </div>

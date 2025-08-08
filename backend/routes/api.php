@@ -233,6 +233,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+// Public PDF route for lesson viewing
+Route::get('/lessons/{lessonId}/pdf/public', [LessonController::class, 'servePDFPublic']);
+
 // Lesson Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('lessons')->group(function () {
@@ -241,6 +244,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{lessonId}/next', [LessonController::class, 'getNextLesson']);
         Route::get('/{lessonId}/previous', [LessonController::class, 'getPreviousLesson']);
         Route::get('/{lessonId}/access', [LessonController::class, 'checkAccess']);
+        Route::get('/{lessonId}/pdf', [LessonController::class, 'servePDF']);
         
         // Quiz Routes
         Route::prefix('{lessonId}/quiz')->group(function () {
