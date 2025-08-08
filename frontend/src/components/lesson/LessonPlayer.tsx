@@ -277,15 +277,19 @@ export default function LessonPlayer() {
 
       case 'text':
         return (
-          <div className="prose prose-lg max-w-none">
-            <div 
-              className="text-content rich-text-content"
-              dangerouslySetInnerHTML={{ __html: currentLesson.content || currentLesson.description }}
-              style={{
-                lineHeight: '1.6',
-                fontSize: '1rem'
-              }}
-            />
+          <div className="bg-card border rounded-lg overflow-hidden">
+            <div className="max-h-[70vh] overflow-y-auto p-6">
+              <div className="prose prose-lg max-w-none">
+                <div 
+                  className="text-content rich-text-content"
+                  dangerouslySetInnerHTML={{ __html: currentLesson.content || currentLesson.description }}
+                  style={{
+                    lineHeight: '1.6',
+                    fontSize: '1rem'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         );
 

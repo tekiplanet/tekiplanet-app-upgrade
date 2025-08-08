@@ -111,3 +111,7 @@
 [2025-08-08 20:10:11] production.INFO: Course details for enrollment {"course_id":"b8dcf9ea-7f40-4c81-a6a5-d349c2ef8878","course_title":"Cybersecurity Essentials","course_price":388.4,"course_exists":"Yes","user_currency":"GBP"} 
 [2025-08-08 20:10:11] production.INFO: Next Course Schedule Determination {"course_id":"b8dcf9ea-7f40-4c81-a6a5-d349c2ef8878","next_schedule_start_date":"No schedule found","next_schedule_days_of_week":"N/A","current_date":"2025-08-08"} 
 [2025-08-08 20:10:11] production.INFO: Enrollment query results {"total_enrollments":4} 
+[2025-08-08 20:14:18] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-08 20:14:18] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
+[2025-08-08 20:14:18] production.INFO: Getting exam status: {"exam_id":"1350843e-09f3-4856-95ff-205081bbe71f","status":"completed"} 
+[2025-08-08 20:14:18] production.INFO: Getting exam status: {"exam_id":"137544e8-a135-4cb6-a64b-92bca85634ae","status":"upcoming"} 
