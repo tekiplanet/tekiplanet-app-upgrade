@@ -26,13 +26,46 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        // Add debugging for share link validation
+        if ($request->share_link_ids) {
+            \Log::info('Share link validation debug', [
+                'share_link_ids' => $request->share_link_ids,
+                'share_link_ids_type' => gettype($request->share_link_ids),
+                'is_array' => is_array($request->share_link_ids)
+            ]);
+            
+            // Check if share links exist in database
+            foreach ($request->share_link_ids as $shareLinkId) {
+                $exists = \App\Models\UserProductShare::where('id', $shareLinkId)->exists();
+                
+                // Add more detailed debugging
+                $shareLink = \App\Models\UserProductShare::where('id', $shareLinkId)->first();
+                $allShares = \App\Models\UserProductShare::all(['id', 'product_id', 'user_id']);
+                
+                // Try direct database query
+                $directQuery = \DB::table('user_product_shares')->where('id', $shareLinkId)->first();
+                
+                \Log::info('Share link exists check', [
+                    'share_link_id' => $shareLinkId,
+                    'exists' => $exists,
+                    'share_link_found' => $shareLink ? $shareLink->toArray() : null,
+                    'direct_query_result' => $directQuery,
+                    'total_shares_in_db' => $allShares->count(),
+                    'all_share_ids' => $allShares->pluck('id')->toArray(),
+                    'database_connection' => config('database.default'),
+                    'database_name' => config('database.connections.' . config('database.default') . '.database'),
+                    'current_database' => \DB::connection()->getDatabaseName()
+                ]);
+            }
+        }
+
         $request->validate([
             'shipping_address_id' => 'required|exists:shipping_addresses,id',
             'shipping_method_id' => 'required|exists:shipping_methods,id',
             'payment_method' => 'required|in:wallet',
             'coupon_code' => 'nullable|string',
             'share_link_ids' => 'nullable|array',
-        'share_link_ids.*' => 'string|exists:user_product_shares,id'
+            'share_link_ids.*' => 'string'
         ], [
             'shipping_address_id.required' => 'Shipping address is required',
             'shipping_address_id.exists' => 'Invalid shipping address',

@@ -77,10 +77,14 @@ export default function ProductDetails() {
       storeService
         .trackShareVisit(shareParam)
         .then(() => {
-          // console.log('Share visit tracked');
+          console.log('Share visit tracked successfully');
         })
-        .catch(() => {
-          // Silent fail to avoid impacting UX
+        .catch((error) => {
+          console.error('Share visit tracking failed:', error);
+          // Clear invalid share link ID from localStorage
+          if (product?.id) {
+            localStorage.removeItem(`share_link_${product.id}`);
+          }
         });
     }
   }, []);

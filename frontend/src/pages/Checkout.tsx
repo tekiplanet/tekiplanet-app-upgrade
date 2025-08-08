@@ -140,17 +140,25 @@ export default function Checkout() {
     try {
       // Get share link IDs from localStorage for all products in cart
       const shareLinkIds: string[] = [];
-      const cartItems = cart?.items || [];
+      const cartItems = cartData?.items || [];
       
       for (const item of cartItems) {
-        const shareDataKey = `share_link_${item.product_id}`;
+        const shareDataKey = `share_link_${item.product.id}`;
         const shareData = localStorage.getItem(shareDataKey);
         if (shareData) {
           try {
             const parsedData = JSON.parse(shareData);
             if (parsedData.shareLinkId) {
+              // Add debugging to see what's stored in localStorage
+              console.log('Share data from localStorage:', {
+                productId: item.product.id,
+                shareDataKey,
+                parsedData,
+                shareLinkId: parsedData.shareLinkId
+              });
+              
               shareLinkIds.push(parsedData.shareLinkId);
-              console.log('Found share link ID for product:', item.product_id, parsedData.shareLinkId);
+              console.log('Found share link ID for product:', item.product.id, parsedData.shareLinkId);
             }
           } catch (e) {
             console.error('Failed to parse share data:', e);
@@ -181,7 +189,7 @@ export default function Checkout() {
       // Clear share link IDs from localStorage after successful order
       if (shareLinkIds.length > 0) {
         for (const item of cartItems) {
-          const shareDataKey = `share_link_${item.product_id}`;
+          const shareDataKey = `share_link_${item.product.id}`;
           localStorage.removeItem(shareDataKey);
         }
         console.log('Share link IDs cleared from localStorage');
@@ -196,11 +204,17 @@ export default function Checkout() {
       });
 
     } catch (error: any) {
-      console.error('Payment Error:', error.response?.data);
+      console.error('Payment Error:', error);
+      console.error('Payment Error Details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       
       // Show detailed error with sonner
+      const errorMessage = error.response?.data?.message || error.message || "Failed to process payment. Please try again.";
       toast.error("Payment Failed", {
-        description: error.response?.data?.message || "Failed to process payment. Please try again."
+        description: errorMessage
       });
 
       // If there are validation errors, show them

@@ -71,6 +71,13 @@ class ProductShareService
                 ->first();
         }
 
+        // Additional fallback: try to find by user_conversion_task_id if no direct match
+        if (!$share && !str_contains($identifier, '/')) {
+            $share = UserProductShare::where('user_conversion_task_id', $identifier)
+                ->where('status', 'active')
+                ->first();
+        }
+
         if ($share && $share->isActive()) {
             // Record the visit with analytics
             $share->recordVisit($visitorIp, $userAgent, $referrer);

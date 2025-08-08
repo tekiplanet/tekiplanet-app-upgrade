@@ -195,16 +195,20 @@ CREATE TABLE share_link_visits (
 ### API Endpoints
 
 #### **Share Link Analytics**
-- `POST /api/share-links/track-visit` - Track a share link click
+- `POST /api/share-links/track-visit` - **Public endpoint** to track a share link click (no auth required)
 - `GET /api/share-links/analytics/{shareId}` - Get analytics for specific share link
 - `GET /api/share-links/overall-analytics` - Get overall share link statistics
+
+**Note**: The track-visit endpoint is public to allow anonymous visitor tracking, while analytics endpoints require authentication.
 
 ### Frontend Integration
 
 #### **Product Details Page**
-- Detects share link parameters from URL (`?share=`)
-- Stores share link ID in localStorage with product-specific keys
+- Detects share link parameters from URL (`?share=`) in both standard query strings and hash fragments
+- **Automatically calls tracking API** on page load to record the visit and increment click count
+- Stores share link ID in localStorage with product-specific keys for checkout tracking
 - Preserves tracking information during the purchase flow
+- **Non-blocking tracking**: Visit logging is fire-and-forget with silent error handling
 
 #### **Checkout Process**
 - Retrieves multiple share link IDs from localStorage
@@ -220,14 +224,16 @@ CREATE TABLE share_link_visits (
 ### Backend Services
 
 #### **ProductShareService**
-- `generateShareLink()` - Creates share links with 7-day expiration
-- `trackShareClick()` - Records visits with detailed analytics
-- `recordVisit()` - Logs individual visits with visitor information
+- `generateShareLink()` - Creates share links with 7-day expiration using share's UUID
+- `trackShareClick()` - Records visits with detailed analytics and flexible identifier resolution
+- `recordVisit()` - Logs individual visits with visitor information (IP, user-agent, referrer)
+- **Enhanced identifier support**: Accepts share_link (URL), share_id (UUID), or legacy user_conversion_task_id
 
 #### **ShareLinkController**
-- Handles share link visit tracking
-- Provides analytics endpoints
+- Handles share link visit tracking with flexible identifier support
+- Provides analytics endpoints for authenticated users
 - Manages overall share link statistics
+- **Public track-visit endpoint**: Allows anonymous visitor tracking without authentication
 
 ### Security Features
 
@@ -429,15 +435,13 @@ public function recordVisit(string $visitorIp = null, string $userAgent = null, 
   - ✅ **Robust Error Handling**: Share tracking failures don't disrupt order processing
   - ✅ **Frontend Integration**: Enhanced localStorage management for multiple share links
   - ✅ **Backend API Endpoints**: New analytics and tracking endpoints for comprehensive monitoring
-- **2024-12-19:** **COMPLETED Enhanced Share Link Tracking System**:
-  - ✅ **7-Day Expiration**: All share links now expire after 7 days from creation
-  - ✅ **Self-Referral Prevention**: Users cannot gain rewards by purchasing through their own share links
-  - ✅ **Enhanced Analytics**: Added comprehensive click tracking, conversion rates, and visit history
-  - ✅ **Multiple Share Link Support**: Users can have multiple active share links for different products
-  - ✅ **Enhanced Database Schema**: Added `share_link_visits` table and new columns to `user_product_shares`
-  - ✅ **Robust Error Handling**: Share tracking failures don't disrupt order processing
-  - ✅ **Frontend Integration**: Enhanced localStorage management for multiple share links
-  - ✅ **Backend API Endpoints**: New analytics and tracking endpoints for comprehensive monitoring
+- **2024-12-19:** **FIXED Share Link Visit Tracking Issues**:
+  - ✅ **Public Tracking Endpoint**: Moved POST `/api/share-links/track-visit` outside auth to allow anonymous visitor tracking
+  - ✅ **Automatic Visit Logging**: ProductDetails page now calls tracking API on page load when `?share=` is detected
+  - ✅ **Hash Router Support**: Added robust parsing to extract share parameters from hash-based URLs
+  - ✅ **Flexible Identifier Resolution**: Enhanced tracking to accept share_link (URL), share_id (UUID), or legacy user_conversion_task_id
+  - ✅ **Backward Compatibility**: Legacy share links using user_conversion_task_id still work correctly
+  - ✅ **Non-Blocking Tracking**: Visit tracking is fire-and-forget with silent error handling to avoid UX disruption
 
 ---
 
