@@ -4,6 +4,7 @@ export interface Lesson {
   id: string;
   title: string;
   description: string;
+  content?: string;
   content_type: 'video' | 'text' | 'quiz' | 'assignment' | 'pdf';
   duration_minutes: number;
   resource_url?: string;

@@ -408,7 +408,11 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.tiny.cloud/1/mcly272j4s6nba47aqrweoe9ju9fs15hrg8ir2zw6ixw4fve/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
+// Global variables
+let tinyMCEInstance = null;
+
 // MODULE MODAL FUNCTIONS
 function openModuleModal(moduleId = null) {
     const modal = document.getElementById('moduleModal');
@@ -513,6 +517,18 @@ function openLessonModal(moduleId, lessonId = null) {
 function closeLessonModal() {
     const modal = document.getElementById('lessonModal');
     modal.classList.add('hidden');
+    document.getElementById('lessonForm').reset();
+    
+    // Clean up TinyMCE
+    if (tinyMCEInstance) {
+        tinyMCE.remove('#lessonContent');
+        tinyMCEInstance = null;
+    }
+    
+    window.isEditingLesson = false;
+    window.currentLessonId = null;
+    document.getElementById('lessonModalTitle').textContent = 'Add New Lesson';
+    document.getElementById('lessonModalAction').textContent = 'Create Lesson';
 }
 function loadLesson(lessonId) {
     fetch(`/admin/courses/{{ $course->id }}/lessons/${lessonId}/edit`)
@@ -531,6 +547,23 @@ function loadLesson(lessonId) {
                 
                 // Trigger content type change to show/hide quiz management section
                 handleContentTypeChange();
+                
+                // Set TinyMCE content after initialization
+                if (data.lesson.content_type === 'text' && data.lesson.content) {
+                    // Use a more robust approach to wait for TinyMCE
+                    const waitForTinyMCE = () => {
+                        if (tinyMCEInstance && tinyMCEInstance.getContent) {
+                            // TinyMCE is ready, set the content
+                            tinyMCEInstance.setContent(data.lesson.content);
+                        } else {
+                            // TinyMCE is not ready yet, wait a bit more
+                            setTimeout(waitForTinyMCE, 150);
+                        }
+                    };
+                    
+                    // Start waiting for TinyMCE to be ready
+                    setTimeout(waitForTinyMCE, 300);
+                }
             }
         })
         .catch(error => {
@@ -550,17 +583,18 @@ function handleLessonSubmit(event) {
     submitButton.disabled = true;
     loadingSpinner.classList.remove('hidden');
     const formData = new FormData(form);
-    const data = {
-        module_id: moduleId,
-        title: formData.get('title'),
-        description: formData.get('description'),
-        content_type: formData.get('content_type'),
-        duration_minutes: formData.get('duration_minutes'),
-        order: formData.get('order'),
-        resource_url: formData.get('resource_url'),
-        is_preview: formData.get('is_preview') === 'on',
-        learn_rewards: formData.get('learn_rewards')
-    };
+            const data = {
+            module_id: moduleId,
+            title: formData.get('title'),
+            description: formData.get('description'),
+            content: tinyMCEInstance ? tinyMCEInstance.getContent() : formData.get('content'),
+            content_type: formData.get('content_type'),
+            duration_minutes: formData.get('duration_minutes'),
+            order: formData.get('order'),
+            resource_url: formData.get('resource_url'),
+            is_preview: formData.get('is_preview') === 'on',
+            learn_rewards: formData.get('learn_rewards')
+        };
     fetch(url, {
         method: method,
         headers: {
@@ -918,12 +952,70 @@ let isEditingQuestion = false;
 function handleContentTypeChange() {
     const contentType = document.querySelector('select[name="content_type"]').value;
     const quizSection = document.getElementById('quizManagementSection');
+    const contentField = document.getElementById('contentField');
     
+    // Show/hide quiz management section
     if (contentType === 'quiz') {
         quizSection.classList.remove('hidden');
     } else {
         quizSection.classList.add('hidden');
     }
+    
+    // Show/hide content field for text lessons
+    if (contentType === 'text') {
+        contentField.classList.remove('hidden');
+        // Initialize TinyMCE if not already initialized
+        if (!tinyMCEInstance) {
+            initializeTinyMCE();
+        }
+    } else {
+        contentField.classList.add('hidden');
+        // Remove TinyMCE if it exists
+        if (tinyMCEInstance) {
+            tinyMCE.remove('#lessonContent');
+            tinyMCEInstance = null;
+        }
+    }
+}
+
+// Initialize TinyMCE rich text editor
+function initializeTinyMCE(callback = null) {
+    // Check if TinyMCE is loaded
+    if (typeof tinyMCE === 'undefined') {
+        console.error('TinyMCE is not loaded. Please check the CDN URL and API key.');
+        return;
+    }
+    
+    if (tinyMCEInstance) {
+        tinyMCE.remove('#lessonContent');
+    }
+    
+    tinyMCE.init({
+        selector: '#lessonContent',
+        height: 400,
+        menubar: false,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic forecolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
+        branding: false,
+        promotion: false,
+        setup: function(editor) {
+            tinyMCEInstance = editor;
+            // Call the callback when TinyMCE is ready
+            if (callback && typeof callback === 'function') {
+                editor.on('init', function() {
+                    callback();
+                });
+            }
+        }
+    });
 }
 
 // Open quiz modal

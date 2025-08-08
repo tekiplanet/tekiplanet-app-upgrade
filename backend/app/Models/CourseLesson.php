@@ -15,6 +15,7 @@ class CourseLesson extends Model
         'module_id',
         'title',
         'description',
+        'content',
         'content_type',
         'duration_minutes',
         'order',

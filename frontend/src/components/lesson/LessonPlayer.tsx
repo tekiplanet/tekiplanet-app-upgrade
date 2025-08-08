@@ -279,8 +279,12 @@ export default function LessonPlayer() {
         return (
           <div className="prose prose-lg max-w-none">
             <div 
-              className="text-content"
-              dangerouslySetInnerHTML={{ __html: currentLesson.description }}
+              className="text-content rich-text-content"
+              dangerouslySetInnerHTML={{ __html: currentLesson.content || currentLesson.description }}
+              style={{
+                lineHeight: '1.6',
+                fontSize: '1rem'
+              }}
             />
           </div>
         );

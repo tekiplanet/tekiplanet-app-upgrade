@@ -25,6 +25,7 @@ class CourseLessonController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
+                'content' => 'nullable|string',
                 'content_type' => 'required|in:video,text,quiz,assignment,pdf',
                 'duration_minutes' => 'required|integer|min:1',
                 'order' => 'required|integer|min:1',
@@ -71,6 +72,7 @@ class CourseLessonController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
+                'content' => 'nullable|string',
                 'content_type' => 'required|in:video,text,quiz,assignment,pdf',
                 'duration_minutes' => 'required|integer|min:1',
                 'order' => 'required|integer|min:1',

@@ -5,7 +5,7 @@
 
     <!-- Modal Content -->
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <!-- Header -->
             <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -32,8 +32,10 @@
                 <!-- Description -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                    <textarea name="description" rows="3" required
+                    <textarea name="description" rows="2" required
+                              placeholder="Brief description of what this lesson covers"
                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <p class="mt-1 text-xs text-gray-500">Brief description of what this lesson covers</p>
                 </div>
 
                 <!-- Content Type -->
@@ -47,6 +49,15 @@
                         <option value="assignment">Assignment</option>
                         <option value="pdf">PDF</option>
                     </select>
+                </div>
+
+                <!-- Content Field (for text lessons) -->
+                <div id="contentField" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lesson Content</label>
+                    <textarea id="lessonContent" name="content" rows="15"
+                              placeholder="Enter the full lesson content here. Use the rich text editor above for formatting."
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <p class="mt-1 text-xs text-gray-500">Use the rich text editor above for formatting. Supports headings, lists, links, and more.</p>
                 </div>
 
                 <!-- Duration -->
