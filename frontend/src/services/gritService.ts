@@ -129,7 +129,8 @@ export const gritService = {
 
   getMyGrits: async () => {
     const { data } = await api.get('/my-grits');
-    return data.grits;
+    // API returns { grits: { data: [...] }}
+    return data.grits?.data || [];
   },
 
   createGrit: async (gritData: CreateGritData) => {

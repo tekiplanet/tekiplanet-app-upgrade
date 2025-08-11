@@ -1,6 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import useAuthStore from '@/store/useAuthStore';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from 'sonner';
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,6 +46,7 @@ import { Capacitor } from '@capacitor/core';
 import RewardsTasksPage from '@/pages/dashboard/RewardsTasksPage';
 import TasksPage from '@/pages/dashboard/TasksPage';
 import { returnUrlUtils } from '@/utils/returnUrlUtils';
+import useAuthStore from '@/store/useAuthStore';
 
 // Lazy load pages
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
@@ -138,6 +138,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   console.log('🛡️ ProtectedRoute: Allowing access to', location.pathname);
   return children;
+};
+
+const RequireAccountType = ({ type, children }: { type: 'professional' | 'business' | 'student'; children: React.ReactNode }) => {
+  const user = useAuthStore((s) => s.user);
+  const location = useLocation();
+  if (!user || user.account_type !== type) {
+    return <Navigate to="/dashboard" state={{ from: location }} />;
+  }
+  return <>{children}</>;
 };
 
 const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
@@ -272,7 +281,20 @@ const AppContent = () => {
               <Route path="subscription" element={<WorkstationSubscription />} />
             </Route>
             <Route path="professional/profile/create" element={<CreateProfileForm />} />
-            <Route path="grits" element={<Grits />} />
+            <Route path="grits" element={
+              <ProtectedRoute>
+                <RequireAccountType type="professional">
+                  <Grits />
+                </RequireAccountType>
+              </ProtectedRoute>
+            } />
+            <Route path="grits/mine" element={
+              <ProtectedRoute>
+                <RequireAccountType type="business">
+                  {React.createElement(React.lazy(() => import('@/pages/grits/MyGrits')))}
+                </RequireAccountType>
+              </ProtectedRoute>
+            } />
             <Route path="grits/:id" element={<GritDetails />} />
                         <Route path="grits/applications" element={<MyGritApplications />} />
             <Route path="grits/create" element={<CreateGrit />} />

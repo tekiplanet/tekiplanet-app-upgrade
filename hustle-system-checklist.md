@@ -18,6 +18,10 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **Create `grit_disputes` table**: For handling disputes between parties.
 - [x] **Professionals Table**: Enhance with `completion_rate`, `average_rating`, `total_projects_completed`, `qualifications`, and `portfolio_items`.
 
+### Legacy/Compatibility fixes
+- [x] Populate legacy single-currency `budget` column from `owner_budget` during GRIT creation (until column is removed/nullable).
+- [x] Default `professional_budget` to 0 and `professional_currency` to owner's currency at creation (to satisfy NOT NULL constraints; finalized during negotiation).
+
 ### Models
 - [x] **Update `User` model**: Add `frozen_balance` attribute and relationships.
 - [x] **Rename `Hustle` models** to `Grit` models (`Grit`, `GritApplication`, `GritMessage`, `GritPayment`).
@@ -50,12 +54,13 @@ This checklist tracks the implementation of the GRIT system, including the integ
 ## Phase 3: API & Controllers
 
 - [ ] **Business Owner `GritController`**:
-    - [ ] `store()`: Create a new GRIT (pending admin approval).
+    - [x] `store()`: Create a new GRIT (pending admin approval).
     - [ ] `approveApplication()`: Approve a professional and trigger initial escrow.
     - [ ] `startProject()`: Trigger project creation and main escrow flow.
     - [ ] `releasePayment()`: Authorize staged payments.
     - [ ] `increaseBudget()`: Add funds to the project.
     - [ ] `markComplete()`: Mark the GRIT as complete and provide feedback.
+- [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
 - [ ] **Admin `GritController`**:
     - [ ] `approveGrit()`: Approve a newly created GRIT to make it public.
     - [ ] `manageDispute()`: View and resolve disputes.
@@ -79,6 +84,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
 ### New GRIT Components
 - [x] **`CreateGrit.tsx` page**: For business owners to create GRITs.
 - [x] **Add `Create Grit` link to Business Dashboard**: Link added to `Dashboard.tsx`.
+- [x] **`MyGrits.tsx` page and route (`/dashboard/grits/mine`)**: Business owners can view only their created GRITs.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
@@ -87,6 +93,14 @@ This checklist tracks the implementation of the GRIT system, including the integ
 ### Service Layer (`gritService.ts`)
 - [x] Implement and wire up GRIT API endpoints (GritController, routes, etc.).
 - [ ] Ensure multicurrency amounts are handled correctly for display.
+
+### Role-based navigation & access
+- [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).
+- [x] Post-create redirect: Business → `/dashboard/grits/mine`; Professional → `/dashboard/grits`.
+
+### Form and listing fixes
+- [x] `CreateGrit.tsx`: Use UUID string for `category_id`, prevent premature form submit on Enter, and register/validate `deadline`.
+- [x] `Grits.tsx`: Safely handle `categories` and `grits.data` mapping to avoid runtime errors when undefined.
 
 ## Phase 5: Real-time Features
 

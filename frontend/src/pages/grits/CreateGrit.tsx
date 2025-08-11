@@ -19,12 +19,12 @@ import { gritService, type Category, type CreateGritData } from '@/services/grit
 
 interface GritFormData extends Omit<CreateGritData, 'skills_required' | 'category_id'> {
   skills_required: string[];
-  category_id: number;
+  category_id: string; // UUID from backend
 }
 
 export default function CreateGrit() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, control, trigger, watch, setValue } = useForm<GritFormData>({
+  const { register, handleSubmit, formState: { errors }, control, trigger, watch, setValue, getValues } = useForm<GritFormData>({
     defaultValues: {
       owner_budget: 0,
       skills_required: []
@@ -60,11 +60,25 @@ export default function CreateGrit() {
     setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    const target = e.target as HTMLElement;
+    if (target.nodeName !== 'INPUT') return;
+    // Allow Enter inside TagInput to add tags
+    if (target.closest('[data-tag-input]')) return;
+    // Prevent implicit submits and optionally advance steps
+    e.preventDefault();
+    if (currentStep < steps.length - 1) {
+      handleNext();
+    }
+  };
+
   const handleBack = () => {
     setCurrentStep((s) => Math.max(s - 1, 0));
   };
 
-  const onSubmit = async (data: GritFormData) => {
+  const onSubmit = async () => {
+    const data = getValues();
     try {
       setLoading(true);
       const gritData: CreateGritData = {
@@ -74,7 +88,13 @@ export default function CreateGrit() {
       };
       await gritService.createGrit(gritData);
       toast.success('Grit created successfully');
-      navigate('/dashboard/grits');
+      // Redirect based on account type: business → My Grits, professional → listings
+      const accountType = JSON.parse(localStorage.getItem('user') || '{}')?.account_type;
+      if (accountType === 'business') {
+        navigate('/dashboard/grits/mine');
+      } else {
+        navigate('/dashboard/grits');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to create Grit');
     } finally {
@@ -95,7 +115,7 @@ export default function CreateGrit() {
             <Progress value={((currentStep + 1) / steps.length) * 100} />
           </div>
           
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onKeyDown={handleKeyDown} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {currentStep === 0 && (
               <>
                 <div className="space-y-2">
@@ -117,8 +137,8 @@ export default function CreateGrit() {
                     rules={{ required: 'Category is required' }}
                     render={({ field }) => (
                       <Select
-                        onValueChange={(value) => field.onChange(parseInt(value, 10))}
-                        defaultValue={field.value ? String(field.value) : undefined}
+                        onValueChange={(value) => field.onChange(value)}
+                        value={field.value || undefined}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -165,11 +185,13 @@ export default function CreateGrit() {
                     control={control}
                     rules={{ validate: (vals) => (vals && vals.length > 0) || 'Please add at least one skill' }}
                     render={({ field }) => (
-                      <TagInput
-                        tags={field.value || []}
-                        onTagsChange={field.onChange}
-                        placeholder="Add skills and press Enter"
-                      />
+                      <div data-tag-input>
+                        <TagInput
+                          tags={field.value || []}
+                          onTagsChange={field.onChange}
+                          placeholder="Add skills and press Enter"
+                        />
+                      </div>
                     )}
                   />
                   {errors.skills_required && (
@@ -199,6 +221,8 @@ export default function CreateGrit() {
                 </div>
                 <div className="space-y-2 relative">
                   <Label htmlFor="deadline">Deadline</Label>
+                  {/* Hidden input to register deadline for client-side validation */}
+                  <input type="hidden" {...register('deadline', { required: 'Deadline is required' })} />
                   <Button
                     variant="outline"
                     className="w-full justify-between"
@@ -247,7 +271,7 @@ export default function CreateGrit() {
                   Next
                 </Button>
               ) : (
-                <Button type="submit" disabled={loading} className="ml-auto">
+                <Button type="submit" disabled={loading}>
                   {loading ? 'Submitting...' : 'Create Grit'}
                 </Button>
               )}

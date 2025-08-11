@@ -67,6 +67,12 @@ const Grits = () => {
     setSelectedCategory(null);
   };
 
+  // If user is business, redirect them to their own grits page
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user?.account_type === 'business') {
+    navigate('/dashboard/grits/mine');
+  }
+
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
       <div className="container mx-auto p-4 space-y-6">
@@ -124,7 +130,7 @@ const Grits = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {categories?.data.map((category: Category) => (
+              {(categories ?? []).map((category: Category) => (
                 <DropdownMenuItem 
                   key={category.id}
                   onClick={() => setSelectedCategory(category)}
@@ -142,7 +148,7 @@ const Grits = () => {
         </motion.div>
 
         {/* No Results Message */}
-        {!isLoading && grits?.data.length === 0 && (
+        {!isLoading && (grits?.data ?? []).length === 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -176,7 +182,7 @@ const Grits = () => {
               animate="show"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {grits?.data.map((grit: Grit) => (
+              {(grits?.data ?? []).map((grit: Grit) => (
                 <motion.div
                   key={grit.id}
                   variants={item}

@@ -39,8 +39,25 @@ class GritController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function myGrits(Request $request)
     {
+        try {
+            $grits = Grit::with(['category', 'applications', 'user'])
+                ->where('created_by_user_id', Auth::id())
+                ->latest()
+                ->paginate(10);
+
+            return response()->json(['grits' => $grits]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching my grits:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to fetch my grits'], 500);
+        }
+    }
+
+        public function store(Request $request)
+    {
+        Log::info('Create Grit Request Received:', $request->all());
+
         try {
             $validatedData = $request->validate([
                 'title' => 'required|string|max:255',
@@ -49,10 +66,11 @@ class GritController extends Controller
                 'owner_budget' => 'required|numeric|min:0',
                 'deadline' => 'required|date',
                 'requirements' => 'nullable|string',
-                'skills_required' => 'nullable', // can be array or comma-separated string from frontend
+                'skills_required' => 'nullable|array',
+                'skills_required.*' => 'string|max:255', // Each skill must be a string
             ]);
 
-            // Infer currency from authenticated user's preference
+            // Infer currency from authenticated user's preference3
             $ownerCurrency = strtoupper(optional(Auth::user())->currency_code ?: 'NGN');
 
             // Normalize requirements: if skills_required provided, map to a comma-separated requirements string
@@ -70,18 +88,25 @@ class GritController extends Controller
                 'title' => $validatedData['title'],
                 'description' => $validatedData['description'],
                 'category_id' => $validatedData['category_id'],
+                // Populate legacy single-currency budget column to satisfy NOT NULL constraint
+                'budget' => $validatedData['owner_budget'],
                 'owner_budget' => $validatedData['owner_budget'],
                 'owner_currency' => $ownerCurrency,
+                // Initialize professional terms as empty values (filled during negotiation)
+                'professional_budget' => 0,
+                'professional_currency' => $ownerCurrency,
                 'deadline' => $validatedData['deadline'],
                 'requirements' => $requirements,
                 'created_by_user_id' => Auth::id(),
-                'status' => 'pending_admin_approval',
+                // Keep DB enum valid; use admin_approval_status for the approval workflow
+                'status' => 'open',
                 'admin_approval_status' => 'pending',
             ]);
 
             return response()->json($grit, 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+                } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Grit Creation Validation Failed:', ['errors' => $e->errors()]);
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error creating grit:', ['error' => $e->getMessage()]);
