@@ -67,10 +67,14 @@ This checklist tracks the implementation of the GRIT system, including the integ
 ## Phase 4: Frontend Implementation
 
 ### Component Renaming & Updates
-- [ ] Rename `hustleService.ts` to `gritService.ts`.
-- [ ] Rename `components/hustles/` to `components/grits/`.
-- [ ] Rename `pages/hustles/` to `pages/grits/`.
-- [ ] Rename `useHustleChat.ts` to `useGritChat.ts`.
+- [x] Rename `hustleService.ts` to `gritService.ts` (including all interfaces and methods).
+- [x] Rename `components/hustles/` to `components/grits/`.
+- [x] Rename `pages/hustles/` to `pages/grits/`.
+- [x] Rename `useHustleChat.ts` to `useGritChat.ts` (including hook implementation).
+- [x] Rename `HustleDetails.tsx` to `GritDetails.tsx` (including component implementation).
+- [x] Rename `ApplyHustleDialog.tsx` to `ApplyGritDialog.tsx` (including component implementation).
+- [x] Rename `Hustles.tsx` to `Grits.tsx` (including component implementation).
+- [x] Rename `MyHustles.tsx` to `MyGrits.tsx` (including component implementation).
 
 ### New GRIT Components
 - [ ] **`CreateGritDialog.tsx`**: For business owners to create GRITs.

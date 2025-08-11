@@ -1,33 +1,31 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Calendar, 
-  Clock, 
-  Users, 
-  CheckCircle2,
   Briefcase,
   ArrowLeft,
   Send,
   Loader2,
   DollarSign,
   Timer,
-  UserCheck
+  UserCheck,
+  Users
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { hustleService, type Hustle } from '@/services/hustleService';
+import { gritService, type Grit } from '@/services/gritService';
 import { cn, formatCurrency } from '@/lib/utils';
-import ApplyHustleDialog from '@/components/hustles/ApplyHustleDialog';
-import { ChatNotificationBadge } from '@/components/hustles/ChatNotificationBadge';
-import HustleChat from '@/components/hustles/HustleChat';
-import PaymentTab from '@/components/hustles/PaymentTab';
+import ApplyGritDialog from '@/components/grits/ApplyGritDialog';
+import { ChatNotificationBadge } from '@/components/grits/ChatNotificationBadge';
+import GritChat from '@/components/grits/GritChat';
+import PaymentTab from '@/components/grits/PaymentTab';
 import { settingsService } from '@/services/settingsService';
 
 const container = {
@@ -45,7 +43,7 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-const HustleDetails = () => {
+const GritDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,8 +51,8 @@ const HustleDetails = () => {
   const [isApplyDialogOpen, setIsApplyDialogOpen] = React.useState(false);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['hustle', id],
-    queryFn: () => hustleService.getHustleDetails(id!),
+    queryKey: ['grit', id],
+    queryFn: () => gritService.getGritDetails(id!),
     enabled: !!id
   });
 
@@ -63,97 +61,69 @@ const HustleDetails = () => {
     queryFn: settingsService.fetchSettings
   });
 
-  const hustle = data?.hustle;
-
-  // console.log('Hustle Data:', {
-  //   data,
-  //   hustle,
-  //   can_apply: hustle?.can_apply,
-  //   status: hustle?.status,
-  //   deadline: hustle?.deadline,
-  //   assigned_professional_id: hustle?.assigned_professional_id,
-  //   application_status: hustle?.application_status,
-  //   cannot_apply_reason: hustle?.cannot_apply_reason
-  // });
+  const grit = data?.grit;
 
   const applyMutation = useMutation({
-    mutationFn: hustleService.applyForHustle,
+    mutationFn: () => gritService.applyForGrit(id!),
     onSuccess: () => {
       toast.success('Application submitted successfully');
-      queryClient.invalidateQueries({ queryKey: ['hustle', id] });
+      queryClient.invalidateQueries({ queryKey: ['grit', id] });
     },
-    onError: () => {
-      toast.error('Failed to submit application');
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to submit application');
     }
   });
 
   const { data: profileData } = useQuery({
     queryKey: ['professional-profile'],
-    queryFn: hustleService.checkProfessionalProfile
+    queryFn: gritService.checkProfessionalProfile
   });
 
-  // console.log('Application Status Check:', {
-  //   hasProfile: profileData?.has_profile,
-  //   profileStatus: profileData?.profile?.status,
-  //   profileCategory: profileData?.profile?.category_id,
-  //   hustleCategory: hustle?.category?.id,
-  //   canApply: hustle?.can_apply,
-  //   hustleStatus: hustle?.status,
-  //   deadline: hustle?.deadline,
-  //   applicationStatus: hustle?.application_status
-  // });
-
-  const getApplicationStatus = (hustle: Hustle) => {
-    // First check if user has a professional profile
+  const getApplicationStatus = (grit: Grit) => {
     if (!profileData?.has_profile) {
       return {
         can_apply: false,
-        reason: 'You need to create a professional profile to apply for hustles'
+        reason: 'You need to create a professional profile to apply for Grits'
       };
     }
 
-    // Check if professional profile exists and is active
     if (!profileData?.profile || profileData.profile.status !== 'active') {
       return {
         can_apply: false,
         reason: profileData?.profile?.status === 'inactive' 
-          ? 'Your professional profile is inactive. Please activate it to apply for hustles.'
+          ? 'Your professional profile is inactive. Please activate it to apply.'
           : profileData?.profile?.status === 'suspended'
           ? 'Your professional profile is suspended. Please contact support.'
-          : 'Your professional profile must be active to apply for hustles'
+          : 'Your professional profile must be active to apply for Grits'
       };
     }
 
-    // Check if professional's category matches the hustle category
-    if (profileData.profile.category_id !== hustle.category.id) {
+    if (profileData.profile.category_id !== grit.category.id) {
       return {
         can_apply: false,
-        reason: 'This hustle is for a different professional category'
+        reason: 'This Grit is for a different professional category'
       };
     }
 
-    // Check if this hustle is assigned to the current professional
-    if (hustle.assigned_professional_id === profileData.profile.id) {
+    if (grit.assigned_professional_id === profileData.profile.id) {
       return {
         can_apply: false,
-        reason: 'Hustle assigned to you. Please complete within the time frame'
+        reason: 'Grit assigned to you. Please complete within the time frame'
       };
     }
 
-    // Check application status
-    if (hustle.application_status) {
+    if (grit.application_status) {
       return {
         can_apply: false,
-        reason: hustle.application_status === 'pending' ? 'Your application is under review' :
-               hustle.application_status === 'approved' ? 'Your application has been approved' :
-               hustle.application_status === 'rejected' ? 'Your application was not successful' :
+        reason: grit.application_status === 'pending' ? 'Your application is under review' :
+               grit.application_status === 'approved' ? 'Your application has been approved' :
+               grit.application_status === 'rejected' ? 'Your application was not successful' :
                'You have withdrawn your application'
       };
     }
 
-    // Check deadline
     const currentDate = new Date();
-    const deadlineDate = new Date(hustle.deadline);
+    const deadlineDate = new Date(grit.deadline);
     if (deadlineDate < currentDate) {
       return {
         can_apply: false,
@@ -161,17 +131,15 @@ const HustleDetails = () => {
       };
     }
 
-    // Check if hustle is open and not assigned
-    if (hustle.status !== 'open' || hustle.assigned_professional_id) {
+    if (grit.status !== 'open' || grit.assigned_professional_id) {
       return {
         can_apply: false,
-        reason: hustle.assigned_professional_id 
-          ? 'A professional has already been assigned to this hustle'
-          : 'This hustle is no longer accepting applications'
+        reason: grit.assigned_professional_id 
+          ? 'A professional has already been assigned to this Grit'
+          : 'This Grit is no longer accepting applications'
       };
     }
 
-    // If all checks pass, user can apply
     return {
       can_apply: true,
       reason: null
@@ -186,27 +154,26 @@ const HustleDetails = () => {
     );
   }
 
-  if (error || !hustle) {
+  if (error || !grit) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold">Hustle not found</h2>
+        <h2 className="text-xl font-semibold">Grit not found</h2>
         <Button 
           variant="link" 
-          onClick={() => navigate('/dashboard/hustles')}
+          onClick={() => navigate('/dashboard/grits')}
           className="mt-4"
         >
-          Back to Hustles
+          Back to Grits
         </Button>
       </div>
     );
   }
 
-  // Calculate days remaining
   const daysRemaining = Math.max(0, Math.ceil(
-    (new Date(hustle.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
+    (new Date(grit.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
   ));
 
-  const applicationStatus = getApplicationStatus(hustle);
+  const applicationStatus = getApplicationStatus(grit);
 
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
@@ -216,11 +183,9 @@ const HustleDetails = () => {
         animate="show"
         className="container mx-auto px-4 py-4 md:py-6 space-y-4 max-w-5xl"
       >
-        {/* Header Section */}
         <motion.div variants={item} className="relative">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl" />
           <div className="relative p-4 md:p-6">
-            {/* Back Button and Category */}
             <div className="flex items-center gap-3 mb-4">
               <Button
                 variant="ghost"
@@ -232,30 +197,27 @@ const HustleDetails = () => {
               </Button>
               <Badge variant="secondary" className="bg-background/50 backdrop-blur-sm">
                 <Briefcase className="h-3 w-3 mr-1" />
-                {hustle.category.name}
+                {grit.category.name}
               </Badge>
             </div>
 
-            {/* Title */}
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4">
-              {hustle.title}
+              {grit.title}
             </h1>
 
-            {/* Application Status Section */}
             <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 space-y-3">
-              {/* Status Badge and Reason */}
               <div className="flex flex-col gap-2">
-                {hustle.application_status && (
+                {grit.application_status && (
                   <div className="flex items-center gap-2">
                     <Badge 
                       variant={
-                        hustle.application_status === 'approved' ? 'success' :
-                        hustle.application_status === 'rejected' ? 'destructive' :
+                        grit.application_status === 'approved' ? 'success' :
+                        grit.application_status === 'rejected' ? 'destructive' :
                         'secondary'
                       }
                       className="px-2.5 py-0.5 text-xs font-medium"
                     >
-                      {hustle.application_status.toUpperCase()}
+                      {grit.application_status.toUpperCase()}
                     </Badge>
                   </div>
                 )}
@@ -266,7 +228,6 @@ const HustleDetails = () => {
                 )}
               </div>
 
-              {/* Action Button */}
               <Button 
                 size="lg"
                 onClick={() => setIsApplyDialogOpen(true)}
@@ -275,7 +236,7 @@ const HustleDetails = () => {
                   "w-full h-12 rounded-xl text-sm font-medium transition-all",
                   applicationStatus.can_apply 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                    : hustle.application_status === 'approved'
+                    : grit.application_status === 'approved'
                       ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 hover:bg-green-200 dark:hover:bg-green-700"
                       : "bg-muted text-muted-foreground"
                 )}
@@ -287,23 +248,20 @@ const HustleDetails = () => {
                   </>
                 ) : (
                   <>
-
                     <UserCheck className="h-5 w-5 mr-2" />
-                    {applicationStatus.can_apply ? 'Apply for Hustle' : (
-                      hustle.application_status === 'pending' ? 'Application Pending' :
-                      hustle.application_status === 'approved' ? 'Application Approved' :
-                      hustle.application_status === 'rejected' ? 'Application Rejected' :
+                    {applicationStatus.can_apply ? 'Apply for Grit' : (
+                      grit.application_status === 'pending' ? 'Application Pending' :
+                      grit.application_status === 'approved' ? 'Application Approved' :
+                      grit.application_status === 'rejected' ? 'Application Rejected' :
                       'Cannot Apply'
                     )}
                   </>
-
                 )}
               </Button>
             </div>
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
         <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent group-hover:from-primary/10 transition-colors" />
@@ -334,7 +292,7 @@ const HustleDetails = () => {
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Deadline</p>
                   <p className="font-semibold text-sm truncate">
-                    {new Date(hustle.deadline).toLocaleDateString()}
+                    {new Date(grit.deadline).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -354,7 +312,7 @@ const HustleDetails = () => {
                   </div>
                 </div>
                 <p className="font-semibold text-sm px-2">
-                  {formatCurrency(hustle.budget, settings?.default_currency)}
+                  {formatCurrency(grit.professional_budget, grit.currency)}
                 </p>
               </div>
             </CardContent>
@@ -370,7 +328,7 @@ const HustleDetails = () => {
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Applications</p>
                   <p className="font-semibold text-sm truncate">
-                    {hustle.applications_count}
+                    {grit.applications_count}
                   </p>
                 </div>
               </div>
@@ -378,7 +336,6 @@ const HustleDetails = () => {
           </Card>
         </motion.div>
 
-        {/* Main Content */}
         <motion.div variants={item}>
           <Tabs defaultValue="details" className="space-y-4">
             <TabsList className="w-full justify-start h-11 p-1 bg-muted/50 backdrop-blur-sm">
@@ -386,13 +343,13 @@ const HustleDetails = () => {
                 <Briefcase className="h-4 w-4" />
                 Details
               </TabsTrigger>
-              {hustle.application_status === 'approved' && (
+              {grit.application_status === 'approved' && (
                 <>
                   <TabsTrigger value="chat" className="flex items-center gap-2 relative rounded-lg">
                     <Send className="h-4 w-4" />
                     Chat
                     <ChatNotificationBadge 
-                      count={hustle.unread_messages_count || 0}
+                      count={grit.unread_messages_count || 0}
                     />
                   </TabsTrigger>
                   <TabsTrigger value="payments" className="flex items-center gap-2 rounded-lg">
@@ -406,20 +363,20 @@ const HustleDetails = () => {
             <TabsContent value="details" className="space-y-4">
               <Card>
                 <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: hustle.description }} />
+                  <div dangerouslySetInnerHTML={{ __html: grit.description }} />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {hustle.application_status === 'approved' && (
+            {grit.application_status === 'approved' && (
               <>
                 <TabsContent value="chat">
-                  <HustleChat hustleId={hustle.id} />
+                  <GritChat gritId={grit.id} />
                 </TabsContent>
                 <TabsContent value="payments">
                   <PaymentTab 
-                    payments={hustle.payments || []} 
-                    currency={settings?.default_currency || 'USD'} 
+                    payments={grit.payments || []} 
+                    currency={grit.currency || 'USD'} 
                   />
                 </TabsContent>
               </>
@@ -428,18 +385,18 @@ const HustleDetails = () => {
         </motion.div>
       </motion.div>
 
-      <ApplyHustleDialog
+      <ApplyGritDialog
         isOpen={isApplyDialogOpen}
         onClose={() => setIsApplyDialogOpen(false)}
         onConfirm={() => {
-          applyMutation.mutate(id!);
+          applyMutation.mutate();
           setIsApplyDialogOpen(false);
         }}
         isLoading={applyMutation.isPending}
-        hustleTitle={hustle.title}
+        gritTitle={grit.title}
       />
     </ScrollArea>
   );
 };
 
-export default HustleDetails; 
+export default GritDetails;

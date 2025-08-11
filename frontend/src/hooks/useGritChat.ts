@@ -3,15 +3,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { pusher } from '@/lib/pusher';
 import { toast } from 'sonner';
 
-export const useHustleChat = (hustleId: string) => {
+export const useGritChat = (gritId: string) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const channel = pusher.subscribe(`hustle.${hustleId}`);
+    const channel = pusher.subscribe(`grit.${gritId}`);
 
     channel.bind('new-message', (data: any) => {
       // Update messages in cache
-      queryClient.invalidateQueries({ queryKey: ['hustle-messages', hustleId] });
+      queryClient.invalidateQueries({ queryKey: ['grit-messages', gritId] });
 
       // Show notification if message is from admin
       if (data.message.sender_type === 'admin') {
@@ -34,5 +34,5 @@ export const useHustleChat = (hustleId: string) => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [hustleId, queryClient]);
+  }, [gritId, queryClient]);
 }; 

@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDebounce } from '@/hooks/useDebounce';
-import { hustleService, type Hustle, type Category } from '@/services/hustleService';
+import { gritService, type Grit, type Category } from '@/services/gritService';
 import { formatCurrency } from '@/lib/utils';
 import { settingsService } from '@/services/settingsService';
 
@@ -35,15 +35,15 @@ const item = {
   show: { y: 0, opacity: 1 }
 };
 
-const Hustles = () => {
+const Grits = () => {
   const navigate = useNavigate();
   const [search, setSearch] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data: hustles, isLoading } = useQuery({
-    queryKey: ['hustles', debouncedSearch, selectedCategory?.id],
-    queryFn: () => hustleService.getHustles({ 
+  const { data: grits, isLoading } = useQuery({
+    queryKey: ['grits', debouncedSearch, selectedCategory?.id],
+    queryFn: () => gritService.getGrits({ 
       search: debouncedSearch,
       category_id: selectedCategory?.id 
     })
@@ -51,7 +51,7 @@ const Hustles = () => {
 
   const { data: categories } = useQuery({
     queryKey: ['professional-categories'],
-    queryFn: hustleService.getCategories
+    queryFn: gritService.getCategories
   });
 
   const { data: settings } = useQuery({
@@ -59,8 +59,8 @@ const Hustles = () => {
     queryFn: settingsService.fetchSettings
   });
 
-  const handleHustleClick = (id: string) => {
-    navigate(`/dashboard/hustles/${id}`);
+  const handleGritClick = (id: string) => {
+    navigate(`/dashboard/grits/${id}`);
   };
 
   const clearFilters = () => {
@@ -74,7 +74,7 @@ const Hustles = () => {
         <div className="space-y-4">
           {/* Title and Description */}
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">Explore Hustles</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Explore Grits</h1>
             <p className="text-muted-foreground">
               Find and apply for exciting opportunities in your field
             </p>
@@ -84,7 +84,7 @@ const Hustles = () => {
           <div className="w-full sm:flex sm:justify-end">
             <Button
               variant="outline"
-              onClick={() => navigate('/dashboard/hustles/applications')}
+              onClick={() => navigate('/dashboard/grits/applications')}
               className="w-full sm:w-auto"
             >
               <Briefcase className="h-4 w-4 mr-2" />
@@ -103,7 +103,7 @@ const Hustles = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search hustles..."
+              placeholder="Search grits..."
               className="pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -116,12 +116,11 @@ const Hustles = () => {
                 {selectedCategory ? selectedCategory.name : 'Filter'}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {categories?.map((category: Category) => (
-                <DropdownMenuItem
+            <DropdownMenuContent align="end">
+              {categories?.data.map((category: Category) => (
+                <DropdownMenuItem 
                   key={category.id}
                   onClick={() => setSelectedCategory(category)}
-                  className="cursor-pointer"
                 >
                   {category.name}
                 </DropdownMenuItem>
@@ -129,61 +128,27 @@ const Hustles = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           {selectedCategory && (
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={clearFilters}
-              className="hidden sm:flex"
-            >
+            <Button variant="ghost" onClick={clearFilters} size="icon">
               <X className="h-4 w-4" />
             </Button>
           )}
         </motion.div>
 
-        {/* Active Filters */}
-        {(selectedCategory || search) && (
-          <motion.div
+        {/* No Results Message */}
+        {!isLoading && grits?.data.length === 0 && (
+          <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-wrap gap-2"
-          >
-            {selectedCategory && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                {selectedCategory.name}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
-                  onClick={clearFilters}
-                />
-              </Badge>
-            )}
-            {search && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                Search: {search}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
-                  onClick={() => setSearch('')}
-                />
-              </Badge>
-            )}
-          </motion.div>
-        )}
-
-        {/* No Results Message */}
-        {!isLoading && hustles?.data.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <Briefcase className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No hustles found</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-lg font-semibold">No Grits Found</h3>
+            <p className="text-muted-foreground mt-2">
               Try adjusting your filters or search terms
             </p>
           </motion.div>
         )}
 
-        {/* Hustles Grid */}
+        {/* Grits Grid */}
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div
@@ -204,27 +169,27 @@ const Hustles = () => {
               animate="show"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {hustles?.data.map((hustle: Hustle) => (
+              {grits?.data.map((grit: Grit) => (
                 <motion.div
-                  key={hustle.id}
+                  key={grit.id}
                   variants={item}
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                  onClick={() => handleHustleClick(hustle.id)}
+                  onClick={() => handleGritClick(grit.id)}
                 >
                   <Card className="relative overflow-hidden cursor-pointer group h-full">
                     <div className="p-6 space-y-4">
                       {/* Category Badge */}
                       <Badge variant="secondary" className="mb-4">
-                        {hustle.category.name}
+                        {grit.category.name}
                       </Badge>
 
                       {/* Title and Description */}
                       <div className="space-y-2">
                         <h3 className="font-semibold text-lg line-clamp-2">
-                          {hustle.title}
+                          {grit.title}
                         </h3>
                         <p className="text-muted-foreground text-sm line-clamp-3">
-                          {hustle.description}
+                          {grit.description}
                         </p>
                       </div>
 
@@ -232,11 +197,11 @@ const Hustles = () => {
                       <div className="grid grid-cols-2 gap-4 pt-4">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{hustle.deadline}</span>
+                          <span className="text-sm">{grit.deadline}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{hustle.applications_count} applied</span>
+                          <span className="text-sm">{grit.applications_count} applied</span>
                         </div>
                       </div>
 
@@ -244,21 +209,21 @@ const Hustles = () => {
                       <div className="flex items-center justify-between pt-4">
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Budget</p>
-                          <p className="font-semibold">{formatCurrency(hustle.budget, settings?.default_currency)}</p>
+                          <p className="font-semibold">{formatCurrency(grit.professional_budget, settings?.default_currency)}</p>
                         </div>
                         <Button 
                           size="sm" 
                           className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={!hustle.can_apply || hustle.has_applied}
+                          disabled={!grit.can_apply || grit.has_applied}
                         >
-                          {hustle.has_applied ? 'Applied' : 'Apply Now'}
+                          {grit.has_applied ? 'Applied' : 'Apply Now'}
                           <ArrowRight className="h-4 w-4 ml-2" />
                         </Button>
                       </div>
                     </div>
 
                     {/* Status Indicator */}
-                    {hustle.has_applied && (
+                    {grit.has_applied && (
                       <div className="absolute top-3 right-3">
                         <Badge variant="success">Applied</Badge>
                       </div>
@@ -274,4 +239,4 @@ const Hustles = () => {
   );
 };
 
-export default Hustles; 
+export default Grits;

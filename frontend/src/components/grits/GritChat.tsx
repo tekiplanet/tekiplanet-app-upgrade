@@ -9,37 +9,37 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { hustleService } from '@/services/hustleService';
+import { gritService } from '@/services/gritService';
 import { format } from 'date-fns';
-import { useHustleChat } from '@/hooks/useHustleChat';
+import { useGritChat } from '@/hooks/useGritChat';
 
-interface HustleChatProps {
-  hustleId: string;
+interface GritChatProps {
+  gritId: string;
 }
 
-const HustleChat = ({ hustleId }: HustleChatProps) => {
+const GritChat = ({ gritId }: GritChatProps) => {
   const [message, setMessage] = React.useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useHustleChat(hustleId);
+  useGritChat(gritId);
 
   const { data: messages, isLoading } = useQuery({
-    queryKey: ['hustle-messages', hustleId],
-    queryFn: () => hustleService.getMessages(hustleId),
-    refetchInterval: 5000 // Poll every 5 seconds
+    queryKey: ['grit-messages', gritId],
+    queryFn: () => gritService.getGritMessages(gritId),
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (message: string) => hustleService.sendMessage(hustleId, message),
+    mutationFn: (message: string) => gritService.sendGritMessage(gritId, message),
     onSuccess: () => {
       setMessage('');
-      queryClient.invalidateQueries({ queryKey: ['hustle-messages', hustleId] });
+      queryClient.invalidateQueries({ queryKey: ['grit-messages', gritId] });
     },
     onError: () => {
       toast.error('Failed to send message');
-    }
+    },
   });
 
   const handleSendMessage = () => {
@@ -55,8 +55,8 @@ const HustleChat = ({ hustleId }: HustleChatProps) => {
 
   // Mark messages as read when chat is opened
   useEffect(() => {
-    hustleService.markMessagesAsRead(hustleId);
-  }, [hustleId]);
+    gritService.markGritMessagesAsRead(gritId);
+  }, [gritId]);
 
   if (isLoading) {
     return (
@@ -73,9 +73,10 @@ const HustleChat = ({ hustleId }: HustleChatProps) => {
         <div className="space-y-4">
           <AnimatePresence initial={false}>
             {messages?.map((msg, index) => {
-              const showDate = index === 0 || 
-                new Date(msg.created_at).toDateString() !== 
-                new Date(messages[index - 1].created_at).toDateString();
+              const showDate =
+                index === 0 ||
+                new Date(msg.created_at).toDateString() !==
+                  new Date(messages[index - 1].created_at).toDateString();
 
               return (
                 <React.Fragment key={msg.id}>
@@ -91,7 +92,7 @@ const HustleChat = ({ hustleId }: HustleChatProps) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     className={cn(
-                      "flex items-start gap-2 group",
+                      'flex items-start gap-2 group',
                       msg.sender_type === 'professional' ? 'flex-row-reverse' : ''
                     )}
                   >
@@ -101,23 +102,27 @@ const HustleChat = ({ hustleId }: HustleChatProps) => {
                         {msg.user.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className={cn(
-                      "relative max-w-[80%] rounded-2xl px-4 py-2",
-                      msg.sender_type === 'professional' 
-                        ? "bg-primary text-primary-foreground rounded-tr-none" 
-                        : "bg-muted rounded-tl-none"
-                    )}>
+                    <div
+                      className={cn(
+                        'relative max-w-[80%] rounded-2xl px-4 py-2',
+                        msg.sender_type === 'professional'
+                          ? 'bg-primary text-primary-foreground rounded-tr-none'
+                          : 'bg-muted rounded-tl-none'
+                      )}
+                    >
                       <p className="text-sm whitespace-pre-wrap break-words">
                         {msg.message}
                       </p>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className={cn(
-                            "text-[10px] mt-1 opacity-0 group-hover:opacity-70 transition-opacity absolute bottom-1 right-2",
-                            msg.sender_type === 'professional' 
-                              ? "text-primary-foreground" 
-                              : "text-muted-foreground"
-                          )}>
+                          <span
+                            className={cn(
+                              'text-[10px] mt-1 opacity-0 group-hover:opacity-70 transition-opacity absolute bottom-1 right-2',
+                              msg.sender_type === 'professional'
+                                ? 'text-primary-foreground'
+                                : 'text-muted-foreground'
+                            )}
+                          >
                             {format(new Date(msg.created_at), 'h:mm a')}
                           </span>
                         </TooltipTrigger>
@@ -180,4 +185,4 @@ const HustleChat = ({ hustleId }: HustleChatProps) => {
   );
 };
 
-export default HustleChat; 
+export default GritChat;

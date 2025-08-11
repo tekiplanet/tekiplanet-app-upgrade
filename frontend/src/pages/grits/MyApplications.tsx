@@ -16,10 +16,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { hustleService } from '@/services/hustleService';
+import { hustleService } from '@/services/gritService';
 import { settingsService } from '@/services/settingsService';
 import { formatCurrency, formatDate, formatShortDate, cn } from '@/lib/utils';
-import WithdrawApplicationDialog from '@/components/hustles/WithdrawApplicationDialog';
+import WithdrawApplicationDialog from '@/components/grits/WithdrawApplicationDialog';
 
 const MyApplications = () => {
   const navigate = useNavigate();
