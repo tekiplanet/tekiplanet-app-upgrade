@@ -6,14 +6,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TagInput } from '@/components/ui/tag-input';
 import { gritService, type Category, type CreateGritData } from '@/services/gritService';
 
 interface GritFormData extends Omit<CreateGritData, 'skills_required' | 'category_id'> {
-  skills_required: string; // Comma-separated
+  skills_required: string[];
   category_id: number;
 }
 
@@ -21,11 +26,13 @@ export default function CreateGrit() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }, control, trigger, watch, setValue } = useForm<GritFormData>({
     defaultValues: {
-      owner_budget: 0
+      owner_budget: 0,
+      skills_required: []
     }
   });
   const [loading, setLoading] = React.useState(false);
   const [currentStep, setCurrentStep] = React.useState(0);
+  const [isDeadlineOpen, setIsDeadlineOpen] = React.useState(false);
 
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['professional-categories'],
@@ -63,7 +70,7 @@ export default function CreateGrit() {
       const gritData: CreateGritData = {
         ...data,
         category_id: String(data.category_id),
-        skills_required: data.skills_required.split(',').map(skill => skill.trim()),
+        skills_required: data.skills_required,
       };
       await gritService.createGrit(gritData);
       toast.success('Grit created successfully');
@@ -79,8 +86,14 @@ export default function CreateGrit() {
     <div className="min-h-screen bg-background p-4">
       <Card className="max-w-2xl mx-auto">
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-2">Create a New Grit</h1>
-          <p className="text-sm text-muted-foreground mb-6">Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}</p>
+          <h1 className="text-2xl font-bold mb-2">Create a New GRIT</h1>
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Step {currentStep + 1} of {steps.length}</p>
+              <p className="text-sm font-medium">{steps[currentStep].title}</p>
+            </div>
+            <Progress value={((currentStep + 1) / steps.length) * 100} />
+          </div>
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {currentStep === 0 && (
@@ -146,15 +159,21 @@ export default function CreateGrit() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="skills_required">Skills Required (comma-separated)</Label>
-                  <Textarea
-                    id="skills_required"
-                    {...register('skills_required', { required: 'Skills are required' })}
-                    placeholder="e.g., React, TypeScript, Node.js"
-                    rows={3}
+                  <Label>Skills Required</Label>
+                  <Controller
+                    name="skills_required"
+                    control={control}
+                    rules={{ validate: (vals) => (vals && vals.length > 0) || 'Please add at least one skill' }}
+                    render={({ field }) => (
+                      <TagInput
+                        tags={field.value || []}
+                        onTagsChange={field.onChange}
+                        placeholder="Add skills and press Enter"
+                      />
+                    )}
                   />
                   {errors.skills_required && (
-                    <p className="text-sm text-red-500">{errors.skills_required.message}</p>
+                    <p className="text-sm text-red-500">{String(errors.skills_required.message)}</p>
                   )}
                 </div>
               </>
@@ -178,19 +197,40 @@ export default function CreateGrit() {
                     <p className="text-sm text-red-500">{errors.owner_budget.message}</p>
                   )}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <Label htmlFor="deadline">Deadline</Label>
-                  <Input
-                    type="date"
-                    id="deadline"
-                    min={new Date().toISOString().split('T')[0]}
-                    {...register('deadline', { 
-                      required: 'Deadline is required',
-                      validate: (value) => 
-                        new Date(value) > new Date() || 
-                        'Deadline must be a future date'
-                    })}
-                  />
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    type="button"
+                    onClick={() => setIsDeadlineOpen((v) => !v)}
+                  >
+                    {watch('deadline') ? (
+                      <span>{format(new Date(watch('deadline')), 'PPP')}</span>
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                  {isDeadlineOpen && (
+                    <div 
+                      className="absolute top-[calc(100%+4px)] left-0 z-50 rounded-md border bg-popover p-0 text-popover-foreground shadow-md outline-none"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <CalendarComponent
+                        mode="single"
+                        selected={watch('deadline') ? new Date(watch('deadline')) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            setValue('deadline', format(date, 'yyyy-MM-dd'), { shouldValidate: true });
+                          }
+                          setIsDeadlineOpen(false);
+                        }}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        initialFocus
+                      />
+                    </div>
+                  )}
                   {errors.deadline && (
                     <p className="text-sm text-red-500">{errors.deadline.message}</p>
                   )}
