@@ -5,18 +5,18 @@ This checklist tracks the implementation of the GRIT system, including the integ
 ## Phase 1: Database & Models
 
 ### Migrations
-- [ ] **Users Table**: Add `frozen_balance` column.
-- [ ] **Rename Tables**: Rename `hustles` and related tables to `grits`.
-- [ ] **Grits Table**:
-    - [ ] Add columns for business owner (`created_by_user_id`, `admin_approval_status`).
-    - [ ] Add columns for multicurrency budget (`owner_budget`, `owner_currency`, `professional_budget`, `professional_currency`).
-    - [ ] Add columns for workflow management (`negotiation_status`, `terms_modified_at`, `project_started_at`, `completion_requested_at`).
-    - [ ] Add columns for feedback and disputes (`owner_satisfaction`, `owner_rating`, `dispute_status`).
-    - [ ] Add `project_id` for project integration.
-- [ ] **Create `grit_escrow_transactions` table**: For managing frozen/released funds.
-- [ ] **Create `grit_negotiations` table**: To track terms negotiation history.
-- [ ] **Create `grit_disputes` table**: For handling disputes between parties.
-- [ ] **Professionals Table**: Enhance with `completion_rate`, `average_rating`, `total_projects_completed`, `qualifications`, and `portfolio_items`.
+- [x] **Users Table**: Add `frozen_balance` column.
+- [x] **Rename Tables**: Rename `hustles` and related tables to `grits`.
+- [x] **Grits Table**:
+    - [x] Add columns for business owner (`created_by_user_id`, `admin_approval_status`).
+    - [x] Add columns for multicurrency budget (`owner_budget`, `owner_currency`, `professional_budget`, `professional_currency`).
+    - [x] Add columns for workflow management (`negotiation_status`, `terms_modified_at`, `project_started_at`, `completion_requested_at`).
+    - [x] Add columns for feedback and disputes (`owner_satisfaction`, `owner_rating`, `dispute_status`).
+    - [x] Add `project_id` for project integration.
+- [x] **Create `grit_escrow_transactions` table**: For managing frozen/released funds.
+- [x] **Create `grit_negotiations` table**: To track terms negotiation history.
+- [x] **Create `grit_disputes` table**: For handling disputes between parties.
+- [x] **Professionals Table**: Enhance with `completion_rate`, `average_rating`, `total_projects_completed`, `qualifications`, and `portfolio_items`.
 
 ### Models
 - [ ] **Update `User` model**: Add `frozen_balance` attribute and relationships.
