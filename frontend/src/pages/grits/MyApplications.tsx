@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { hustleService } from '@/services/gritService';
+import { gritService, type Application } from '@/services/gritService';
 import { settingsService } from '@/services/settingsService';
 import { formatCurrency, formatDate, formatShortDate, cn } from '@/lib/utils';
 import WithdrawApplicationDialog from '@/components/grits/WithdrawApplicationDialog';
@@ -25,52 +25,49 @@ const MyApplications = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: settings } = useQuery({
+    const { data: settings } = useQuery<any>({
     queryKey: ['settings'],
     queryFn: settingsService.getAllSettings,
   });
 
-  const { data: applications, isLoading } = useQuery({
+    const { data: applications, isLoading } = useQuery<Application[]>({
     queryKey: ['my-applications'],
-    queryFn: hustleService.getMyApplications
+    queryFn: gritService.getMyApplications
   });
 
   const [withdrawalDialog, setWithdrawalDialog] = React.useState<{
     isOpen: boolean;
     applicationId: string | null;
-    hustleTitle: string;
+    gritTitle: string;
   }>({
     isOpen: false,
     applicationId: null,
-    hustleTitle: ''
+    gritTitle: ''
   });
 
   const withdrawMutation = useMutation({
-    mutationFn: hustleService.withdrawApplication,
+    mutationFn: (applicationId: string) => gritService.withdrawApplication(applicationId),
     onSuccess: () => {
       toast.success('Application withdrawn successfully');
       queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      setWithdrawalDialog({ isOpen: false, applicationId: null, gritTitle: '' });
     },
-    onError: () => {
-      toast.error('Failed to withdraw application');
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to withdraw application');
     }
   });
 
-  const handleWithdraw = (applicationId: string, hustleTitle: string) => {
+  const handleWithdraw = (applicationId: string, gritTitle: string) => {
     setWithdrawalDialog({
       isOpen: true,
       applicationId,
-      hustleTitle
+      gritTitle
     });
   };
 
   const handleConfirmWithdraw = () => {
     if (withdrawalDialog.applicationId) {
-      withdrawMutation.mutate(withdrawalDialog.applicationId, {
-        onSuccess: () => {
-          setWithdrawalDialog({ isOpen: false, applicationId: null, hustleTitle: '' });
-        }
-      });
+      withdrawMutation.mutate(withdrawalDialog.applicationId);
     }
   };
 
@@ -89,7 +86,7 @@ const MyApplications = () => {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">My Applications</h1>
           <p className="text-muted-foreground">
-            Track and manage your hustle applications
+            Track and manage your grit applications
           </p>
         </div>
 
@@ -129,15 +126,15 @@ const MyApplications = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-background">
-                      {application.hustle.category}
+                      {application.grit.category}
                     </Badge>
                   </div>
                 </div>
 
-                {/* Hustle Title */}
+                {/* Grit Title */}
                 <div>
                   <h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
-                    {application.hustle.title}
+                    {application.grit.title}
                   </h3>
                 </div>
 
@@ -149,7 +146,7 @@ const MyApplications = () => {
                       Deadline
                     </p>
                     <p className="text-sm font-medium">
-                      {formatShortDate(application.hustle.deadline)}
+                      {formatShortDate(application.grit.deadline)}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -158,7 +155,7 @@ const MyApplications = () => {
                       Budget
                     </p>
                     <p className="text-sm font-medium">
-                      {formatCurrency(application.hustle.budget, settings?.default_currency)}
+                      {formatCurrency(application.grit.budget, settings?.default_currency)}
                     </p>
                   </div>
                 </div>
@@ -168,7 +165,7 @@ const MyApplications = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/dashboard/hustles/${application.hustle.id}`)}
+                    onClick={() => navigate(`/dashboard/grits/${application.grit.id}`)}
                     className="group/button"
                   >
                     View Details
@@ -179,7 +176,7 @@ const MyApplications = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleWithdraw(application.id, application.hustle.title)}
+                      onClick={() => handleWithdraw(application.id, application.grit.title)}
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                       <XCircle className="h-4 w-4 mr-2" />
@@ -203,13 +200,13 @@ const MyApplications = () => {
                   </div>
                   <h3 className="text-xl font-semibold mb-2">No Applications Yet</h3>
                   <p className="text-muted-foreground mb-6">
-                    You haven't applied to any hustles yet. Start exploring opportunities!
+                    You haven't applied to any grits yet. Start exploring opportunities!
                   </p>
                   <Button 
-                    onClick={() => navigate('/dashboard/hustles')}
+                    onClick={() => navigate('/dashboard/grits')}
                     className="gap-2"
                   >
-                    Browse Hustles
+                    Browse Grits
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -221,10 +218,10 @@ const MyApplications = () => {
 
       <WithdrawApplicationDialog
         isOpen={withdrawalDialog.isOpen}
-        onClose={() => setWithdrawalDialog({ isOpen: false, applicationId: null, hustleTitle: '' })}
+        onClose={() => setWithdrawalDialog({ isOpen: false, applicationId: null, gritTitle: '' })}
         onConfirm={handleConfirmWithdraw}
         isLoading={withdrawMutation.isPending}
-        hustleTitle={withdrawalDialog.hustleTitle}
+        gritTitle={withdrawalDialog.gritTitle}
       />
     </ScrollArea>
   );

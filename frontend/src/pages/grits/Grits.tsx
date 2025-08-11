@@ -81,7 +81,7 @@ const Grits = () => {
           </div>
 
           {/* My Applications Button - Full width on mobile */}
-          <div className="w-full sm:flex sm:justify-end">
+          <div className="w-full sm:flex sm:justify-end gap-4">
             <Button
               variant="outline"
               onClick={() => navigate('/dashboard/grits/applications')}
@@ -89,6 +89,13 @@ const Grits = () => {
             >
               <Briefcase className="h-4 w-4 mr-2" />
               My Applications
+            </Button>
+            <Button
+              onClick={() => navigate('/dashboard/grits/create')}
+              className="w-full sm:w-auto mt-2 sm:mt-0"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Create Grit
             </Button>
           </div>
         </div>

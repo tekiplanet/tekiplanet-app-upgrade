@@ -61,11 +61,11 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
 
   const quickActions = useMemo(() => [
     {
-      title: "View Hustles",
-      description: "Browse available hustles",
+            title: "View Grits",
+            description: "Browse available grits",
       icon: Briefcase,
       color: "from-blue-600 to-blue-400",
-      link: "/dashboard/hustles",
+            link: "/dashboard/grits",
       stat: "Explore opportunities"
     },
     {
@@ -139,7 +139,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'hustle':
+            case 'grit':
         return <Calendar className="h-4 w-4 text-white" />;
       case 'payment':
         return <CreditCard className="h-4 w-4 text-white" />;
@@ -152,7 +152,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'hustle':
+            case 'grit':
         return 'bg-blue-500';
       case 'payment':
         return 'bg-green-500';
@@ -202,13 +202,13 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
           <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full transform translate-x-12 -translate-y-6 sm:translate-x-16 sm:-translate-y-8" />
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-medium">Completed Hustles</span>
+                            <span className="text-xs sm:text-sm font-medium">Completed Grits</span>
               <Users className="h-4 w-4 text-blue-500" />
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-3xl font-bold">{dashboardData?.statistics?.completed_hustles || 0}</h2>
+                            <h2 className="text-xl sm:text-3xl font-bold">{dashboardData?.statistics?.completed_grits || 0}</h2>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
                 Successful completions
               </p>
@@ -314,7 +314,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate">
                       {activity.type === 'payment' && `Amount: ${formatCurrency(activity.amount)}`}
-                      {activity.type === 'hustle' && `Category: ${activity.category}`}
+                                            {activity.type === 'grit' && `Category: ${activity.category}`}
                       {activity.type === 'workstation' && `Workstation Payment: ${formatCurrency(activity.amount)}`}
                     </p>
                     <Badge 

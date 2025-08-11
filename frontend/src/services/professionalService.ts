@@ -31,7 +31,7 @@ export interface DashboardData {
   statistics: {
     monthly_revenue: number;
     total_revenue: number;
-    completed_hustles: number;
+        completed_grits: number;
     success_rate: number;
   };
   workstation: {
@@ -42,7 +42,7 @@ export interface DashboardData {
     } | null;
   };
   recent_activities: Array<{
-    type: 'hustle' | 'payment' | 'workstation';
+        type: 'grit' | 'payment' | 'workstation';
     title: string;
     category?: string;
     amount?: number;
@@ -62,7 +62,7 @@ export interface ActivityFilters {
 export interface PaginatedActivities {
   data: Array<{
     id: string;
-    type: 'hustle' | 'payment' | 'workstation';
+        type: 'grit' | 'payment' | 'workstation';
     title: string;
     category?: string;
     amount?: number;

@@ -293,8 +293,8 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
       icon: <Building2 className="h-5 w-5" />,
     },
     {
-      label: "Hustles",
-      path: "/dashboard/hustles",
+      label: "Grits",
+      path: "/dashboard/grits",
       icon: <Briefcase className="h-4 w-4" />,
       badge: "New"
     },
@@ -356,8 +356,8 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
         queryClient.invalidateQueries({ queryKey: ['business-transactions'] }),
         queryClient.invalidateQueries({ queryKey: ['business-profile'] }),
         
-        // Hustles
-        queryClient.invalidateQueries({ queryKey: ['hustles'] }),
+                // Grits
+                queryClient.invalidateQueries({ queryKey: ['grits'] }),
         queryClient.invalidateQueries({ queryKey: ['my-applications'] }),
         
         // Services & Quotes

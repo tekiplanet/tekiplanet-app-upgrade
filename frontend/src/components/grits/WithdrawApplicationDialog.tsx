@@ -15,7 +15,7 @@ interface WithdrawApplicationDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   isLoading: boolean;
-  hustleTitle: string;
+    gritTitle: string;
 }
 
 const WithdrawApplicationDialog = ({
@@ -23,7 +23,7 @@ const WithdrawApplicationDialog = ({
   onClose,
   onConfirm,
   isLoading,
-  hustleTitle
+    gritTitle
 }: WithdrawApplicationDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -31,7 +31,7 @@ const WithdrawApplicationDialog = ({
         <DialogHeader>
           <DialogTitle>Withdraw Application</DialogTitle>
           <DialogDescription>
-            Are you sure you want to withdraw your application for "{hustleTitle}"? 
+                        Are you sure you want to withdraw your application for "{gritTitle}"? 
             This action cannot be undone.
           </DialogDescription>
         </DialogHeader>

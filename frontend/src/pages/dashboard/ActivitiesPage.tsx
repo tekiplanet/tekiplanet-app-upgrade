@@ -95,7 +95,7 @@ const ActivitiesPage = () => {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'hustle':
+            case 'grit':
         return <Calendar className="h-4 w-4 text-white" />;
       case 'payment':
         return <CreditCard className="h-4 w-4 text-white" />;
@@ -108,7 +108,7 @@ const ActivitiesPage = () => {
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'hustle':
+            case 'grit':
         return 'bg-blue-500';
       case 'payment':
         return 'bg-green-500';
@@ -167,7 +167,7 @@ const ActivitiesPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="hustle">Hustles</SelectItem>
+                                <SelectItem value="grit">Grits</SelectItem>
                 <SelectItem value="payment">Payments</SelectItem>
                 <SelectItem value="workstation">Workstation</SelectItem>
               </SelectContent>
@@ -303,7 +303,7 @@ const ActivitiesPage = () => {
                         </div>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {activity.type === 'payment' && `Amount: ${formatCurrency(activity.amount)}`}
-                          {activity.type === 'hustle' && `Category: ${activity.category}`}
+                                                    {activity.type === 'grit' && `Category: ${activity.category}`}
                           {activity.type === 'workstation' && `Workstation Payment: ${formatCurrency(activity.amount)}`}
                         </p>
                         <Badge 

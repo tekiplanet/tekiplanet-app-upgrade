@@ -31,7 +31,7 @@ import { lazy } from "react";
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { platformService } from './services/platformService';
 import { App as CapacitorApp } from '@capacitor/app';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard } from '@capacitor/keyboard';
 import { Browser } from '@capacitor/browser';
 import DebugLogger from '@/components/DebugLogger';
@@ -79,9 +79,10 @@ const ProjectDetailsPage = React.lazy(() => import('@/pages/ProjectDetails'));
 const WorkstationPlans = React.lazy(() => import('@/pages/workstation/Plans'));
 const WorkstationSubscription = React.lazy(() => import('@/pages/workstation/Subscription'));
 const DashboardHome = React.lazy(() => import('@/pages/DashboardHome'));
-const Hustles = React.lazy(() => import('@/pages/grits/Grits'));
-const HustleDetails = React.lazy(() => import('@/pages/grits/GritDetails'));
-const MyHustleApplications = React.lazy(() => import('@/pages/grits/MyApplications'));
+const Grits = React.lazy(() => import('@/pages/grits/Grits'));
+const GritDetails = React.lazy(() => import('@/pages/grits/GritDetails'));
+const MyGritApplications = React.lazy(() => import('@/pages/grits/MyApplications'));
+const CreateGrit = React.lazy(() => import('@/pages/grits/CreateGrit'));
 const CourseManagement = React.lazy(() => import('@/pages/CourseManagement'));
 const LessonPlayer = React.lazy(() => import('@/components/lesson/LessonPlayer'));
 const Services = React.lazy(() => import('@/pages/Services'));
@@ -271,9 +272,10 @@ const AppContent = () => {
               <Route path="subscription" element={<WorkstationSubscription />} />
             </Route>
             <Route path="professional/profile/create" element={<CreateProfileForm />} />
-            <Route path="hustles" element={<Hustles />} />
-            <Route path="hustles/:id" element={<HustleDetails />} />
-            <Route path="hustles/applications" element={<MyHustleApplications />} />
+            <Route path="grits" element={<Grits />} />
+            <Route path="grits/:id" element={<GritDetails />} />
+                        <Route path="grits/applications" element={<MyGritApplications />} />
+            <Route path="grits/create" element={<CreateGrit />} />
             <Route path="business/profile/create" element={<CreateBusinessProfile />} />
             <Route 
               path="business/customers" 
@@ -390,7 +392,7 @@ const AppWrapper = () => {
 
     // Cleanup
     return () => {
-      backButtonHandler.remove();
+      backButtonHandler.then(handler => handler.remove());
     };
   }, []);
 

@@ -41,7 +41,7 @@ class NotificationService {
         }
     }
 
-    private async initializePushNotifications() {
+    public async initializePushNotifications() {
         try {
             // Request permissions first
             const permResult = await PushNotifications.checkPermissions();
