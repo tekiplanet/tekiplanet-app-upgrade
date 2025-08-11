@@ -28,9 +28,11 @@ use App\Http\Controllers\ConsultingReviewController;
 use App\Http\Controllers\WorkstationController;
 use App\Http\Controllers\ProfessionalController;
 use App\Http\Controllers\ProfessionalCategoryController;
-use App\Http\Controllers\HustleController;
+use App\Http\Controllers\Admin\HustleController;
+use App\Http\Controllers\Admin\GritController as AdminGritController;
 use App\Http\Controllers\HustleApplicationController;
 use App\Http\Controllers\HustleMessageController;
+use App\Http\Controllers\GritController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessCustomerController;
 use App\Http\Controllers\BusinessInvoiceController;
@@ -357,8 +359,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Hustle messages
     Route::get('/hustles/{hustleId}/messages', [HustleMessageController::class, 'getMessages']);
-    Route::post('/hustles/{hustleId}/messages', [HustleMessageController::class, 'sendMessage']);
-    Route::post('/hustles/{hustleId}/messages/mark-read', [HustleMessageController::class, 'markMessagesAsRead']);
+    Route::post('/hustles/{hustle}/messages', [HustleMessageController::class, 'store']);
+});
+
+// Grit Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/grits', [GritController::class, 'index']);
+    Route::get('/grits/{id}', [GritController::class, 'show']);
+    Route::post('/grits', [GritController::class, 'store']);
 });
 
 // Business Routes

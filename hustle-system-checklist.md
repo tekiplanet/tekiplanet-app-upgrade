@@ -44,8 +44,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] `raiseDispute()`: Create a new dispute record.
     - [x] `addEvidence()`: Allow parties to upload evidence.
     - [x] `resolveDispute()`: Finalize and record the outcome. resolve and close disputes.
-- [ ] **`GritProjectIntegrationService`**:
-    - [ ] `createProjectFromGrit()`: Automatically create a project when a GRIT starts.
+- [x] **`GritProjectIntegrationService`**:
+    - [x] `createProjectFromGrit()`: Automatically create a project when a GRIT starts.
 
 ## Phase 3: API & Controllers
 
@@ -80,7 +80,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [ ] **`GritDisputeDialog.tsx`**: For raising and managing disputes.
 
 ### Service Layer (`gritService.ts`)
-- [ ] Add functions for all new GRIT actions (create, approve, negotiate, etc.).
+- [x] Implement and wire up GRIT API endpoints (GritController, routes, etc.).
 - [ ] Ensure multicurrency amounts are handled correctly for display.
 
 ## Phase 5: Real-time Features

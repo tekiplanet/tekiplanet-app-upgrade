@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\BankAccountController;
 use App\Http\Controllers\Admin\HustleController;
 use App\Http\Controllers\Admin\HustleApplicationController;
+use App\Http\Controllers\Admin\GritController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\Auth\LogoutController;
 use App\Http\Controllers\Admin\QuoteController;
@@ -234,9 +235,13 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::delete('/{hustle}', [HustleController::class, 'destroy'])->name('destroy');
             
             // Applications routes
-            Route::get('/{hustle}/applications', [HustleApplicationController::class, 'index'])->name('applications.index');
-            Route::get('/{hustle}/applications/{application}', [HustleApplicationController::class, 'show'])->name('applications.show');
-            Route::patch('/{hustle}/applications/{application}/status', [HustleApplicationController::class, 'updateStatus'])->name('applications.update-status');
+            Route::get('hustles/{hustle}/applications', [HustleApplicationController::class, 'index'])->name('hustles.applications.index');
+            Route::get('hustles/applications/{application}', [HustleApplicationController::class, 'show'])->name('hustles.applications.show');
+            Route::patch('hustles/applications/{application}/status', [HustleApplicationController::class, 'updateStatus'])->name('hustles.applications.update-status');
+
+            // Grit Management
+            Route::get('grits', [GritController::class, 'index'])->name('grits.index');
+            Route::patch('grits/{grit}/approval', [GritController::class, 'updateApprovalStatus'])->name('grits.updateApprovalStatus');
         });
 
         Route::patch('hustles/{hustle}/status', [HustleController::class, 'updateStatus'])
