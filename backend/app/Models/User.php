@@ -35,6 +35,7 @@ class User extends Authenticatable
         'avatar',
         'status',
         'wallet_balance',
+        'frozen_balance',
         'learn_rewards',
         'dark_mode',
         'email_notifications',
@@ -77,6 +78,7 @@ class User extends Authenticatable
         'two_factor_enabled' => 'boolean',
         'two_factor_recovery_codes' => 'array',
         'wallet_balance' => 'decimal:2',
+        'frozen_balance' => 'decimal:2',
     ];
 
     /**
@@ -93,6 +95,7 @@ class User extends Authenticatable
         'profile_visibility' => 'public',
         'status' => 'active',
         'wallet_balance' => 0.00,
+        'frozen_balance' => 0.00,
     ];
 
     /**

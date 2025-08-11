@@ -19,30 +19,31 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **Professionals Table**: Enhance with `completion_rate`, `average_rating`, `total_projects_completed`, `qualifications`, and `portfolio_items`.
 
 ### Models
-- [ ] **Update `User` model**: Add `frozen_balance` attribute and relationships.
-- [ ] **Rename `Hustle` models** to `Grit` models (`Grit`, `GritApplication`, `GritMessage`, `GritPayment`).
-- [ ] **Update `Grit` model**: Add new fillable attributes, casts, and relationships (`project`, `escrowTransactions`, `negotiations`, `disputes`).
-- [ ] **Create `GritEscrowTransaction` model**.
-- [ ] **Create `GritNegotiation` model**.
-- [ ] **Create `GritDispute` model**.
-- [ ] **Update `Professional` model**: Add new fillable attributes and casts.
+- [x] **Update `User` model**: Add `frozen_balance` attribute and relationships.
+- [x] **Rename `Hustle` models** to `Grit` models (`Grit`, `GritApplication`, `GritMessage`, `GritPayment`).
+- [x] **Update `Grit` model**: Add new fillable attributes, casts, and relationships (`project`, `escrowTransactions`, `negotiations`, `disputes`).
+- [x] **Create `GritEscrowTransaction` model**.
+- [x] **Create `GritNegotiation` model**.
+- [x] **Create `GritDispute` model**.
+- [x] **Update `Professional` model**: Add new fillable attributes and casts.
 
 ## Phase 2: Backend Services
 
-- [ ] **`GritEscrowService`**:
-    - [ ] `freezeInitialAmount()`: Freeze 20% on professional approval.
-    - [ ] `processProjectStart()`: Refund 20%, freeze 100%, release 40%.
-    - [ ] `releasePayment()`: Release subsequent payments up to 80%.
-    - [ ] `handleBudgetIncrease()`: Freeze additional funds.
-    - [ ] `processFinalPayment()`: Release remaining funds on completion.
-- [ ] **`GritNegotiationService`**:
-    - [ ] `proposeTerms()`: Allow owner or professional to propose changes.
-    - [ ] `acceptTerms()`: Finalize terms and trigger payment processing.
-    - [ ] `rejectTerms()`: Handle rejection of proposed terms.
-- [ ] **`GritDisputeService`**:
-    - [ ] `raiseDispute()`: Create a new dispute record.
-    - [ ] `addEvidence()`: Allow parties to upload evidence.
-    - [ ] `resolveDispute()`: Admin functionality to resolve and close disputes.
+- [x] **`GritEscrowService`**:
+    - [x] `freezeInitialAmount()`: Freeze 20% on professional approval.
+    - [x] `processProjectStart()`: Refund 20%, freeze 100%, release 40%.
+    - [x] `releasePayment()`: Release subsequent payments up to 80%.
+    - [x] `handleBudgetIncrease()`: Freeze additional funds.
+    - [x] `processFinalPayment()`: Release remaining funds on completion.
+- [x] **`GritNegotiationService`**:
+    - [x] `proposeTerms()`: Allow owner or professional to propose changes.
+    - [x] `acceptTerms()`: Finalize terms and trigger payment processing.
+    - [x] `rejectTerms()`: Decline proposed terms.
+    - [x] `counterOffer()`: Propose new terms in response.
+- [x] **`GritDisputeService`**:
+    - [x] `raiseDispute()`: Create a new dispute record.
+    - [x] `addEvidence()`: Allow parties to upload evidence.
+    - [x] `resolveDispute()`: Finalize and record the outcome. resolve and close disputes.
 - [ ] **`GritProjectIntegrationService`**:
     - [ ] `createProjectFromGrit()`: Automatically create a project when a GRIT starts.
 
