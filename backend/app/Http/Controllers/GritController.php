@@ -14,7 +14,8 @@ class GritController extends Controller
     {
         try {
             $query = Grit::with(['category', 'applications', 'user'])
-                ->where('status', 'open');
+                ->where('status', 'open')
+                ->where('admin_approval_status', 'approved');
 
             if ($request->has('category_id')) {
                 $query->where('category_id', $request->category_id);
@@ -46,21 +47,35 @@ class GritController extends Controller
                 'description' => 'required|string',
                 'category_id' => 'required|exists:professional_categories,id',
                 'owner_budget' => 'required|numeric|min:0',
-                'owner_currency' => 'required|string|size:3',
                 'deadline' => 'required|date',
                 'requirements' => 'nullable|string',
+                'skills_required' => 'nullable', // can be array or comma-separated string from frontend
             ]);
+
+            // Infer currency from authenticated user's preference
+            $ownerCurrency = strtoupper(optional(Auth::user())->currency_code ?: 'NGN');
+
+            // Normalize requirements: if skills_required provided, map to a comma-separated requirements string
+            $requirements = $validatedData['requirements'] ?? null;
+            $skills = $request->input('skills_required');
+            if (!$requirements && $skills) {
+                if (is_array($skills)) {
+                    $requirements = implode(', ', array_filter($skills));
+                } elseif (is_string($skills)) {
+                    $requirements = $skills;
+                }
+            }
 
             $grit = Grit::create([
                 'title' => $validatedData['title'],
                 'description' => $validatedData['description'],
                 'category_id' => $validatedData['category_id'],
                 'owner_budget' => $validatedData['owner_budget'],
-                'owner_currency' => $validatedData['owner_currency'],
+                'owner_currency' => $ownerCurrency,
                 'deadline' => $validatedData['deadline'],
-                'requirements' => $validatedData['requirements'],
+                'requirements' => $requirements,
                 'created_by_user_id' => Auth::id(),
-                'status' => 'open',
+                'status' => 'pending_admin_approval',
                 'admin_approval_status' => 'pending',
             ]);
 

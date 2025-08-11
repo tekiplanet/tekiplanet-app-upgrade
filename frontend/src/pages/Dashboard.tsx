@@ -281,6 +281,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
       show: user?.account_type === 'business'
     },
     {
+      label: "Create Grit",
+      path: "/dashboard/grits/create",
+      icon: <ClipboardList className="w-4 h-4" />,
+      show: user?.account_type === 'business'
+    },
+    {
       label: "Projects",
       path: "/dashboard/projects",
       icon: <Server className="w-4 h-4" />
@@ -663,7 +669,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 {user?.account_type === 'business' && profileData?.has_profile && profileData?.profile?.status === 'active' && (
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Business</h4>
-                    {menuItems.slice(7, 9).map((item) => (
+                    {menuItems.slice(8, 11).map((item) => (
                       <Button
                         key={item.path}
                         variant={location.pathname === item.path ? "secondary" : "ghost"}
@@ -701,7 +707,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 {user?.account_type === 'professional' && professionalData?.has_profile && professionalData?.profile?.status === 'active' && (
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Professional</h4>
-                    {menuItems.slice(9, 11).map((item) => (
+                    {menuItems.slice(11, 13).map((item) => (
                       <Button
                         key={item.path}
                         variant={location.pathname === item.path ? "secondary" : "ghost"}
@@ -738,7 +744,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 {/* Shop */}
                 <div className="space-y-1">
                   <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Shop</h4>
-                  {menuItems.slice(11).map((item) => (
+                  {menuItems.slice(13).map((item) => (
                     <Button
                       key={item.path}
                       variant={location.pathname === item.path ? "secondary" : "ghost"}
@@ -1310,7 +1316,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                           {user?.account_type === 'business' && profileData?.has_profile && profileData?.profile?.status === 'active' && (
                             <div className="space-y-1">
                               <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Business</h4>
-                              {menuItems.slice(7, 9).map((item) => (
+                              {menuItems.slice(8, 11).map((item) => (
                                 <Button
                                   key={item.path}
                                   variant={location.pathname === item.path ? "secondary" : "ghost"}
@@ -1348,7 +1354,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                           {user?.account_type === 'professional' && professionalData?.has_profile && professionalData?.profile?.status === 'active' && (
                             <div className="space-y-1">
                               <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Professional</h4>
-                              {menuItems.slice(9, 11).map((item) => (
+                              {menuItems.slice(11, 13).map((item) => (
                                 <Button
                                   key={item.path}
                                   variant={location.pathname === item.path ? "secondary" : "ghost"}
@@ -1385,7 +1391,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                           {/* Shop */}
                           <div className="space-y-1">
                             <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Shop</h4>
-                            {menuItems.slice(11).map((item) => (
+                            {menuItems.slice(13).map((item) => (
                               <Button
                                 key={item.path}
                                 variant={location.pathname === item.path ? "secondary" : "ghost"}

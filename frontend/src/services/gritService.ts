@@ -5,11 +5,8 @@ export interface CreateGritData {
   description: string;
   category_id: string;
   skills_required: string[];
-  professional_budget: number;
   owner_budget: number;
-  currency: string;
   deadline: string; // YYYY-MM-DD
-  is_public: boolean;
 }
 
 export interface Grit {

@@ -77,7 +77,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] Rename `MyHustles.tsx` to `MyGrits.tsx` (including component implementation).
 
 ### New GRIT Components
-- [ ] **`CreateGritDialog.tsx`**: For business owners to create GRITs.
+- [x] **`CreateGrit.tsx` page**: For business owners to create GRITs.
+- [x] **Add `Create Grit` link to Business Dashboard**: Link added to `Dashboard.tsx`.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.

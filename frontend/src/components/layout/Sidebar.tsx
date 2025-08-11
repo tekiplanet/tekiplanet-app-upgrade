@@ -6,7 +6,8 @@ import {
   LayoutDashboard, 
   GraduationCap, 
   Wallet,
-  Building2
+  Building2,
+  Plus
 } from "lucide-react";
 
 interface SidebarProps {
@@ -37,6 +38,11 @@ function Sidebar({ open, onClose }: SidebarProps) {
       label: "Wallet",
       href: "/dashboard/wallet",
       icon: <Wallet className="h-4 w-4 mr-2" />
+    },
+    {
+      label: "Create Grit",
+      href: "/dashboard/grits/create",
+      icon: <Plus className="h-4 w-4 mr-2" />
     }
   ];
 
