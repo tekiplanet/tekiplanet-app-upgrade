@@ -44,8 +44,10 @@ RENAME TABLE hustle_payments TO grit_payments;
 -- Migration: modify_grits_table_for_business_owners.php
 ALTER TABLE grits ADD COLUMN created_by_user_id UUID NULL AFTER id;
 ALTER TABLE grits ADD COLUMN admin_approval_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' AFTER status;
-ALTER TABLE grits ADD COLUMN original_budget DECIMAL(10,2) NULL AFTER budget;
-ALTER TABLE grits ADD COLUMN budget_currency VARCHAR(3) DEFAULT 'USD' AFTER budget;
+ALTER TABLE grits ADD COLUMN owner_budget DECIMAL(10,2) NOT NULL AFTER budget;
+ALTER TABLE grits ADD COLUMN owner_currency VARCHAR(3) NOT NULL AFTER owner_budget;
+ALTER TABLE grits ADD COLUMN professional_budget DECIMAL(10,2) NOT NULL AFTER owner_currency;
+ALTER TABLE grits ADD COLUMN professional_currency VARCHAR(3) NOT NULL AFTER professional_budget;
 ALTER TABLE grits ADD COLUMN negotiation_status ENUM('none', 'pending', 'accepted', 'rejected') DEFAULT 'none';
 ALTER TABLE grits ADD COLUMN terms_modified_at TIMESTAMP NULL;
 ALTER TABLE grits ADD COLUMN project_started_at TIMESTAMP NULL;
@@ -53,9 +55,12 @@ ALTER TABLE grits ADD COLUMN completion_requested_at TIMESTAMP NULL;
 ALTER TABLE grits ADD COLUMN owner_satisfaction ENUM('pending', 'satisfied', 'unsatisfied') DEFAULT 'pending';
 ALTER TABLE grits ADD COLUMN owner_rating TINYINT NULL;
 ALTER TABLE grits ADD COLUMN dispute_status ENUM('none', 'raised_by_owner', 'raised_by_professional', 'resolved') DEFAULT 'none';
+ALTER TABLE grits ADD COLUMN project_id UUID NULL AFTER dispute_status;
 
 -- Add foreign key for business owner
 ALTER TABLE grits ADD FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
+-- Add foreign key for project
+ALTER TABLE grits ADD FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL;
 ```
 
 ### 4. Create GRIT Escrow Transactions Table
@@ -66,8 +71,10 @@ CREATE TABLE grit_escrow_transactions (
     grit_id UUID NOT NULL,
     user_id UUID NOT NULL,
     transaction_type ENUM('freeze', 'release', 'refund') NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    currency VARCHAR(3) NOT NULL,
+    owner_amount DECIMAL(10,2) NOT NULL,
+    owner_currency VARCHAR(3) NOT NULL,
+    professional_amount DECIMAL(10,2) NOT NULL,
+    professional_currency VARCHAR(3) NOT NULL,
     percentage DECIMAL(5,2) NULL,
     description TEXT,
     status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
@@ -86,8 +93,10 @@ CREATE TABLE grit_negotiations (
     id UUID PRIMARY KEY,
     grit_id UUID NOT NULL,
     proposed_by_user_id UUID NOT NULL,
-    proposed_budget DECIMAL(10,2) NOT NULL,
-    proposed_currency VARCHAR(3) NOT NULL,
+    proposed_owner_budget DECIMAL(10,2) NOT NULL,
+    proposed_owner_currency VARCHAR(3) NOT NULL,
+    proposed_professional_budget DECIMAL(10,2) NOT NULL,
+    proposed_professional_currency VARCHAR(3) NOT NULL,
     proposed_deadline DATE NOT NULL,
     proposed_requirements TEXT NULL,
     status ENUM('pending', 'accepted', 'rejected', 'superseded') DEFAULT 'pending',
@@ -240,7 +249,7 @@ class GritEscrowService
 {
     public function freezeInitialAmount(Grit $grit, User $owner): bool
     {
-        $initialAmount = $grit->budget * 0.20; // 20%
+        $initialAmount = $grit->owner_budget * 0.20; // 20% of owner's budget
         
         if ($owner->wallet_balance < $initialAmount) {
             throw new InsufficientFundsException();
@@ -257,8 +266,9 @@ class GritEscrowService
                 'grit_id' => $grit->id,
                 'user_id' => $owner->id,
                 'transaction_type' => 'freeze',
-                'amount' => $initialAmount,
-                'currency' => $grit->budget_currency,
+                'owner_amount' => $initialAmount,
+                'owner_currency' => $grit->owner_currency,
+                // professional_amount and currency will be calculated and stored here
                 'percentage' => 20.00,
                 'description' => 'Initial 20% frozen for GRIT approval',
                 'status' => 'completed'
@@ -354,6 +364,59 @@ class GritController extends Controller
 }
 ```
 
+#### 3.2 Create GRIT-Project Integration Service
+```php
+// app/Services/GritProjectIntegrationService.php
+class GritProjectIntegrationService
+{
+    public function createProjectFromGrit(Grit $grit): Project
+    {
+        DB::transaction(function () use ($grit) {
+            // 1. Create the Project from the GRIT data
+            $project = Project::create([
+                'name' => $grit->title,
+                'description' => $grit->description,
+                'business_id' => $grit->user->businessProfile->id,
+                'client_name' => $grit->user->businessProfile->business_name,
+                'start_date' => now(),
+                'end_date' => $grit->deadline,
+                'budget' => $grit->owner_budget, // Project budget is from owner's perspective
+                'status' => 'in_progress',
+                'progress' => 0,
+            ]);
+
+            // 2. Link the Project to the GRIT
+            $grit->update(['project_id' => $project->id]);
+
+            // 3. Add the professional as a team member
+            $project->teamMembers()->create([
+                'professional_id' => $grit->assigned_professional_id,
+                'role' => 'Lead Professional',
+            ]);
+
+            // 4. Optionally, create initial stages based on a template
+            $this->createInitialProjectStages($project);
+
+            return $project;
+        });
+    }
+
+    private function createInitialProjectStages(Project $project)
+    {
+        // Example initial stages
+        $stages = [
+            ['name' => 'Project Kick-off', 'status' => 'completed'],
+            ['name' => 'Phase 1 Deliverables', 'status' => 'in_progress'],
+            ['name' => 'Final Review', 'status' => 'pending'],
+        ];
+
+        foreach ($stages as $stageData) {
+            $project->stages()->create($stageData);
+        }
+    }
+}
+```
+
 ## 🎨 Frontend Implementation Plan
 
 ### Phase 4: Component Renaming and Updates
@@ -429,8 +492,10 @@ export interface Grit {
   title: string;
   description: string;
   category: { id: string; name: string; };
-  budget: number;
-  budget_currency: string;
+  owner_budget: number;
+  owner_currency: string;
+  professional_budget: number;
+  professional_currency: string;
   original_budget?: number;
   deadline: string;
   requirements: string;
@@ -445,7 +510,7 @@ export interface Grit {
   dispute_status: 'none' | 'raised_by_owner' | 'raised_by_professional' | 'resolved';
   
   // Computed fields
-  budget_in_user_currency?: number;
+  
   user_currency_symbol?: string;
   escrow_status?: {
     total_frozen: number;
@@ -670,29 +735,8 @@ Initial GRIT Creation (Business Owner):
 #### 7.2 Currency Conversion Flow
 ```typescript
 // Currency conversion for budget display
-const convertAndDisplayBudget = async (grit: Grit, userCurrency: string) => {
-  if (grit.budget_currency === userCurrency) {
-    return {
-      amount: grit.budget,
-      currency: userCurrency,
-      symbol: await getCurrencySymbol(userCurrency)
-    };
-  }
-  
-  const converted = await gritService.convertBudget(
-    grit.budget, 
-    grit.budget_currency, 
-    userCurrency
-  );
-  
-  return {
-    amount: converted.amount,
-    currency: userCurrency,
-    symbol: converted.symbol,
-    originalAmount: grit.budget,
-    originalCurrency: grit.budget_currency
-  };
-};
+// No longer needed, as amounts are pre-converted and stored.
+// The frontend will simply display the correct amount based on the logged-in user's role.
 ```
 
 ## 🚀 Implementation Phases
