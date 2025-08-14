@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Grit;
+use App\Jobs\SendGritNotification;
+use App\Jobs\NotifyProfessionalsAboutNewGrit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -70,19 +72,11 @@ class GritController extends Controller
                     'status' => 'open' // Make it visible to professionals
                 ]);
 
-                // Send approval notification to business owner
-                $notificationService = app(\App\Services\NotificationService::class);
-                $notificationService->send([
-                    'type' => 'grit_approved',
-                    'title' => 'GRIT Approved',
-                    'message' => "Your GRIT '{$grit->title}' has been approved and is now visible to professionals.",
-                    'icon' => 'check-circle',
-                    'action_url' => '/dashboard/grits/mine',
-                    'extra_data' => [
-                        'grit_id' => $grit->id,
-                        'category_id' => $grit->category_id,
-                    ]
-                ], $grit->user);
+                // Dispatch approval notification job (email + in-app notification)
+                dispatch(new SendGritNotification($grit, 'approved'));
+
+                // Dispatch job to notify all professionals in this category about the new GRIT
+                dispatch(new NotifyProfessionalsAboutNewGrit($grit));
 
                 $message = 'GRIT approved successfully. It is now visible to professionals.';
             } else {
@@ -91,20 +85,8 @@ class GritController extends Controller
                     'status' => 'cancelled'
                 ]);
 
-                // Send rejection notification to business owner
-                $notificationService = app(\App\Services\NotificationService::class);
-                $notificationService->send([
-                    'type' => 'grit_rejected',
-                    'title' => 'GRIT Rejected',
-                    'message' => "Your GRIT '{$grit->title}' has been rejected." . 
-                                ($validated['reason'] ? " Reason: {$validated['reason']}" : ""),
-                    'icon' => 'x-circle',
-                    'action_url' => '/dashboard/grits/mine',
-                    'extra_data' => [
-                        'grit_id' => $grit->id,
-                        'category_id' => $grit->category_id,
-                    ]
-                ], $grit->user);
+                // Dispatch rejection notification job (email + in-app notification)
+                dispatch(new SendGritNotification($grit, 'rejected', $validated['reason']));
 
                 $message = 'GRIT rejected successfully.';
             }
@@ -224,6 +206,9 @@ class GritController extends Controller
                 'admin_approval_status' => 'approved', // Admin-created GRITs are auto-approved
                 'status' => 'open'
             ]);
+
+            // Dispatch job to notify all professionals in this category about the new GRIT
+            dispatch(new NotifyProfessionalsAboutNewGrit($grit));
 
             return redirect()->route('admin.grits.show', $grit)
                 ->with('success', 'GRIT created successfully.');

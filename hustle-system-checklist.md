@@ -62,7 +62,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [ ] `markComplete()`: Mark the GRIT as complete and provide feedback.
 - [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
 - [x] **Admin `GritController`**:
-    - [x] `updateApprovalStatus()`: Approve/reject newly created GRITs with notifications.
+    - [x] `updateApprovalStatus()`: Approve/reject newly created GRITs with queued email + in-app notifications.
     - [x] `getPendingCount()`: Get count of pending GRITs for admin dashboard.
     - [x] `getByStatus()`: Get GRITs filtered by approval status with search/filtering.
     - [x] `index()`: List GRITs with filtering and view rendering.
@@ -108,6 +108,19 @@ This checklist tracks the implementation of the GRIT system, including the integ
 
 ## Phase 5: Real-time Features
 
+- [x] **GRIT Approval/Rejection Notifications**: 
+    - [x] Email templates for approval and rejection
+    - [x] Queued job system for notifications (`SendGritNotification`)
+    - [x] In-app notifications via NotificationService
+    - [x] Push notifications via Firebase Cloud Messaging
+    - [x] Both email and in-app notifications sent asynchronously
+- [x] **Professional Notifications for New GRITs**: 
+    - [x] Email template for new GRIT availability (`new-grit-available.blade.php`)
+    - [x] Mail class for professional notifications (`NewGritAvailable`)
+    - [x] Queued job to notify all professionals in category (`NotifyProfessionalsAboutNewGrit`)
+    - [x] Notifications sent when admin approves business-created GRITs
+    - [x] Notifications sent when admin creates GRITs (auto-approved)
+    - [x] Both email and in-app notifications sent asynchronously
 - [ ] **WebSocket Enhancements**: Create new channels and events for GRITs.
 - [ ] **System Messages**: Integrate system messages into the chat for all key actions (e.g., "Payment of $50 released.").
 - [ ] **Real-time Notifications**: Trigger notifications for owners, professionals, and admins for relevant events.

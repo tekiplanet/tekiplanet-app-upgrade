@@ -1,0 +1,21 @@
+<x-mail.layout>
+    <x-slot:greeting>
+        Hello {{ $grit->user->name }}!
+    </x-slot>
+
+    <p>Great news! Your GRIT has been approved and is now visible to professionals.</p>
+
+    <div style="margin: 20px 0; padding: 15px; background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px;">
+        <h3 style="margin-top: 0; color: #0c4a6e; font-size: 18px;">{{ $grit->title }}</h3>
+        <p><strong>Category:</strong> {{ $grit->category->name }}</p>
+        <p><strong>Budget:</strong> {{ $grit->owner_currency ?? '₦' }}{{ number_format($grit->owner_budget ?? $grit->budget, 2) }}</p>
+        <p><strong>Deadline:</strong> {{ optional($grit->deadline)->format('M d, Y') }}</p>
+        <p><strong>Status:</strong> <span style="color: #059669; font-weight: 600;">Approved</span></p>
+    </div>
+
+    <p>Your GRIT is now live and professionals can start applying for it. You'll receive notifications when applications come in.</p>
+
+    <x-slot:closing>
+        <p>Best regards,<br>TekiPlanet Team</p>
+    </x-slot>
+</x-mail.layout>
