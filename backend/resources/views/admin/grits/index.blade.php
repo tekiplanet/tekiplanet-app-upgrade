@@ -15,7 +15,7 @@
     <!-- Tabs for Hustles vs GRITs -->
     <div class="mb-6">
         <div class="border-b border-gray-200 dark:border-gray-700">
-            <nav class="-mb-px flex space-x-8">
+            <nav class="-mb-px flex items-center gap-6">
                 <a href="{{ route('admin.grits.index', ['type' => 'all']) }}" 
                    class="py-2 px-1 border-b-2 font-medium text-sm {{ !request('type') || request('type') === 'all' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     All Hustles & GRITs
@@ -211,61 +211,152 @@
 <!-- JavaScript for GRIT approval/rejection -->
 <script>
 function approveGrit(gritId) {
-    if (confirm('Are you sure you want to approve this GRIT? It will become visible to professionals.')) {
-        fetch(`/admin/grits/${gritId}/approval`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                status: 'approved'
+    Swal.fire({
+        title: 'Approve GRIT?',
+        text: 'Are you sure you want to approve this GRIT? It will become visible to professionals.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, Approve!',
+        cancelButtonText: 'Cancel',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Approving...',
+                text: 'Please wait while we approve the GRIT.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/admin/grits/${gritId}/approval`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    status: 'approved'
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('Failed to approve GRIT: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while approving the GRIT');
-        });
-    }
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Approved!',
+                        text: data.message || 'GRIT has been approved successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#10B981',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to approve GRIT.',
+                        icon: 'error',
+                        confirmButtonColor: '#EF4444'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while approving the GRIT.',
+                    icon: 'error',
+                    confirmButtonColor: '#EF4444'
+                });
+            });
+        }
+    });
 }
 
 function rejectGrit(gritId) {
-    const reason = prompt('Please provide a reason for rejecting this GRIT:');
-    if (reason !== null) {
-        fetch(`/admin/grits/${gritId}/approval`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                status: 'rejected',
-                reason: reason
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert('Failed to reject GRIT: ' + data.message);
+    Swal.fire({
+        title: 'Reject GRIT',
+        text: 'Please provide a reason for rejection:',
+        input: 'text',
+        inputPlaceholder: 'Enter rejection reason...',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Reject',
+        cancelButtonText: 'Cancel',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        inputValidator: (value) => {
+            if (!value) {
+                return 'You need to provide a reason for rejection!';
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while rejecting the GRIT');
-        });
-    }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Rejecting...',
+                text: 'Please wait while we reject the GRIT.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/admin/grits/${gritId}/approval`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    status: 'rejected',
+                    reason: result.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Rejected!',
+                        text: data.message || 'GRIT has been rejected successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#EF4444',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to reject GRIT.',
+                        icon: 'error',
+                        confirmButtonColor: '#EF4444'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while rejecting the GRIT.',
+                    icon: 'error',
+                    confirmButtonColor: '#EF4444'
+                });
+            });
+        }
+    });
 }
 </script>
 @endsection 
