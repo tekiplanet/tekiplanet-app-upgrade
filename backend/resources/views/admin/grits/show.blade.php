@@ -1,6 +1,23 @@
 @extends('admin.layouts.app')
 
 @section('content')
+@include('admin.components.notification')
+
+@if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('{{ session('success') }}');
+        });
+    </script>
+@endif
+
+@if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('{{ session('error') }}', 'error');
+        });
+    </script>
+@endif
 <div class="container px-6 mx-auto">
     <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">

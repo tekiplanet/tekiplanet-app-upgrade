@@ -1,19 +1,36 @@
 @extends('admin.layouts.app')
 
 @section('content')
+@include('admin.components.notification')
+
+@if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('{{ session('success') }}');
+        });
+    </script>
+@endif
+
+@if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('{{ session('error') }}', 'error');
+        });
+    </script>
+@endif
 <div class="container px-6 mx-auto">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-            Create New Hustle
+            Create New GRIT
         </h2>
-        <a href="{{ route('admin.hustles.index') }}" 
+        <a href="{{ route('admin.grits.index') }}" 
            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-            Back to Hustles
+            Back to GRITs
         </a>
     </div>
 
     <div class="bg-white rounded-lg shadow-md dark:bg-gray-800 p-6">
-        <form id="createHustleForm" action="{{ route('admin.hustles.store') }}" method="POST" class="space-y-6">
+        <form id="createGritForm" action="{{ route('admin.grits.store') }}" method="POST" class="space-y-6">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -48,17 +65,35 @@
                     @enderror
                 </div>
 
-                <!-- Budget -->
+                <!-- Owner Budget -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Budget (₦)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Owner Budget</label>
                     <input type="number" 
-                           name="budget" 
-                           value="{{ old('budget') }}"
+                           name="owner_budget" 
+                           value="{{ old('owner_budget') }}"
                            required
                            min="0"
                            step="0.01"
                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    @error('budget')
+                    @error('owner_budget')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Owner Currency -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Owner Currency</label>
+                    <select name="owner_currency" 
+                            required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select Currency</option>
+                        @foreach($currencies as $currency)
+                            <option value="{{ $currency->code }}" {{ old('owner_currency') == $currency->code ? 'selected' : '' }}>
+                                {{ $currency->symbol }} {{ $currency->code }} - {{ $currency->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('owner_currency')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
@@ -92,11 +127,12 @@
 
             <!-- Requirements -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Requirements</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Requirements & Skills</label>
                 <textarea name="requirements" 
                           rows="4" 
                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="Enter each requirement on a new line">{{ old('requirements') }}</textarea>
+                          placeholder="Enter skills, requirements, or any other project specifications (e.g., PHP, Laravel, MySQL, Must have 3+ years experience, Portfolio required)">{{ old('requirements') }}</textarea>
+                <p class="mt-1 text-sm text-gray-500">Enter skills, requirements, or any other project specifications. You can separate items with commas or put each on a new line.</p>
                 @error('requirements')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
@@ -107,7 +143,7 @@
                 <button type="submit" 
                         id="submitButton"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                    <span>Create Hustle</span>
+                    <span>Create GRIT</span>
                     <svg id="loadingIcon" class="hidden w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -120,7 +156,7 @@
 
 @push('scripts')
 <script>
-document.getElementById('createHustleForm').addEventListener('submit', async function(e) {
+document.getElementById('createGritForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const form = e.target;
@@ -157,7 +193,7 @@ document.getElementById('createHustleForm').addEventListener('submit', async fun
         // Show success message
         await Swal.fire({
             title: 'Success!',
-            text: 'Hustle created successfully',
+            text: 'GRIT created successfully',
             icon: 'success',
             timer: 2000,
             showConfirmButton: false
@@ -170,12 +206,12 @@ document.getElementById('createHustleForm').addEventListener('submit', async fun
         // Reset button state
         submitButton.disabled = false;
         loadingIcon.classList.add('hidden');
-        buttonText.textContent = 'Create Hustle';
+        buttonText.textContent = 'Create GRIT';
 
         // Show error message
         await Swal.fire({
             title: 'Error!',
-            text: error.message || 'Failed to create hustle',
+            text: error.message || 'Failed to create GRIT',
             icon: 'error',
             confirmButtonText: 'OK'
         });

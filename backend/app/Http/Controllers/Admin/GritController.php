@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Grit;
+use App\Models\Currency;
 use App\Jobs\SendGritNotification;
 use App\Jobs\NotifyProfessionalsAboutNewGrit;
 use Illuminate\Http\Request;
@@ -183,7 +184,8 @@ class GritController extends Controller
     public function create()
     {
         $categories = \App\Models\ProfessionalCategory::all();
-        return view('admin.grits.create', compact('categories'));
+        $currencies = Currency::where('is_active', true)->orderBy('position')->get();
+        return view('admin.grits.create', compact('categories', 'currencies'));
     }
 
     /**
@@ -196,13 +198,23 @@ class GritController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'category_id' => 'required|exists:professional_categories,id',
-                'budget' => 'required|numeric|min:0',
+                'owner_budget' => 'required|numeric|min:0',
+                'owner_currency' => 'required|string|exists:currencies,code',
                 'deadline' => 'required|date|after:today',
                 'requirements' => 'nullable|string',
             ]);
 
             $grit = Grit::create([
-                ...$validated,
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'category_id' => $validated['category_id'],
+                'budget' => $validated['owner_budget'], // Legacy field
+                'owner_budget' => $validated['owner_budget'],
+                'owner_currency' => $validated['owner_currency'],
+                'professional_budget' => 0, // Will be set during negotiation
+                'professional_currency' => $validated['owner_currency'], // Default to owner currency
+                'deadline' => $validated['deadline'],
+                'requirements' => $validated['requirements'],
                 'admin_approval_status' => 'approved', // Admin-created GRITs are auto-approved
                 'status' => 'open'
             ]);
@@ -240,7 +252,8 @@ class GritController extends Controller
     public function edit(Grit $grit)
     {
         $categories = \App\Models\ProfessionalCategory::all();
-        return view('admin.grits.edit', compact('grit', 'categories'));
+        $currencies = Currency::where('is_active', true)->orderBy('position')->get();
+        return view('admin.grits.edit', compact('grit', 'categories', 'currencies'));
     }
 
     /**
@@ -253,12 +266,27 @@ class GritController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'category_id' => 'required|exists:professional_categories,id',
-                'budget' => 'required|numeric|min:0',
+                'owner_budget' => 'required|numeric|min:0',
+                'owner_currency' => 'required|string|exists:currencies,code',
                 'deadline' => 'required|date',
                 'requirements' => 'nullable|string',
+                'admin_approval_status' => 'required|in:pending,approved,rejected',
             ]);
 
-            $grit->update($validated);
+            // Prepare update data
+            $updateData = [
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'category_id' => $validated['category_id'],
+                'budget' => $validated['owner_budget'], // Legacy field
+                'owner_budget' => $validated['owner_budget'],
+                'owner_currency' => $validated['owner_currency'],
+                'deadline' => $validated['deadline'],
+                'requirements' => $validated['requirements'],
+                'admin_approval_status' => $validated['admin_approval_status'],
+            ];
+
+            $grit->update($updateData);
 
             return redirect()->route('admin.grits.show', $grit)
                 ->with('success', 'GRIT updated successfully.');
