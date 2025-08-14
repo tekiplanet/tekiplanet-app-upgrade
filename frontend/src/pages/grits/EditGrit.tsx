@@ -117,7 +117,7 @@ const EditGrit = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <motion.div 
@@ -127,15 +127,6 @@ const EditGrit = () => {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`/dashboard/grits/${id}`)}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to GRIT Details
-              </Button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Edit GRIT

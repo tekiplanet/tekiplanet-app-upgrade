@@ -83,7 +83,7 @@ const BusinessGritDetails = () => {
     if (adminStatus === 'pending') {
       return {
         label: 'Pending Approval',
-        bgColor: 'bg-yellow-100 text-yellow-800',
+        bgColor: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200',
         icon: Clock,
         description: 'Waiting for admin approval'
       };
@@ -91,7 +91,7 @@ const BusinessGritDetails = () => {
     if (adminStatus === 'rejected') {
       return {
         label: 'Rejected',
-        bgColor: 'bg-red-100 text-red-800',
+        bgColor: 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200',
         icon: XCircle,
         description: 'Admin rejected this GRIT'
       };
@@ -101,35 +101,35 @@ const BusinessGritDetails = () => {
       case 'open':
         return {
           label: 'Open',
-          bgColor: 'bg-green-100 text-green-800',
+          bgColor: 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200',
           icon: CheckCircle,
           description: 'Accepting applications'
         };
       case 'in_progress':
         return {
           label: 'In Progress',
-          bgColor: 'bg-blue-100 text-blue-800',
+          bgColor: 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200',
           icon: TrendingUp,
           description: 'Project is being worked on'
         };
       case 'completed':
         return {
           label: 'Completed',
-          bgColor: 'bg-gray-100 text-gray-800',
+          bgColor: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200',
           icon: CheckCircle,
           description: 'Project completed'
         };
       case 'disputed':
         return {
           label: 'Disputed',
-          bgColor: 'bg-red-100 text-red-800',
+          bgColor: 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200',
           icon: AlertCircle,
           description: 'Dispute raised'
         };
       default:
         return {
           label: status,
-          bgColor: 'bg-gray-100 text-gray-800',
+          bgColor: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200',
           icon: Settings,
           description: 'Unknown status'
         };
@@ -141,17 +141,6 @@ const BusinessGritDetails = () => {
       navigate(`/dashboard/grits/${id}/edit`);
     } else {
       toast.error('This GRIT cannot be edited. It may have a professional assigned or be in progress.');
-    }
-  };
-
-  const handleDelete = () => {
-    if (canEdit) {
-      if (confirm('Are you sure you want to delete this GRIT? This action cannot be undone.')) {
-        // TODO: Implement delete mutation
-        toast.info('Delete functionality will be implemented');
-      }
-    } else {
-      toast.error('This GRIT cannot be deleted. It may have a professional assigned or be in progress.');
     }
   };
 
@@ -184,7 +173,7 @@ const BusinessGritDetails = () => {
   const statusConfig = getStatusConfig(grit.status, grit.admin_approval_status);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <motion.div 
@@ -192,25 +181,26 @@ const BusinessGritDetails = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {grit.title}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline">{grit.category?.name}</Badge>
-                  <div className={cn(
-                    "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium",
-                    statusConfig.bgColor
-                  )}>
-                    {React.createElement(statusConfig.icon, { className: "w-4 h-4" })}
-                    {statusConfig.label}
-                  </div>
+          {/* Title Section - Mobile Optimized */}
+          <div className="space-y-4">
+            {/* Title, Category, and Status */}
+            <div className="space-y-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 break-words">
+                {grit.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline">{grit.category?.name}</Badge>
+                <div className={cn(
+                  "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium",
+                  statusConfig.bgColor
+                )}>
+                  {React.createElement(statusConfig.icon, { className: "w-4 h-4" })}
+                  {statusConfig.label}
                 </div>
               </div>
             </div>
 
+            {/* Action Buttons - Moved below title on mobile */}
             <div className="flex items-center gap-2">
               {canEdit && (
                 <Button onClick={handleEdit} className="flex items-center gap-2">
@@ -230,12 +220,6 @@ const BusinessGritDetails = () => {
                     <DropdownMenuItem onClick={handleEdit}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit GRIT
-                    </DropdownMenuItem>
-                  )}
-                  {canEdit && (
-                    <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Delete GRIT
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={() => setActiveTab('applications')}>
@@ -353,10 +337,10 @@ const BusinessGritDetails = () => {
                         )}
 
                         {!canEdit && grit.assigned_professional_id && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                             <div className="flex items-center gap-2">
-                              <UserCheck className="h-5 w-5 text-blue-600" />
-                              <p className="text-blue-800 dark:text-blue-200">
+                              <UserCheck className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                              <p className="text-gray-800 dark:text-gray-200">
                                 A professional has been assigned to this GRIT. It can no longer be edited.
                               </p>
                             </div>
@@ -410,7 +394,10 @@ const BusinessGritDetails = () => {
               <TabsContent value="payments" className="mt-6">
                 <Card>
                   <CardContent className="p-0">
-                    <PaymentTab gritId={id!} />
+                    <PaymentTab 
+                      payments={grit.payments || []} 
+                      currency={grit.owner_currency || '₦'} 
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
