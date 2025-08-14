@@ -239,9 +239,26 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('hustles/applications/{application}', [HustleApplicationController::class, 'show'])->name('hustles.applications.show');
             Route::patch('hustles/applications/{application}/status', [HustleApplicationController::class, 'updateStatus'])->name('hustles.applications.update-status');
 
-            // Grit Management
-            Route::get('grits', [GritController::class, 'index'])->name('grits.index');
-            Route::patch('grits/{grit}/approval', [GritController::class, 'updateApprovalStatus'])->name('grits.updateApprovalStatus');
+
+        });
+
+        // Grit Management - Separate from hustles
+        Route::prefix('grits')->name('grits.')->group(function () {
+            Route::get('/', [GritController::class, 'index'])->name('index');
+            Route::get('/create', [GritController::class, 'create'])->name('create');
+            Route::post('/', [GritController::class, 'store'])->name('store');
+            Route::get('/{grit}', [GritController::class, 'show'])->name('show');
+            Route::get('/{grit}/edit', [GritController::class, 'edit'])->name('edit');
+            Route::put('/{grit}', [GritController::class, 'update'])->name('update');
+            Route::delete('/{grit}', [GritController::class, 'destroy'])->name('destroy');
+            Route::get('/pending-count', [GritController::class, 'getPendingCount'])->name('pending-count');
+            Route::get('/by-status', [GritController::class, 'getByStatus'])->name('by-status');
+            Route::patch('/{grit}/approval', [GritController::class, 'updateApprovalStatus'])->name('updateApprovalStatus');
+            
+            // Grit Applications
+            Route::get('/{grit}/applications', [GritApplicationController::class, 'index'])->name('applications.index');
+            Route::get('/applications/{application}', [GritApplicationController::class, 'show'])->name('applications.show');
+            Route::patch('/applications/{application}/status', [GritApplicationController::class, 'updateStatus'])->name('applications.update-status');
         });
 
         Route::patch('hustles/{hustle}/status', [HustleController::class, 'updateStatus'])

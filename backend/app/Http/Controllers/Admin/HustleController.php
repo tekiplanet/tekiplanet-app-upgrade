@@ -20,7 +20,7 @@ class HustleController extends Controller
 {
     public function index(Request $request)
     {
-        $hustles = Hustle::with(['category', 'assignedProfessional', 'applications'])
+        $query = Hustle::with(['category', 'assignedProfessional', 'applications', 'user'])
             ->when($request->search, function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
@@ -30,13 +30,31 @@ class HustleController extends Controller
             })
             ->when($request->category, function ($query, $category) {
                 $query->where('category_id', $category);
-            })
-            ->latest()
-            ->paginate(10);
+            });
 
+        // Filter by hustle type (admin created vs business created)
+        if ($request->has('type')) {
+            if ($request->type === 'admin_created') {
+                $query->whereNull('created_by_user_id');
+            } elseif ($request->type === 'business_created') {
+                $query->whereNotNull('created_by_user_id');
+            }
+        }
+
+        // Filter by approval status for business-created GRITs
+        if ($request->has('approval_status') && ($request->type === 'business_created' || !$request->type)) {
+            $query->where('admin_approval_status', $request->approval_status);
+        }
+
+        $hustles = $query->latest()->paginate(10);
         $categories = ProfessionalCategory::all();
 
-        return view('admin.hustles.index', compact('hustles', 'categories'));
+        // Get pending GRITs count for the badge
+        $pendingGritsCount = Hustle::whereNotNull('created_by_user_id')
+            ->where('admin_approval_status', 'pending')
+            ->count();
+
+        return view('admin.hustles.index', compact('hustles', 'categories', 'pendingGritsCount'));
     }
 
     public function create()

@@ -281,8 +281,8 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
       show: user?.account_type === 'business'
     },
     {
-      label: "Create Grit",
-      path: "/dashboard/grits/create",
+      label: "Manage Grits",
+      path: "/dashboard/grits/mine",
       icon: <ClipboardList className="w-4 h-4" />,
       show: user?.account_type === 'business'
     },

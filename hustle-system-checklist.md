@@ -61,8 +61,12 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [ ] `increaseBudget()`: Add funds to the project.
     - [ ] `markComplete()`: Mark the GRIT as complete and provide feedback.
 - [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
-- [ ] **Admin `GritController`**:
-    - [ ] `approveGrit()`: Approve a newly created GRIT to make it public.
+- [x] **Admin `GritController`**:
+    - [x] `updateApprovalStatus()`: Approve/reject newly created GRITs with notifications.
+    - [x] `getPendingCount()`: Get count of pending GRITs for admin dashboard.
+    - [x] `getByStatus()`: Get GRITs filtered by approval status with search/filtering.
+    - [x] `index()`: List GRITs with filtering and view rendering.
+    - [x] `create()`, `store()`, `show()`, `edit()`, `update()`, `destroy()`: Full CRUD operations.
     - [ ] `manageDispute()`: View and resolve disputes.
 - [ ] **Professional `GritController`**:
     - [ ] `apply()`: Apply for a GRIT.
@@ -83,7 +87,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
 
 ### New GRIT Components
 - [x] **`CreateGrit.tsx` page**: For business owners to create GRITs.
-- [x] **Add `Create Grit` link to Business Dashboard**: Link added to `Dashboard.tsx`.
+- [x] **Add `Manage Grits` link to Business Dashboard**: Link added to `Dashboard.tsx` (goes to `/dashboard/grits/mine`).
 - [x] **`MyGrits.tsx` page and route (`/dashboard/grits/mine`)**: Business owners can view only their created GRITs.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.

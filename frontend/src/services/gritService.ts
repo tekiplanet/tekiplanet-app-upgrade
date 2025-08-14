@@ -21,6 +21,7 @@ export interface Grit {
   status: 'open' | 'negotiation' | 'in_progress' | 'pending_completion_approval' | 'completed' | 'disputed' | 'closed';
   admin_approval_status: 'pending' | 'approved' | 'rejected';
   is_public: boolean;
+  created_at?: string;
   user: { // The business owner who created the grit
     id: string;
     name: string;
