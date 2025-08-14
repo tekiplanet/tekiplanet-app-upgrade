@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from 'sonner';
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -81,6 +81,8 @@ const WorkstationSubscription = React.lazy(() => import('@/pages/workstation/Sub
 const DashboardHome = React.lazy(() => import('@/pages/DashboardHome'));
 const Grits = React.lazy(() => import('@/pages/grits/Grits'));
 const GritDetails = React.lazy(() => import('@/pages/grits/GritDetails'));
+const BusinessGritDetails = React.lazy(() => import('@/pages/grits/BusinessGritDetails'));
+const EditGrit = React.lazy(() => import('@/pages/grits/EditGrit'));
 const MyGritApplications = React.lazy(() => import('@/pages/grits/MyApplications'));
 const CreateGrit = React.lazy(() => import('@/pages/grits/CreateGrit'));
 const CourseManagement = React.lazy(() => import('@/pages/CourseManagement'));
@@ -147,6 +149,24 @@ const RequireAccountType = ({ type, children }: { type: 'professional' | 'busine
     return <Navigate to="/dashboard" state={{ from: location }} />;
   }
   return <>{children}</>;
+};
+
+const GritDetailsWrapper = () => {
+  const user = useAuthStore((s) => s.user);
+  const { id } = useParams<{ id: string }>();
+  
+  // If user is business, show business view
+  if (user?.account_type === 'business') {
+    return <BusinessGritDetails />;
+  }
+  
+  // If user is professional, show professional view
+  if (user?.account_type === 'professional') {
+    return <GritDetails />;
+  }
+  
+  // Default to professional view for other account types
+  return <GritDetails />;
 };
 
 const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
@@ -295,7 +315,12 @@ const AppContent = () => {
                 </RequireAccountType>
               </ProtectedRoute>
             } />
-            <Route path="grits/:id" element={<GritDetails />} />
+            <Route path="grits/:id" element={
+              <ProtectedRoute>
+                <GritDetailsWrapper />
+              </ProtectedRoute>
+            } />
+            <Route path="grits/:id/edit" element={<EditGrit />} />
                         <Route path="grits/applications" element={<MyGritApplications />} />
             <Route path="grits/create" element={<CreateGrit />} />
             <Route path="business/profile/create" element={<CreateBusinessProfile />} />

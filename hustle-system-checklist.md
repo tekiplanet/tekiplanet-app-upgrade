@@ -89,6 +89,11 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **`CreateGrit.tsx` page**: For business owners to create GRITs.
 - [x] **Add `Manage Grits` link to Business Dashboard**: Link added to `Dashboard.tsx` (goes to `/dashboard/grits/mine`).
 - [x] **`MyGrits.tsx` page and route (`/dashboard/grits/mine`)**: Business owners can view only their created GRITs.
+- [x] **`BusinessGritDetails.tsx`**: Business owner view for managing their GRITs with edit functionality.
+- [x] **`EditGrit.tsx`**: Business owner form for editing GRITs with admin approval reset.
+- [x] **Business vs Professional Views**: Different views based on user account type.
+- [x] **Edit Restrictions**: GRITs can only be edited when no professional is assigned and status is 'open'.
+- [x] **Admin Approval Reset**: When business edits GRIT, admin_approval_status resets to 'pending'.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.

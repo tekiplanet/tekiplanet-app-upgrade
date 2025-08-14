@@ -14,6 +14,7 @@ export interface Grit {
   title: string;
   description: string;
   skills_required: string[];
+  requirements?: string; // Added requirements field
   professional_budget: number;
   owner_budget: number;
   currency: string;
@@ -136,6 +137,11 @@ export const gritService = {
 
   createGrit: async (gritData: CreateGritData) => {
     const { data } = await api.post('/grits', gritData);
+    return data;
+  },
+
+  updateGrit: async (gritId: string, gritData: any) => {
+    const { data } = await api.put(`/grits/${gritId}`, gritData);
     return data;
   }
 }; 

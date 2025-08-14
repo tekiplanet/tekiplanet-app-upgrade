@@ -5816,3 +5816,31 @@
 [2025-08-14 17:42:14] production.INFO: Recent payments: {"count":0} 
 [2025-08-14 17:42:14] production.INFO: Combined activities: {"count":0} 
 [2025-08-14 17:42:14] production.INFO: Metrics response: {"metrics":{"revenue":0,"revenue_trend":{"direction":"up","percentage":0},"total_customers":0,"customers_this_month":0,"customer_trend":{"direction":"up","percentage":0},"revenueData":[{"name":"Mar 2025","value":0},{"name":"Apr 2025","value":0},{"name":"May 2025","value":0},{"name":"Jun 2025","value":0},{"name":"Jul 2025","value":0},{"name":"Aug 2025","value":0}],"recent_activities":[]}} 
+[2025-08-14 17:44:18] production.INFO: Metrics endpoint hit {"endpoint":"GET /business/metrics","user":"d25d7013-277a-4699-9292-aed6896b7590"} 
+[2025-08-14 17:44:18] production.INFO: Fetching metrics for business: {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","business_profile":{"App\\Models\\BusinessProfile":{"id":"9f9bc112-5b15-436f-b06c-70575238e0f3","user_id":"d25d7013-277a-4699-9292-aed6896b7590","business_name":"Trst Coperate","business_email":"adezeto@proton.me","phone_number":"08166700169","address":"2, Buffalo House, Allen Avenue","city":"Ikeja","state":"Bauchi","country":"Nigeria","business_type":"Fashion","registration_number":"4556666666","tax_number":"67889899999","logo":"business-logos/dgCCfH1jSpvEdZHVNNxSPUCq3LRJfWF0LMSYyb6g.jpg","website":"https://tekio0a9.com","description":"This is a professional business. Please provide a brief description of your business","status":"active","is_verified":0,"verified_at":null,"created_at":"2025-08-11T11:51:19.000000Z","updated_at":"2025-08-11T11:51:54.000000Z","logo_url":"https://api.tekiplanet.org/storage/business-logos/dgCCfH1jSpvEdZHVNNxSPUCq3LRJfWF0LMSYyb6g.jpg"}},"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3"} 
+[2025-08-14 17:44:18] production.INFO: Calculating monthly revenue: {"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3","month":8,"year":2025} 
+[2025-08-14 17:44:18] production.INFO: Found invoices: {"invoice_count":0,"invoice_ids":{"Illuminate\\Support\\Collection":[]}} 
+[2025-08-14 17:44:18] production.INFO: Revenue calculation result: {"total_revenue":0} 
+[2025-08-14 17:44:18] production.INFO: Getting total customers: {"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3"} 
+[2025-08-14 17:44:18] production.INFO: Customer count: {"total_customers":0} 
+[2025-08-14 17:44:18] production.INFO: Getting recent activities: {"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3","limit":20} 
+[2025-08-14 17:44:18] production.INFO: Activity counts: {"customers":0,"invoices":0,"payments":0} 
+[2025-08-14 17:44:18] production.INFO: Recent customers: {"count":0} 
+[2025-08-14 17:44:18] production.INFO: Recent invoices: {"count":0} 
+[2025-08-14 17:44:18] production.INFO: Recent payments: {"count":0} 
+[2025-08-14 17:44:18] production.INFO: Combined activities: {"count":0} 
+[2025-08-14 17:44:18] production.INFO: Metrics response: {"metrics":{"revenue":0,"revenue_trend":{"direction":"up","percentage":0},"total_customers":0,"customers_this_month":0,"customer_trend":{"direction":"up","percentage":0},"revenueData":[{"name":"Mar 2025","value":0},{"name":"Apr 2025","value":0},{"name":"May 2025","value":0},{"name":"Jun 2025","value":0},{"name":"Jul 2025","value":0},{"name":"Aug 2025","value":0}],"recent_activities":[]}} 
+[2025-08-14 18:01:40] production.INFO: Metrics endpoint hit {"endpoint":"GET /business/metrics","user":"d25d7013-277a-4699-9292-aed6896b7590"} 
+[2025-08-14 18:01:40] production.INFO: Fetching metrics for business: {"user_id":"d25d7013-277a-4699-9292-aed6896b7590","business_profile":{"App\\Models\\BusinessProfile":{"id":"9f9bc112-5b15-436f-b06c-70575238e0f3","user_id":"d25d7013-277a-4699-9292-aed6896b7590","business_name":"Trst Coperate","business_email":"adezeto@proton.me","phone_number":"08166700169","address":"2, Buffalo House, Allen Avenue","city":"Ikeja","state":"Bauchi","country":"Nigeria","business_type":"Fashion","registration_number":"4556666666","tax_number":"67889899999","logo":"business-logos/dgCCfH1jSpvEdZHVNNxSPUCq3LRJfWF0LMSYyb6g.jpg","website":"https://tekio0a9.com","description":"This is a professional business. Please provide a brief description of your business","status":"active","is_verified":0,"verified_at":null,"created_at":"2025-08-11T11:51:19.000000Z","updated_at":"2025-08-11T11:51:54.000000Z","logo_url":"https://api.tekiplanet.org/storage/business-logos/dgCCfH1jSpvEdZHVNNxSPUCq3LRJfWF0LMSYyb6g.jpg"}},"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3"} 
+[2025-08-14 18:01:40] production.INFO: Calculating monthly revenue: {"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3","month":8,"year":2025} 
+[2025-08-14 18:01:40] production.INFO: Found invoices: {"invoice_count":0,"invoice_ids":{"Illuminate\\Support\\Collection":[]}} 
+[2025-08-14 18:01:40] production.INFO: Revenue calculation result: {"total_revenue":0} 
+[2025-08-14 18:01:40] production.INFO: Getting total customers: {"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3"} 
+[2025-08-14 18:01:40] production.INFO: Customer count: {"total_customers":0} 
+[2025-08-14 18:01:40] production.INFO: Getting recent activities: {"business_id":"9f9bc112-5b15-436f-b06c-70575238e0f3","limit":20} 
+[2025-08-14 18:01:40] production.INFO: Activity counts: {"customers":0,"invoices":0,"payments":0} 
+[2025-08-14 18:01:40] production.INFO: Recent customers: {"count":0} 
+[2025-08-14 18:01:40] production.INFO: Recent invoices: {"count":0} 
+[2025-08-14 18:01:40] production.INFO: Recent payments: {"count":0} 
+[2025-08-14 18:01:40] production.INFO: Combined activities: {"count":0} 
+[2025-08-14 18:01:40] production.INFO: Metrics response: {"metrics":{"revenue":0,"revenue_trend":{"direction":"up","percentage":0},"total_customers":0,"customers_this_month":0,"customer_trend":{"direction":"up","percentage":0},"revenueData":[{"name":"Mar 2025","value":0},{"name":"Apr 2025","value":0},{"name":"May 2025","value":0},{"name":"Jun 2025","value":0},{"name":"Jul 2025","value":0},{"name":"Aug 2025","value":0}],"recent_activities":[]}} 

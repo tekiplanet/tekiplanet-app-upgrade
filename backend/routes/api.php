@@ -364,9 +364,10 @@ Route::middleware('auth:sanctum')->group(function () {
 // Grit Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/grits', [GritController::class, 'index']);
-    Route::get('/grits/{id}', [GritController::class, 'show']);
-    Route::post('/grits', [GritController::class, 'store']);
-        Route::get('/my-grits', [GritController::class, 'myGrits']);
+Route::get('/grits/{id}', [GritController::class, 'show']);
+Route::post('/grits', [GritController::class, 'store']);
+Route::put('/grits/{id}', [GritController::class, 'update']);
+Route::get('/my-grits', [GritController::class, 'myGrits']);
 });
 
 // Business Routes

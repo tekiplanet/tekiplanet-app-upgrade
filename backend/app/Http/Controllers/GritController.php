@@ -134,4 +134,52 @@ class GritController extends Controller
             return response()->json(['message' => 'Failed to fetch grit details'], 500);
         }
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $grit = Grit::findOrFail($id);
+
+            // Check if user owns this GRIT
+            if ($grit->created_by_user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Check if GRIT can be edited (no professional assigned and status is open)
+            if ($grit->assigned_professional_id || $grit->status !== 'open') {
+                return response()->json(['message' => 'This GRIT cannot be edited. It may have a professional assigned or be in progress.'], 400);
+            }
+
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'category_id' => 'required|exists:professional_categories,id',
+                'owner_budget' => 'required|numeric|min:0',
+                'deadline' => 'required|date|after:today',
+                'requirements' => 'nullable|string',
+                'admin_approval_status' => 'required|in:pending,approved,rejected',
+            ]);
+
+            // Update the GRIT
+            $grit->update([
+                'title' => $validatedData['title'],
+                'description' => $validatedData['description'],
+                'category_id' => $validatedData['category_id'],
+                'budget' => $validatedData['owner_budget'], // Legacy field
+                'owner_budget' => $validatedData['owner_budget'],
+                'deadline' => $validatedData['deadline'],
+                'requirements' => $validatedData['requirements'],
+                'admin_approval_status' => $validatedData['admin_approval_status'], // Reset to pending
+            ]);
+
+            return response()->json(['message' => 'GRIT updated successfully', 'grit' => $grit]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Grit Update Validation Failed:', ['errors' => $e->errors()]);
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating grit:', ['id' => $id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to update grit'], 500);
+        }
+    }
 }
