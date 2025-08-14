@@ -8,7 +8,8 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,9 +17,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { TagInput } from '@/components/ui/tag-input';
 import { toast } from 'sonner';
 import { gritService, type Grit } from '@/services/gritService';
 import { formatCurrency } from '@/lib/utils';
+import { format } from 'date-fns';
 
 const EditGrit = () => {
   const { id } = useParams<{ id: string }>();
@@ -193,13 +197,15 @@ interface EditGritFormProps {
 
 const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit, isLoading }) => {
   const navigate = useNavigate();
+  const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: grit.title || '',
     description: grit.description || '',
     category_id: grit.category?.id || '',
     owner_budget: grit.owner_budget || 0,
     deadline: grit.deadline ? new Date(grit.deadline).toISOString().split('T')[0] : '',
-    requirements: grit.requirements || ''
+    requirements: grit.requirements || '',
+    skills_required: Array.isArray(grit.skills_required) ? grit.skills_required : []
   });
 
   const handleInputChange = (field: string, value: any) => {
@@ -217,92 +223,112 @@ const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit,
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
-            placeholder="Enter GRIT title"
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="category">Category</Label>
-          <Select
-            value={formData.category_id}
-            onValueChange={(value) => handleInputChange('category_id', value)}
-            required
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="Describe the GRIT in detail"
-            rows={4}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="requirements">Requirements & Skills</Label>
-          <Textarea
-            id="requirements"
-            value={formData.requirements}
-            onChange={(e) => handleInputChange('requirements', e.target.value)}
-            placeholder="Enter skills, requirements, or any other project specifications (e.g., PHP, Laravel, MySQL, Must have 3+ years experience, Portfolio required)"
-            rows={3}
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            Enter skills, requirements, or any other project specifications. You can separate items with commas or put each on a new line.
-          </p>
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="title">Grit Title</Label>
+        <Input
+          id="title"
+          value={formData.title}
+          onChange={(e) => handleInputChange('title', e.target.value)}
+          placeholder="Enter the Grit title"
+          required
+        />
       </div>
 
-      {/* Budget & Timeline */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="budget">Budget</Label>
-          <Input
-            id="budget"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.owner_budget}
-            onChange={(e) => handleInputChange('owner_budget', parseFloat(e.target.value) || 0)}
-            placeholder="Enter budget amount"
-            required
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="category_id">Category</Label>
+        <Select
+          value={formData.category_id}
+          onValueChange={(value) => handleInputChange('category_id', value)}
+          required
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-        <div>
-          <Label htmlFor="deadline">Deadline</Label>
-          <Input
-            id="deadline"
-            type="date"
-            value={formData.deadline}
-            onChange={(e) => handleInputChange('deadline', e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
-            required
-          />
-        </div>
+             <div className="space-y-2">
+         <Label htmlFor="description">Description</Label>
+         <Textarea
+           id="description"
+           value={formData.description}
+           onChange={(e) => handleInputChange('description', e.target.value)}
+           placeholder="Describe the Grit in detail"
+           rows={8}
+           required
+         />
+       </div>
+
+       <div className="space-y-2">
+         <Label>Skills Required</Label>
+         <div data-tag-input>
+           <TagInput
+             tags={formData.skills_required}
+             onTagsChange={(tags) => handleInputChange('skills_required', tags)}
+             placeholder="Add skills and press Enter"
+           />
+         </div>
+         <p className="text-sm text-muted-foreground">
+           Enter skills, requirements, or any other project specifications. Press Enter to add each skill.
+         </p>
+       </div>
+
+      {/* Budget & Timeline */}
+      <div className="space-y-2">
+        <Label htmlFor="owner_budget">Budget</Label>
+        <Input
+          type="number"
+          id="owner_budget"
+          min="0"
+          step="0.01"
+          value={formData.owner_budget}
+          onChange={(e) => handleInputChange('owner_budget', parseFloat(e.target.value) || 0)}
+          placeholder="e.g., 50000"
+          required
+        />
+      </div>
+
+      <div className="space-y-2 relative">
+        <Label htmlFor="deadline">Deadline</Label>
+        <Button
+          variant="outline"
+          className="w-full justify-between"
+          type="button"
+          onClick={() => setIsDeadlineOpen((v) => !v)}
+        >
+          {formData.deadline ? (
+            <span>{format(new Date(formData.deadline), 'PPP')}</span>
+          ) : (
+            <span>Pick a date</span>
+          )}
+          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+        </Button>
+        {isDeadlineOpen && (
+          <div 
+            className="absolute top-[calc(100%+4px)] left-0 z-50 rounded-md border bg-popover p-0 text-popover-foreground shadow-md outline-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CalendarComponent
+              mode="single"
+              selected={formData.deadline ? new Date(formData.deadline) : undefined}
+              onSelect={(date) => {
+                if (date) {
+                  handleInputChange('deadline', format(date, 'yyyy-MM-dd'));
+                }
+                setIsDeadlineOpen(false);
+              }}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              initialFocus
+            />
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}
