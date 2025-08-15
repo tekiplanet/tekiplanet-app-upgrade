@@ -244,16 +244,19 @@ const MyApplications = () => {
                     <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                       {/* Main Content */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+                        <div className="space-y-3 mb-3">
+                          {/* Title and Date */}
+                          <div>
+                            <h3 className="text-lg font-semibold group-hover:text-primary transition-colors break-words">
                               {application.grit.title}
                             </h3>
                             <p className="text-sm text-muted-foreground mt-1">
                               Applied on {formatDate(application.applied_at)}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2">
+                          
+                          {/* Status and Category Badges */}
+                          <div className="flex flex-wrap items-center gap-2">
                             <Badge className={cn("flex items-center gap-1", statusConfig.bgColor)}>
                               {React.createElement(statusConfig.icon, { className: "w-3 h-3" })}
                               {statusConfig.label}
@@ -277,7 +280,12 @@ const MyApplications = () => {
                             <DollarSign className="h-4 w-4 text-green-500 flex-shrink-0" />
                                                          <div className="min-w-0">
                                <p className="text-xs text-muted-foreground">Budget</p>
-                               <p className="font-medium text-sm">{formatCurrency(application.grit.budget, settings?.default_currency)}</p>
+                               <p className="font-medium text-sm">
+                                 {application.grit.owner_currency ? 
+                                   `${application.grit.owner_currency} ${application.grit.budget?.toLocaleString()}` :
+                                   formatCurrency(application.grit.budget, settings?.default_currency)
+                                 }
+                               </p>
                              </div>
                           </div>
                           <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-3 sm:col-span-1 col-span-2">

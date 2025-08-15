@@ -256,8 +256,12 @@ class GritApplicationController extends Controller
                     'grit' => [
                         'id' => $application->grit->id,
                         'title' => $application->grit->title,
-                        'category' => $application->grit->category->name,
+                        'category' => [
+                            'id' => $application->grit->category->id,
+                            'name' => $application->grit->category->name
+                        ],
                         'budget' => $application->grit->owner_budget ?? $application->grit->budget,
+                        'owner_currency' => $application->grit->owner_currency,
                         'deadline' => $application->grit->deadline->format('Y-m-d'),
                         'status' => $application->grit->status
                     ],
