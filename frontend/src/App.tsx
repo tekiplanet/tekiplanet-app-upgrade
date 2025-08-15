@@ -148,6 +148,11 @@ const RequireAccountType = ({ type, children }: { type: 'professional' | 'busine
   const user = useAuthStore((s) => s.user);
   const location = useLocation();
   if (!user || user.account_type !== type) {
+    // Show a toast prompting to switch profile when blocked
+    import('sonner').then(({ toast }) => {
+      const target = type.charAt(0).toUpperCase() + type.slice(1);
+      toast.info(`Switch to ${target} profile to access this feature`);
+    });
     return <Navigate to="/dashboard" state={{ from: location }} />;
   }
   return <>{children}</>;
@@ -325,7 +330,13 @@ const AppContent = () => {
             <Route path="grits/:id/edit" element={<EditGrit />} />
             <Route path="grits/:id/chat" element={<ChatPage />} />
             <Route path="grits/applications" element={<MyGritApplications />} />
-            <Route path="grits/create" element={<CreateGrit />} />
+            <Route path="grits/create" element={
+              <ProtectedRoute>
+                <RequireAccountType type="business">
+                  <CreateGrit />
+                </RequireAccountType>
+              </ProtectedRoute>
+            } />
             <Route path="messages" element={<ChatListPage />} />
             <Route path="business/profile/create" element={<CreateBusinessProfile />} />
             <Route 
