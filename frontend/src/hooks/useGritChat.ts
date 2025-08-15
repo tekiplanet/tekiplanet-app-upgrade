@@ -3,16 +3,32 @@ import { useQueryClient } from '@tanstack/react-query';
 import { pusher } from '@/lib/pusher';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/useAuthStore';
+import { presenceService, type UserPresence } from '@/services/presenceService';
 
 export const useGritChat = (gritId: string) => {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const [typingUsers, setTypingUsers] = useState<{[key: string]: any}>({});
+  const [usersPresence, setUsersPresence] = useState<{ [userId: string]: UserPresence }>({});
 
   // Helper function to truncate long messages for toast notifications
   const truncateMessage = (message: string, maxLength: number = 100) => {
     if (message.length <= maxLength) return message;
     return message.substring(0, maxLength) + '...';
+  };
+
+  // Get presence for users in the chat
+  const getUsersPresence = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    try {
+      const response = await presenceService.getMultipleUsersPresence(userIds);
+      if (response.success) {
+        setUsersPresence(prev => ({ ...prev, ...response.presence }));
+      }
+    } catch (error) {
+      console.error('Failed to get users presence:', error);
+    }
   };
 
   useEffect(() => {
@@ -111,6 +127,16 @@ export const useGritChat = (gritId: string) => {
       }
     });
 
+    // Listen for presence updates
+    channel.bind('user-presence-updated', (data: any) => {
+      if (data.user_id && data.presence) {
+        setUsersPresence(prev => ({
+          ...prev,
+          [data.user_id]: data.presence
+        }));
+      }
+    });
+
     return () => {
       channel.unbind_all();
       channel.unsubscribe();
@@ -135,5 +161,5 @@ export const useGritChat = (gritId: string) => {
     return () => clearInterval(interval);
   }, []);
 
-  return { typingUsers };
+  return { typingUsers, usersPresence, getUsersPresence };
 }; 

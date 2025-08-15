@@ -238,6 +238,36 @@ This checklist tracks the implementation of the GRIT system, including the integ
             - [x] Smooth, non-flickering typing indicators with proper debouncing
             - [x] Automatic scrolling to typing indicators for better visibility
             - [x] Optimized cleanup intervals for consistent user experience
+- [x] **Real-time Online Status & Last Seen**: Complete backend and frontend implementation for user presence tracking
+    - [x] **Database Migration**: Added presence tracking columns to users table (`online_status`, `last_seen_at`, `last_activity_at`)
+    - [x] **UserPresenceService**: Comprehensive service for managing user presence with caching and Pusher broadcasting
+    - [x] **UserPresenceController**: Full API endpoints for presence management (update, get, heartbeat, multiple users)
+    - [x] **Form Request Validation**: Proper validation for presence status updates
+    - [x] **API Routes**: Complete presence API endpoints under `/api/presence/*`
+    - [x] **User Model Updates**: Added presence fields to fillable array with proper casts and defaults
+    - [x] **Activity Tracking Middleware**: Automatic user activity tracking on API requests
+    - [x] **Real-time Broadcasting**: Pusher integration for live presence updates
+    - [x] **Performance Optimization**: Caching system with 10-minute TTL for presence data
+    - [x] **Smart Status Logic**: Automatic offline detection after 10 minutes of inactivity
+    - [x] **Human-readable Timestamps**: Last seen displayed as "X minutes ago", "X hours ago", etc.
+    - [x] **Presence Cleanup System**: Automated cleanup of inactive users with scheduled tasks
+        - [x] **Console Command**: Created `CleanupPresence` command for manual presence cleanup
+        - [x] **Scheduled Tasks**: Automated cleanup every 5 minutes via Laravel scheduler
+        - [x] **Logout Integration**: Users marked offline immediately upon logout via LoginController
+        - [x] **Page Leave Detection**: Frontend detects when users close browser or navigate away
+            - [x] **Event Listeners**: Multiple detection methods (pagehide, beforeunload, visibilitychange)
+            - [x] **Synchronous Requests**: Uses synchronous XMLHttpRequest for beforeunload to ensure completion
+            - [x] **Smart Tab Handling**: Doesn't mark users offline when switching tabs, only when leaving page
+- [x] **Frontend Integration**: Complete presence display implementation in chat interfaces
+    - [x] **PresenceService**: Frontend service for presence API calls
+    - [x] **usePresence Hook**: React hook for managing presence state and heartbeat
+    - [x] **PresenceIndicator Component**: Reusable UI component for displaying online status
+    - [x] **Chat Integration**: Presence indicators added to chat headers, message avatars, and typing indicators
+    - [x] **Real-time Updates**: Live presence updates via Pusher integration
+    - [x] **Mobile Responsive**: Presence indicators work seamlessly on all screen sizes
+    - [x] **Theme Support**: Full light/dark theme compatibility for presence indicators
+    - [x] **Fallback System**: Periodic presence refresh (30 seconds) if Pusher connection fails
+    - [x] **Heartbeat System**: Automatic heartbeat every 2 minutes to maintain online status
 - [ ] **WebSocket Enhancements**: Create new channels and events for GRITs.
 - [ ] **Additional System Messages**: Integrate system messages for other key actions (payment releases, budget changes, etc.).
 - [ ] **Real-time Notifications**: Trigger notifications for owners, professionals, and admins for relevant events.
@@ -251,3 +281,14 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [ ] Dispute resolution flow.
     - [ ] Budget increase flow.
     - [ ] Currency display and conversion accuracy.
+- [ ] **Presence Tracking Testing Scenarios**:
+    - [ ] **Real-time Presence Updates**: Test presence status changes in real-time via Pusher
+    - [ ] **Logout Presence**: Verify users are marked offline immediately upon logout
+    - [ ] **Page Leave Detection**: Test presence updates when users close browser or navigate away
+    - [ ] **Tab Switching**: Verify users remain online when switching between tabs
+    - [ ] **Inactivity Cleanup**: Test automatic offline marking after 10 minutes of inactivity
+    - [ ] **Heartbeat System**: Verify heartbeat maintains online status during active use
+    - [ ] **Fallback System**: Test periodic presence refresh when Pusher connection fails
+    - [ ] **Cross-browser Presence**: Test presence updates between different browsers/devices
+    - [ ] **Presence API Endpoints**: Test all presence API endpoints (update, get, heartbeat, multiple users)
+    - [ ] **Scheduled Cleanup**: Test automated presence cleanup command and scheduler

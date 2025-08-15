@@ -13,6 +13,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+        
+        // Clean up old presence data every 5 minutes
+        $schedule->call(function () {
+            $presenceService = app(\App\Services\UserPresenceService::class);
+            $presenceService->cleanupOldPresence();
+        })->everyFiveMinutes();
     }
 
     /**

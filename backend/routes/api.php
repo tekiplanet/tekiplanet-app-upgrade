@@ -59,6 +59,7 @@ use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Api\CurrencyController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\UserPresenceController;
 use App\Notifications\TestPushNotification;
 
 /*
@@ -93,6 +94,16 @@ Route::post('/country-currency', [OnboardingController::class, 'updateCountryCur
     Route::middleware('verified.email')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
         Route::get('/user/wallet-balance', [UserController::class, 'getWalletBalance']);
+        
+        // User Presence Routes
+        Route::prefix('presence')->group(function () {
+            Route::get('/my-presence', [UserPresenceController::class, 'getMyPresence']);
+            Route::post('/update', [UserPresenceController::class, 'updatePresence']);
+            Route::post('/heartbeat', [UserPresenceController::class, 'heartbeat']);
+            Route::get('/user/{userId}', [UserPresenceController::class, 'getUserPresence']);
+            Route::post('/multiple-users', [UserPresenceController::class, 'getMultipleUsersPresence']);
+        });
+        
         Route::post('/logout', [LoginController::class, 'logout']);
         Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/transactions', [TransactionController::class, 'index']);

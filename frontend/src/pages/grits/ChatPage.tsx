@@ -28,6 +28,8 @@ import { gritService, type Grit } from '@/services/gritService';
 import { format } from 'date-fns';
 import { useGritChat } from '@/hooks/useGritChat';
 import { useAuthStore } from '@/store/useAuthStore';
+import { usePresence } from '@/hooks/usePresence';
+import { PresenceIndicator } from '@/components/ui/PresenceIndicator';
 import { cn } from '@/lib/utils';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -75,6 +77,57 @@ const ChatPage = () => {
 
   // Use real-time chat hook
   const { typingUsers } = useGritChat(id!);
+
+  // Use presence hook
+  const { usersPresence, getUsersPresence } = usePresence();
+  
+  // Helper function to get the correct other user ID
+  const getOtherUserId = useCallback(() => {
+    if (!grit || !currentUser) return undefined;
+    
+    let otherUserId: string | undefined;
+    
+    if (grit.assigned_professional_id === currentUser.id) {
+      // Current user is the assigned professional, so get the business owner's user ID
+      otherUserId = grit.user?.id;
+    } else if (grit.assigned_professional_id && grit.assigned_professional?.user_id) {
+      // Current user is the business owner, so get the professional's user ID
+      otherUserId = grit.assigned_professional.user_id;
+    }
+    
+    // Validate that we're not accidentally using a professional ID
+    if (otherUserId && otherUserId === grit.assigned_professional_id) {
+      // Try to get the user ID from the assigned_professional relationship
+      if (grit.assigned_professional?.user_id) {
+        otherUserId = grit.assigned_professional.user_id;
+      } else {
+        otherUserId = undefined;
+      }
+    }
+    
+    // Final validation - ensure we have a valid user ID
+    if (otherUserId && otherUserId === grit.assigned_professional_id) {
+      otherUserId = undefined;
+    }
+    
+    return otherUserId;
+  }, [grit, currentUser]);
+  
+  // Get the other user's presence (not current user)
+  const otherUserId = getOtherUserId();
+  
+  const otherUserPresence = otherUserId ? usersPresence[otherUserId] : null;
+  
+  // Fetch presence for the other user when component mounts
+  useEffect(() => {
+    if (otherUserId) {
+      // Additional validation before making the API call
+      if (otherUserId === grit?.assigned_professional_id) {
+        return;
+      }
+      getUsersPresence([otherUserId]);
+    }
+  }, [otherUserId, getUsersPresence, grit?.assigned_professional_id]);
 
   // Mark messages as read when chat is opened
   useEffect(() => {
@@ -260,6 +313,14 @@ const ChatPage = () => {
                 <Badge variant="secondary" className={cn("text-[10px]", getStatusColor(grit.status))}>
                   {grit.status.replace('_', ' ')}
                 </Badge>
+                {otherUserPresence && (
+                  <PresenceIndicator 
+                    presence={otherUserPresence} 
+                    size="sm" 
+                    showStatus={true}
+                    showLastSeen={true}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -357,12 +418,24 @@ const ChatPage = () => {
                       isCurrentUser ? 'flex-row-reverse' : ''
                     )}
                   >
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={msg.user?.avatar} />
-                      <AvatarFallback>
-                        {msg.user ? (msg.user.first_name?.[0] || msg.user.last_name?.[0] || msg.user.username?.[0] || '?') : 'S'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={msg.user?.avatar} />
+                        <AvatarFallback>
+                          {msg.user ? (msg.user.first_name?.[0] || msg.user.last_name?.[0] || msg.user.username?.[0] || '?') : 'S'}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Presence indicator for other users */}
+                      {!isCurrentUser && msg.user?.id && usersPresence[msg.user.id] && (
+                        <div className="absolute -bottom-1 -right-1">
+                          <PresenceIndicator 
+                            presence={usersPresence[msg.user.id]} 
+                            size="sm" 
+                            showStatus={false}
+                          />
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="flex flex-col gap-1 max-w-[70%]">
                       
@@ -402,12 +475,24 @@ const ChatPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3"
               >
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarImage src={typingUser.user.avatar} />
-                  <AvatarFallback>
-                    {typingUser.user ? (typingUser.user.first_name?.[0] || typingUser.user.last_name?.[0] || typingUser.user.username?.[0] || '?') : '?'}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarImage src={typingUser.user.avatar} />
+                    <AvatarFallback>
+                      {typingUser.user ? (typingUser.user.first_name?.[0] || typingUser.user.last_name?.[0] || typingUser.user.username?.[0] || '?') : '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Presence indicator for typing users */}
+                  {typingUser.user?.id && usersPresence[typingUser.user.id] && (
+                    <div className="absolute -bottom-1 -right-1">
+                      <PresenceIndicator 
+                        presence={usersPresence[typingUser.user.id]} 
+                        size="sm" 
+                        showStatus={false}
+                      />
+                    </div>
+                  )}
+                </div>
                 <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3">
                   <div className="flex items-center gap-1">
                     <div className="flex gap-1">

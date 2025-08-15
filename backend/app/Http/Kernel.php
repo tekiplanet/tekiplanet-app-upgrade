@@ -42,6 +42,7 @@ class Kernel extends HttpKernel
         'api' => [
             // Removed EnsureFrontendRequestsAreStateful for separate domain setup
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\TrackUserActivity::class,
         ],
     ];
 

@@ -42,6 +42,9 @@ class User extends Authenticatable
         'push_notifications',
         'marketing_notifications',
         'profile_visibility',
+        'online_status',
+        'last_seen_at',
+        'last_activity_at',
         'timezone',
         'language',
         'country_code',
@@ -79,6 +82,8 @@ class User extends Authenticatable
         'two_factor_recovery_codes' => 'array',
         'wallet_balance' => 'decimal:2',
         'frozen_balance' => 'decimal:2',
+        'last_seen_at' => 'datetime',
+        'last_activity_at' => 'datetime',
     ];
 
     /**
@@ -94,6 +99,7 @@ class User extends Authenticatable
         'marketing_notifications' => true,
         'profile_visibility' => 'public',
         'status' => 'active',
+        'online_status' => 'offline',
         'wallet_balance' => 0.00,
         'frozen_balance' => 0.00,
     ];

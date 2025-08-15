@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FA\Google2FA;
 use App\Services\EmailVerificationService;
+use App\Services\UserPresenceService;
 
 class LoginController extends Controller
 {
+    protected $presenceService;
+
+    public function __construct(UserPresenceService $presenceService)
+    {
+        $this->presenceService = $presenceService;
+    }
+
     public function login(Request $request)
     {
         // Validate credentials
@@ -100,6 +108,15 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // Mark user as offline before logging out
+        if (Auth::check()) {
+            try {
+                $this->presenceService->markUserOffline(Auth::user());
+            } catch (\Exception $e) {
+                Log::error('Failed to mark user as offline during logout: ' . $e->getMessage());
+            }
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();
