@@ -53,7 +53,6 @@ const ChatPage = () => {
   const { data: messages, isLoading: messagesLoading } = useQuery({
     queryKey: ['grit-messages', id],
     queryFn: () => gritService.getGritMessages(id!),
-    refetchInterval: 3000, // Poll every 3 seconds
     enabled: !!id
   });
 
@@ -253,8 +252,8 @@ const ChatPage = () => {
                 );
               }
 
-              // Determine if message is from current user
-              const isCurrentUser = msg.user?.id === currentUser?.id;
+              // Determine if message is from current user (ensure string comparison for UUIDs)
+              const isCurrentUser = String(msg.user?.id) === String(currentUser?.id);
 
               return (
                 <React.Fragment key={msg.id}>
@@ -283,18 +282,11 @@ const ChatPage = () => {
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={msg.user?.avatar} />
                       <AvatarFallback>
-                        {msg.user?.name?.charAt(0).toUpperCase()}
+                        {msg.user ? (msg.user.first_name?.[0] || msg.user.last_name?.[0] || msg.user.username?.[0] || '?') : 'S'}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex flex-col gap-1 max-w-[70%]">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {msg.sender_type === 'owner' ? 'Business Owner' : 
-                           msg.sender_type === 'professional' ? 'Professional' : 
-                           msg.sender_type === 'admin' ? 'Admin' : 'Unknown'}
-                        </span>
-                      </div>
                       
                       <div
                         className={cn(

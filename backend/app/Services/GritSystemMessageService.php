@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Grit;
 use App\Models\GritMessage;
 use App\Models\User;
+use App\Events\GritSystemEvent;
 use Illuminate\Support\Facades\Log;
 
 class GritSystemMessageService
@@ -20,13 +21,18 @@ class GritSystemMessageService
     ): GritMessage {
         $message = self::generateSystemMessage($action, $metadata);
         
-        return GritMessage::create([
+        $systemMessage = GritMessage::create([
             'grit_id' => $grit->id,
             'user_id' => $triggeredBy ? $triggeredBy->id : null,
             'message' => $message,
             'sender_type' => 'system',
             'is_read' => false
         ]);
+        
+        // Broadcast the system event
+        broadcast(new GritSystemEvent($action, $message, array_merge($metadata, ['grit_id' => $grit->id])));
+        
+        return $systemMessage;
     }
 
     /**

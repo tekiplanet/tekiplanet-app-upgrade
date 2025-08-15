@@ -10,6 +10,8 @@ export const useGritChat = (gritId: string) => {
     const channel = pusher.subscribe(`grit.${gritId}`);
 
     channel.bind('new-message', (data: any) => {
+      console.log('Received new message:', data);
+      
       // Update messages in cache
       queryClient.invalidateQueries({ queryKey: ['grit-messages', gritId] });
 

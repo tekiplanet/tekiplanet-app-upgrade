@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Grit;
 use App\Models\GritMessage;
+use App\Events\NewGritMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -102,6 +103,9 @@ class GritMessageController extends Controller
             ]);
             
             $message->load('user');
+            
+            // Broadcast the new message to all users in the GRIT chat
+            broadcast(new NewGritMessage($message))->toOthers();
             
             return response()->json(['message' => $message], 201);
             

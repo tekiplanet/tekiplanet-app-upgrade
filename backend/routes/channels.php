@@ -57,3 +57,42 @@ Broadcast::channel('quote.{quoteId}', function ($user, $quoteId) {
     ]);
     return true; // For testing, allow all
 });
+
+Broadcast::channel('grit.{gritId}', function ($user, $gritId) {
+    if (!$user) {
+        return false;
+    }
+    
+    // Get the GRIT
+    $grit = \App\Models\Grit::find($gritId);
+    if (!$grit) {
+        return false;
+    }
+    
+    // Check if user has access to this GRIT
+    $hasAccess = false;
+    
+    // Business owner can access their own GRITs
+    if ($grit->created_by_user_id === $user->id) {
+        $hasAccess = true;
+    }
+    
+    // Assigned professional can access the GRIT
+    if ($grit->assigned_professional_id && $grit->assignedProfessional->user_id === $user->id) {
+        $hasAccess = true;
+    }
+    
+    // Admin can access all GRITs
+    if ($user->is_admin) {
+        $hasAccess = true;
+    }
+    
+    \Log::info('GRIT channel authorization', [
+        'user_id' => $user->id,
+        'grit_id' => $gritId,
+        'has_access' => $hasAccess,
+        'time' => now()
+    ]);
+    
+    return $hasAccess;
+});
