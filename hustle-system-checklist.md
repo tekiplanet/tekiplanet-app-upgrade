@@ -94,6 +94,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **Business vs Professional Views**: Different views based on user account type.
 - [x] **Edit Restrictions**: GRITs can only be edited when no professional is assigned and status is 'open'.
 - [x] **Admin Approval Reset**: When business edits GRIT, admin_approval_status resets to 'pending'.
+- [x] **Chat Integration**: Removed chat tabs from GRIT details pages, kept chat access via dropdown/sidebar buttons that navigate to dedicated chat page.
+- [x] **Dashboard Import Fix**: Fixed MessageSquare import error in Dashboard.tsx.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
@@ -101,6 +103,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
 
 ### Service Layer (`gritService.ts`)
 - [x] Implement and wire up GRIT API endpoints (GritController, routes, etc.).
+- [x] **GRIT Messaging System**: Created GritMessageController and added message routes to handle chat functionality.
+- [x] **Database Fix**: Created migration to fix grit_messages table column structure (rename hustle_id to grit_id) - ✅ COMPLETED.
 - [ ] Ensure multicurrency amounts are handled correctly for display.
 
 ### Role-based navigation & access
@@ -110,6 +114,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
 ### Form and listing fixes
 - [x] `CreateGrit.tsx`: Use UUID string for `category_id`, prevent premature form submit on Enter, and register/validate `deadline`.
 - [x] `Grits.tsx`: Safely handle `categories` and `grits.data` mapping to avoid runtime errors when undefined.
+- [x] `BusinessGritDetails.tsx`: Removed chat tab, kept chat access via navigation buttons.
+- [x] `GritDetails.tsx`: Removed chat tab, simplified tab structure for professional view.
 
 ## Phase 5: Real-time Features
 

@@ -20,7 +20,8 @@ import {
   Clock,
   UserCheck,
   FileText,
-  Settings
+  Settings,
+  Send
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,8 +32,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { gritService, type Grit } from '@/services/gritService';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
-import { ChatNotificationBadge } from '@/components/grits/ChatNotificationBadge';
-import GritChat from '@/components/grits/GritChat';
+
 import PaymentTab from '@/components/grits/PaymentTab';
 import { settingsService } from '@/services/settingsService';
 import {
@@ -226,7 +226,7 @@ const BusinessGritDetails = () => {
                     <Users className="h-4 w-4 mr-2" />
                     View Applications
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('chat')}>
+                  <DropdownMenuItem onClick={() => navigate(`/dashboard/grits/${id}/chat`)}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Open Chat
                   </DropdownMenuItem>
@@ -241,7 +241,7 @@ const BusinessGritDetails = () => {
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="applications">
                   Applications
@@ -249,12 +249,6 @@ const BusinessGritDetails = () => {
                     <Badge variant="secondary" className="ml-2">
                       {grit.applications_count}
                     </Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="chat">
-                  Chat
-                  {grit.unread_messages_count > 0 && (
-                    <ChatNotificationBadge count={grit.unread_messages_count} />
                   )}
                 </TabsTrigger>
                 <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -383,13 +377,7 @@ const BusinessGritDetails = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="chat" className="mt-6">
-                <Card>
-                  <CardContent className="p-0">
-                    <GritChat gritId={id!} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
+
 
               <TabsContent value="payments" className="mt-6">
                 <Card>
@@ -484,7 +472,7 @@ const BusinessGritDetails = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => setActiveTab('chat')}
+                  onClick={() => navigate(`/dashboard/grits/${id}/chat`)}
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Open Chat

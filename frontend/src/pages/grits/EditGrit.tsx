@@ -200,42 +200,29 @@ const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit,
   const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
   // Parse skills_required - it might be stored as JSON string or comma-separated string
   const parseSkills = (skills: any) => {
-    console.log('🔍 parseSkills input:', skills);
-    console.log('🔍 parseSkills type:', typeof skills);
-    
     if (Array.isArray(skills)) {
-      console.log('✅ Skills is already an array:', skills);
       return skills;
     }
     
     if (typeof skills === 'string') {
-      console.log('📝 Skills is a string:', skills);
       // Try to parse as JSON first
       try {
         const parsed = JSON.parse(skills);
         if (Array.isArray(parsed)) {
-          console.log('✅ Parsed JSON array:', parsed);
           return parsed;
         }
       } catch (error) {
-        console.log('❌ JSON parsing failed, trying comma-separated');
         // If JSON parsing fails, try comma-separated string
         if (skills.trim()) {
-          const splitSkills = skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
-          console.log('✅ Parsed comma-separated skills:', splitSkills);
-          return splitSkills;
+          return skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
         }
       }
     }
     
-    console.log('❌ No skills found, returning empty array');
     return [];
   };
 
-  console.log('🔍 Grit object:', grit);
-  console.log('🔍 Grit skills_required:', grit.skills_required);
-  console.log('🔍 All grit keys:', Object.keys(grit));
-  console.log('🔍 Grit requirements:', grit.requirements);
+
   
   const [formData, setFormData] = useState({
     title: grit.title || '',
@@ -247,7 +234,7 @@ const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit,
     skills_required: parseSkills(grit.requirements) // Use requirements field instead of skills_required
   });
   
-  console.log('🔍 FormData skills_required:', formData.skills_required);
+
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({

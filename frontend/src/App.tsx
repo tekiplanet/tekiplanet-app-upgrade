@@ -85,6 +85,8 @@ const BusinessGritDetails = React.lazy(() => import('@/pages/grits/BusinessGritD
 const EditGrit = React.lazy(() => import('@/pages/grits/EditGrit'));
 const MyGritApplications = React.lazy(() => import('@/pages/grits/MyApplications'));
 const CreateGrit = React.lazy(() => import('@/pages/grits/CreateGrit'));
+const ChatListPage = React.lazy(() => import('@/pages/grits/ChatListPage'));
+const ChatPage = React.lazy(() => import('@/pages/grits/ChatPage'));
 const CourseManagement = React.lazy(() => import('@/pages/CourseManagement'));
 const LessonPlayer = React.lazy(() => import('@/components/lesson/LessonPlayer'));
 const Services = React.lazy(() => import('@/pages/Services'));
@@ -321,8 +323,10 @@ const AppContent = () => {
               </ProtectedRoute>
             } />
             <Route path="grits/:id/edit" element={<EditGrit />} />
-                        <Route path="grits/applications" element={<MyGritApplications />} />
+            <Route path="grits/:id/chat" element={<ChatPage />} />
+            <Route path="grits/applications" element={<MyGritApplications />} />
             <Route path="grits/create" element={<CreateGrit />} />
+            <Route path="messages" element={<ChatListPage />} />
             <Route path="business/profile/create" element={<CreateBusinessProfile />} />
             <Route 
               path="business/customers" 

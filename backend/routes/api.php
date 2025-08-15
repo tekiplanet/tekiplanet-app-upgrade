@@ -32,6 +32,7 @@ use App\Http\Controllers\HustleController;
 use App\Http\Controllers\HustleApplicationController;
 use App\Http\Controllers\HustleMessageController;
 use App\Http\Controllers\GritController;
+use App\Http\Controllers\GritMessageController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessCustomerController;
 use App\Http\Controllers\BusinessInvoiceController;
@@ -364,10 +365,15 @@ Route::middleware('auth:sanctum')->group(function () {
 // Grit Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/grits', [GritController::class, 'index']);
-Route::get('/grits/{id}', [GritController::class, 'show']);
-Route::post('/grits', [GritController::class, 'store']);
-Route::put('/grits/{id}', [GritController::class, 'update']);
-Route::get('/my-grits', [GritController::class, 'myGrits']);
+    Route::get('/grits/{id}', [GritController::class, 'show']);
+    Route::post('/grits', [GritController::class, 'store']);
+    Route::put('/grits/{id}', [GritController::class, 'update']);
+    Route::get('/my-grits', [GritController::class, 'myGrits']);
+    
+    // Grit messages
+    Route::get('/grits/{gritId}/messages', [GritMessageController::class, 'getMessages']);
+    Route::post('/grits/{gritId}/messages', [GritMessageController::class, 'store']);
+    Route::post('/grits/{gritId}/messages/mark-read', [GritMessageController::class, 'markAsRead']);
 });
 
 // Business Routes

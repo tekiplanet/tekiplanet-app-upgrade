@@ -23,8 +23,7 @@ import { toast } from 'sonner';
 import { gritService, type Grit } from '@/services/gritService';
 import { cn, formatCurrency } from '@/lib/utils';
 import ApplyGritDialog from '@/components/grits/ApplyGritDialog';
-import { ChatNotificationBadge } from '@/components/grits/ChatNotificationBadge';
-import GritChat from '@/components/grits/GritChat';
+
 import PaymentTab from '@/components/grits/PaymentTab';
 import { settingsService } from '@/services/settingsService';
 
@@ -344,19 +343,10 @@ const GritDetails = () => {
                 Details
               </TabsTrigger>
               {grit.application_status === 'approved' && (
-                <>
-                  <TabsTrigger value="chat" className="flex items-center gap-2 relative rounded-lg">
-                    <Send className="h-4 w-4" />
-                    Chat
-                    <ChatNotificationBadge 
-                      count={grit.unread_messages_count || 0}
-                    />
-                  </TabsTrigger>
-                  <TabsTrigger value="payments" className="flex items-center gap-2 rounded-lg">
-                    <DollarSign className="h-4 w-4" />
-                    Payments
-                  </TabsTrigger>
-                </>
+                <TabsTrigger value="payments" className="flex items-center gap-2 rounded-lg">
+                  <DollarSign className="h-4 w-4" />
+                  Payments
+                </TabsTrigger>
               )}
             </TabsList>
 
@@ -369,17 +359,12 @@ const GritDetails = () => {
             </TabsContent>
 
             {grit.application_status === 'approved' && (
-              <>
-                <TabsContent value="chat">
-                  <GritChat gritId={grit.id} />
-                </TabsContent>
-                <TabsContent value="payments">
-                  <PaymentTab 
-                    payments={grit.payments || []} 
-                    currency={grit.currency || 'USD'} 
-                  />
-                </TabsContent>
-              </>
+              <TabsContent value="payments">
+                <PaymentTab 
+                  payments={grit.payments || []} 
+                  currency={grit.currency || 'USD'} 
+                />
+              </TabsContent>
             )}
           </Tabs>
         </motion.div>
