@@ -9,6 +9,12 @@ export const useGritChat = (gritId: string) => {
   const { user: currentUser } = useAuthStore();
   const [typingUsers, setTypingUsers] = useState<{[key: string]: any}>({});
 
+  // Helper function to truncate long messages for toast notifications
+  const truncateMessage = (message: string, maxLength: number = 100) => {
+    if (message.length <= maxLength) return message;
+    return message.substring(0, maxLength) + '...';
+  };
+
   useEffect(() => {
     const channel = pusher.subscribe(`grit.${gritId}`);
 
@@ -32,7 +38,7 @@ export const useGritChat = (gritId: string) => {
           toast(
             `New message from ${senderLabel}`,
             {
-              description: data.message.message,
+              description: truncateMessage(data.message.message),
               action: {
                 label: 'View',
                 onClick: () => {
@@ -93,7 +99,7 @@ export const useGritChat = (gritId: string) => {
         toast(
           'System Update',
           {
-            description: data.message,
+            description: truncateMessage(data.message),
             action: {
               label: 'View',
               onClick: () => {

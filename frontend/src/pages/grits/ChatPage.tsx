@@ -220,8 +220,8 @@ const ChatPage = () => {
       style={{ height: '100dvh' }}
     >
       {/* Fixed Header */}
-      <div className="sticky top-4 flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-20">
-        <div className="flex items-start justify-between px-3 py-2">
+      <div className="sticky top-0 flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-20">
+        <div className="flex items-start justify-between px-3 py-2 pt-6">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <Button
               variant="ghost"
@@ -231,21 +231,13 @@ const ChatPage = () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={grit.user?.avatar} />
-                <AvatarFallback>
-                  {grit.user?.name?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <h1 className="font-semibold text-sm sm:text-base leading-snug break-words whitespace-normal">{grit.title}</h1>
-                <div className="mt-0.5 flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground">
-                  <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
-                  <Badge variant="secondary" className={cn("text-[10px]", getStatusColor(grit.status))}>
-                    {grit.status.replace('_', ' ')}
-                  </Badge>
-                </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-semibold text-sm sm:text-base leading-snug break-words whitespace-normal">{grit.title}</h1>
+              <div className="mt-0.5 flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground">
+                <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
+                <Badge variant="secondary" className={cn("text-[10px]", getStatusColor(grit.status))}>
+                  {grit.status.replace('_', ' ')}
+                </Badge>
               </div>
             </div>
           </div>
@@ -254,7 +246,7 @@ const ChatPage = () => {
       </div>
 
       {/* Scrollable Messages Area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full p-4">
           <div className="space-y-4 max-w-4xl mx-auto">
             {(!messages || messages.length === 0) && (

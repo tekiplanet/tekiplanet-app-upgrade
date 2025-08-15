@@ -211,6 +211,16 @@ This checklist tracks the implementation of the GRIT system, including the integ
         - [x] GritSystemMessageService created for comprehensive system message handling
         - [x] Application system messages integrated (application approval creates system message)
         - [x] **Real-time Typing Indicators**: Added typing start/stop endpoints and GritTypingEvent for broadcasting typing status
+            - [x] **Typing Indicator UX Fixes**: Fixed flickering typing indicators by implementing proper debouncing logic
+                - [x] Start typing indicator after 300ms delay (prevents false starts)
+                - [x] Stop typing indicator after 2 seconds of no input (more natural feel)
+                - [x] Separate timeout references for start/stop to prevent conflicts
+                - [x] Auto-scroll to typing indicator when it appears (no manual scrolling required)
+                - [x] Reduced cleanup interval frequency and increased timeout for smoother experience
+            - [x] **Message Toast Improvements**: Added message truncation for better UX
+                - [x] Helper function to truncate long messages to 100 characters
+                - [x] Applied truncation to new message notifications and system event notifications
+                - [x] Prevents toast layout breaking from very long messages
     - [x] **Frontend Updates**:
         - [x] ChatPage.tsx: Fixed current user detection using `useAuthStore`, proper message positioning, system message display, clean interface without redundant labels, integrated real-time typing indicators
         - [x] GritChat.tsx: Same improvements as ChatPage for consistent experience, integrated real-time typing indicators
@@ -225,6 +235,9 @@ This checklist tracks the implementation of the GRIT system, including the integ
         - [x] Fixed UUID comparison issues for proper user identification
         - [x] Fixed toast notifications to only show for messages from other users (not self)
         - [x] **Real-time Typing Indicators**: Users see when others are typing with debounced events and automatic cleanup
+            - [x] Smooth, non-flickering typing indicators with proper debouncing
+            - [x] Automatic scrolling to typing indicators for better visibility
+            - [x] Optimized cleanup intervals for consistent user experience
 - [ ] **WebSocket Enhancements**: Create new channels and events for GRITs.
 - [ ] **Additional System Messages**: Integrate system messages for other key actions (payment releases, budget changes, etc.).
 - [ ] **Real-time Notifications**: Trigger notifications for owners, professionals, and admins for relevant events.
