@@ -7,6 +7,7 @@ use App\Models\Grit;
 use App\Models\Currency;
 use App\Jobs\SendGritNotification;
 use App\Jobs\NotifyProfessionalsAboutNewGrit;
+use App\Services\GritSystemMessageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -73,6 +74,9 @@ class GritController extends Controller
                     'status' => 'open' // Make it visible to professionals
                 ]);
 
+                // Create system message for GRIT approval
+                GritSystemMessageService::gritApproved($grit, auth()->user());
+
                 // Dispatch approval notification job (email + in-app notification)
                 dispatch(new SendGritNotification($grit, 'approved'));
 
@@ -85,6 +89,9 @@ class GritController extends Controller
                     'admin_approval_status' => 'rejected',
                     'status' => 'cancelled'
                 ]);
+
+                // Create system message for GRIT rejection
+                GritSystemMessageService::gritRejected($grit, auth()->user(), $validated['reason'] ?? 'No reason provided');
 
                 // Dispatch rejection notification job (email + in-app notification)
                 dispatch(new SendGritNotification($grit, 'rejected', $validated['reason']));

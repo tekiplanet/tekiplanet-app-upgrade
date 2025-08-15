@@ -204,8 +204,24 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] **Success Messages Added**: All admin GRIT views now display success/error notifications
     - [x] Success messages shown when creating, updating, approving, rejecting, or deleting GRITs
     - [x] Consistent notification system using `showNotification()` function across all views
+- [x] **Chat System Enhanced for Business Owners**:
+    - [x] **Database Migration**: Updated `grit_messages` table to support new sender types (`admin`, `professional`, `owner`, `system`)
+    - [x] **Backend Updates**: 
+        - [x] GritMessageController properly handles all sender types with correct access control
+        - [x] GritSystemMessageService created for comprehensive system message handling
+        - [x] Application system messages integrated (application approval creates system message)
+    - [x] **Frontend Updates**:
+        - [x] ChatPage.tsx: Fixed current user detection using `useAuthStore`, proper message positioning, system message display, sender type labels
+        - [x] GritChat.tsx: Same improvements as ChatPage for consistent experience
+        - [x] useGritChat.ts: Updated notifications to handle all sender types and system events
+    - [x] **Key Features**:
+        - [x] Business owners can send/receive messages in their GRIT chats
+        - [x] Proper message positioning (right for current user, left for others)
+        - [x] Clear sender type labels (Business Owner, Professional, Admin)
+        - [x] System messages with special styling for important events
+        - [x] Proper access control for all user types
 - [ ] **WebSocket Enhancements**: Create new channels and events for GRITs.
-- [ ] **System Messages**: Integrate system messages into the chat for all key actions (e.g., "Payment of $50 released.").
+- [ ] **Additional System Messages**: Integrate system messages for other key actions (payment releases, budget changes, etc.).
 - [ ] **Real-time Notifications**: Trigger notifications for owners, professionals, and admins for relevant events.
 
 ## Phase 6: Testing

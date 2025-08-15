@@ -12,12 +12,14 @@ import { cn } from '@/lib/utils';
 import { gritService } from '@/services/gritService';
 import { format } from 'date-fns';
 import { useGritChat } from '@/hooks/useGritChat';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface GritChatProps {
   gritId: string;
 }
 
 const GritChat = ({ gritId }: GritChatProps) => {
+  const { user: currentUser } = useAuthStore();
   const [message, setMessage] = React.useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -76,7 +78,40 @@ const GritChat = ({ gritId }: GritChatProps) => {
               const showDate =
                 index === 0 ||
                 new Date(msg.created_at).toDateString() !==
-                  new Date(messages[index - 1].created_at).toDateString();
+                  new Date(messages[index - 1]?.created_at).toDateString();
+
+              // Handle system messages differently
+              if (msg.sender_type === 'system') {
+                return (
+                  <React.Fragment key={msg.id}>
+                    {showDate && (
+                      <div className="flex justify-center my-4">
+                        <div className="px-3 py-1 text-xs text-muted-foreground bg-muted rounded-full">
+                          {format(new Date(msg.created_at), 'MMMM d, yyyy')}
+                        </div>
+                      </div>
+                    )}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="flex justify-center my-3"
+                    >
+                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-full px-3 py-2 max-w-[90%]">
+                        <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
+                          {msg.message}
+                        </p>
+                        <div className="text-[10px] text-blue-500 dark:text-blue-400 text-center mt-1">
+                          {format(new Date(msg.created_at), 'h:mm a')}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </React.Fragment>
+                );
+              }
+
+              // Determine if message is from current user
+              const isCurrentUser = msg.user?.id === currentUser?.id;
 
               return (
                 <React.Fragment key={msg.id}>
@@ -93,43 +128,52 @@ const GritChat = ({ gritId }: GritChatProps) => {
                     exit={{ opacity: 0 }}
                     className={cn(
                       'flex items-start gap-2 group',
-                      msg.sender_type === 'professional' ? 'flex-row-reverse' : ''
+                      isCurrentUser ? 'flex-row-reverse' : ''
                     )}
                   >
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={msg.user.avatar} />
+                      <AvatarImage src={msg.user?.avatar} />
                       <AvatarFallback>
-                        {msg.user.name.charAt(0).toUpperCase()}
+                        {msg.user?.name?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div
-                      className={cn(
-                        'relative max-w-[80%] rounded-2xl px-4 py-2',
-                        msg.sender_type === 'professional'
-                          ? 'bg-primary text-primary-foreground rounded-tr-none'
-                          : 'bg-muted rounded-tl-none'
-                      )}
-                    >
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {msg.message}
-                      </p>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span
-                            className={cn(
-                              'text-[10px] mt-1 opacity-0 group-hover:opacity-70 transition-opacity absolute bottom-1 right-2',
-                              msg.sender_type === 'professional'
-                                ? 'text-primary-foreground'
-                                : 'text-muted-foreground'
-                            )}
-                          >
-                            {format(new Date(msg.created_at), 'h:mm a')}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {format(new Date(msg.created_at), 'MMM d, yyyy h:mm a')}
-                        </TooltipContent>
-                      </Tooltip>
+                    <div className="flex flex-col gap-1 max-w-[80%]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {msg.sender_type === 'owner' ? 'Business Owner' : 
+                           msg.sender_type === 'professional' ? 'Professional' : 
+                           msg.sender_type === 'admin' ? 'Admin' : 'Unknown'}
+                        </span>
+                      </div>
+                      <div
+                        className={cn(
+                          'relative rounded-2xl px-4 py-2',
+                          isCurrentUser
+                            ? 'bg-primary text-primary-foreground rounded-tr-none'
+                            : 'bg-muted rounded-tl-none'
+                        )}
+                      >
+                        <p className="text-sm whitespace-pre-wrap break-words">
+                          {msg.message}
+                        </p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={cn(
+                                'text-[10px] mt-1 opacity-0 group-hover:opacity-70 transition-opacity absolute bottom-1 right-2',
+                                isCurrentUser
+                                  ? 'text-primary-foreground'
+                                  : 'text-muted-foreground'
+                              )}
+                            >
+                              {format(new Date(msg.created_at), 'h:mm a')}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {format(new Date(msg.created_at), 'MMM d, yyyy h:mm a')}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
                   </motion.div>
                 </React.Fragment>

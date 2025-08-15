@@ -7,6 +7,7 @@ use App\Models\GritApplication;
 use App\Models\Professional;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\GritSystemMessageService;
 use App\Jobs\SendGritApplicationNotification;
 use App\Jobs\SendGritApplicationStatusNotification;
 use Illuminate\Http\Request;
@@ -163,6 +164,9 @@ class GritApplicationController extends Controller
                     'assigned_professional_id' => $application->professional_id,
                     'status' => 'in_progress'
                 ]);
+
+                // Create system message for application approval
+                GritSystemMessageService::applicationApproved($application->grit, $application->professional->user->name, Auth::user());
 
                 // Reject all other pending applications for this GRIT
                 $otherApplications = GritApplication::where('grit_id', $application->grit_id)

@@ -27,12 +27,14 @@ import { toast } from 'sonner';
 import { gritService, type Grit } from '@/services/gritService';
 import { format } from 'date-fns';
 import { useGritChat } from '@/hooks/useGritChat';
+import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
 
 const ChatPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -215,6 +217,45 @@ const ChatPage = () => {
                 new Date(msg.created_at).toDateString() !== 
                 new Date(messages[index - 1]?.created_at).toDateString();
 
+              // Handle system messages differently
+              if (msg.sender_type === 'system') {
+                return (
+                  <React.Fragment key={msg.id}>
+                    {showDate && (
+                      <motion.div
+                        key={`date-${msg.id}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex justify-center my-6"
+                      >
+                        <Badge variant="outline" className="text-xs">
+                          {format(new Date(msg.created_at), 'EEEE, MMMM d, yyyy')}
+                        </Badge>
+                      </motion.div>
+                    )}
+                    
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-center my-4"
+                    >
+                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-full px-4 py-2 max-w-[80%]">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                          {msg.message}
+                        </p>
+                        <div className="text-xs text-blue-500 dark:text-blue-400 text-center mt-1">
+                          {format(new Date(msg.created_at), 'HH:mm')}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </React.Fragment>
+                );
+              }
+
+              // Determine if message is from current user
+              const isCurrentUser = msg.user?.id === currentUser?.id;
+
               return (
                 <React.Fragment key={msg.id}>
                   {showDate && (
@@ -236,7 +277,7 @@ const ChatPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className={cn(
                       'flex items-start gap-3 group',
-                      msg.sender_type === 'professional' ? 'flex-row-reverse' : ''
+                      isCurrentUser ? 'flex-row-reverse' : ''
                     )}
                   >
                     <Avatar className="h-8 w-8 shrink-0">
@@ -247,10 +288,18 @@ const ChatPage = () => {
                     </Avatar>
                     
                     <div className="flex flex-col gap-1 max-w-[70%]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {msg.sender_type === 'owner' ? 'Business Owner' : 
+                           msg.sender_type === 'professional' ? 'Professional' : 
+                           msg.sender_type === 'admin' ? 'Admin' : 'Unknown'}
+                        </span>
+                      </div>
+                      
                       <div
                         className={cn(
                           'relative rounded-2xl px-4 py-3 shadow-sm',
-                          msg.sender_type === 'professional'
+                          isCurrentUser
                             ? 'bg-primary text-primary-foreground rounded-tr-none'
                             : 'bg-muted rounded-tl-none'
                         )}
@@ -262,7 +311,7 @@ const ChatPage = () => {
                       
                       <div className={cn(
                         'flex items-center gap-2 text-xs text-muted-foreground',
-                        msg.sender_type === 'professional' ? 'justify-end' : 'justify-start'
+                        isCurrentUser ? 'justify-end' : 'justify-start'
                       )}>
                         <span>{format(new Date(msg.created_at), 'HH:mm')}</span>
                         {msg.is_read && (
@@ -284,7 +333,7 @@ const ChatPage = () => {
               >
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarFallback>
-                    {grit.user?.name?.charAt(0).toUpperCase()}
+                    {currentUser?.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3">
