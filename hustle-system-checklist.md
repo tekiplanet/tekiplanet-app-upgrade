@@ -210,10 +210,12 @@ This checklist tracks the implementation of the GRIT system, including the integ
         - [x] GritMessageController properly handles all sender types with correct access control
         - [x] GritSystemMessageService created for comprehensive system message handling
         - [x] Application system messages integrated (application approval creates system message)
+        - [x] **Real-time Typing Indicators**: Added typing start/stop endpoints and GritTypingEvent for broadcasting typing status
     - [x] **Frontend Updates**:
-        - [x] ChatPage.tsx: Fixed current user detection using `useAuthStore`, proper message positioning, system message display, clean interface without redundant labels
-        - [x] GritChat.tsx: Same improvements as ChatPage for consistent experience
-        - [x] useGritChat.ts: Updated notifications to handle all sender types and system events
+        - [x] ChatPage.tsx: Fixed current user detection using `useAuthStore`, proper message positioning, system message display, clean interface without redundant labels, integrated real-time typing indicators
+        - [x] GritChat.tsx: Same improvements as ChatPage for consistent experience, integrated real-time typing indicators
+        - [x] useGritChat.ts: Updated notifications to handle all sender types and system events, fixed self-notification issue, added typing event handling
+        - [x] gritService.ts: Added startTyping and stopTyping API methods
     - [x] **Key Features**:
         - [x] Business owners can send/receive messages in their GRIT chats
         - [x] Proper message positioning (right for current user, left for others)
@@ -221,6 +223,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
         - [x] System messages with special styling for important events
         - [x] Proper access control for all user types
         - [x] Fixed UUID comparison issues for proper user identification
+        - [x] Fixed toast notifications to only show for messages from other users (not self)
+        - [x] **Real-time Typing Indicators**: Users see when others are typing with debounced events and automatic cleanup
 - [ ] **WebSocket Enhancements**: Create new channels and events for GRITs.
 - [ ] **Additional System Messages**: Integrate system messages for other key actions (payment releases, budget changes, etc.).
 - [ ] **Real-time Notifications**: Trigger notifications for owners, professionals, and admins for relevant events.

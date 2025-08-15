@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Grit;
 use App\Models\GritMessage;
 use App\Events\NewGritMessage;
+use App\Events\GritTypingEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -157,6 +158,98 @@ class GritMessageController extends Controller
         } catch (\Exception $e) {
             Log::error('Error marking GRIT messages as read:', ['grit_id' => $gritId, 'error' => $e->getMessage()]);
             return response()->json(['message' => 'Failed to mark messages as read'], 500);
+        }
+    }
+    
+    /**
+     * Start typing indicator for a specific GRIT
+     */
+    public function startTyping($gritId)
+    {
+        try {
+            $grit = Grit::findOrFail($gritId);
+            $user = Auth::user();
+            
+            // Check if user has access to this GRIT
+            $hasAccess = false;
+            $senderType = null;
+            
+            // Business owner can send typing events to their own GRITs
+            if ($grit->created_by_user_id === $user->id) {
+                $hasAccess = true;
+                $senderType = 'owner';
+            }
+            
+            // Assigned professional can send typing events to the GRIT
+            if ($grit->assigned_professional_id && $grit->assignedProfessional->user_id === $user->id) {
+                $hasAccess = true;
+                $senderType = 'professional';
+            }
+            
+            // Admin can send typing events to all GRITs
+            if ($user->is_admin) {
+                $hasAccess = true;
+                $senderType = 'admin';
+            }
+            
+            if (!$hasAccess) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            
+            // Broadcast typing start event
+            broadcast(new GritTypingEvent($gritId, $user->id, $senderType, true))->toOthers();
+            
+            return response()->json(['message' => 'Typing started']);
+            
+        } catch (\Exception $e) {
+            Log::error('Error starting typing indicator:', ['grit_id' => $gritId, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to start typing indicator'], 500);
+        }
+    }
+    
+    /**
+     * Stop typing indicator for a specific GRIT
+     */
+    public function stopTyping($gritId)
+    {
+        try {
+            $grit = Grit::findOrFail($gritId);
+            $user = Auth::user();
+            
+            // Check if user has access to this GRIT
+            $hasAccess = false;
+            $senderType = null;
+            
+            // Business owner can send typing events to their own GRITs
+            if ($grit->created_by_user_id === $user->id) {
+                $hasAccess = true;
+                $senderType = 'owner';
+            }
+            
+            // Assigned professional can send typing events to the GRIT
+            if ($grit->assigned_professional_id && $grit->assignedProfessional->user_id === $user->id) {
+                $hasAccess = true;
+                $senderType = 'professional';
+            }
+            
+            // Admin can send typing events to all GRITs
+            if ($user->is_admin) {
+                $hasAccess = true;
+                $senderType = 'admin';
+            }
+            
+            if (!$hasAccess) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            
+            // Broadcast typing stop event
+            broadcast(new GritTypingEvent($gritId, $user->id, $senderType, false))->toOthers();
+            
+            return response()->json(['message' => 'Typing stopped']);
+            
+        } catch (\Exception $e) {
+            Log::error('Error stopping typing indicator:', ['grit_id' => $gritId, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to stop typing indicator'], 500);
         }
     }
 }

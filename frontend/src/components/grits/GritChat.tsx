@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -24,8 +24,11 @@ const GritChat = ({ gritId }: GritChatProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
 
-  useGritChat(gritId);
+  const { typingUsers } = useGritChat(gritId);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['grit-messages', gritId],
@@ -37,11 +40,79 @@ const GritChat = ({ gritId }: GritChatProps) => {
     onSuccess: () => {
       setMessage('');
       queryClient.invalidateQueries({ queryKey: ['grit-messages', gritId] });
+      // Stop typing indicator when message is sent
+      handleStopTyping();
     },
     onError: () => {
       toast.error('Failed to send message');
     },
   });
+
+  // Handle typing start with debouncing
+  const handleStartTyping = useCallback(async () => {
+    if (!gritId || isTypingRef.current) return;
+    
+    isTypingRef.current = true;
+    try {
+      await gritService.startTyping(gritId);
+    } catch (error) {
+      console.error('Failed to start typing indicator:', error);
+    }
+  }, [gritId]);
+
+  // Handle typing stop
+  const handleStopTyping = useCallback(async () => {
+    if (!gritId || !isTypingRef.current) return;
+    
+    isTypingRef.current = false;
+    try {
+      await gritService.stopTyping(gritId);
+    } catch (error) {
+      console.error('Failed to stop typing indicator:', error);
+    }
+  }, [gritId]);
+
+  // Debounced typing handler
+  const handleTyping = useCallback((value: string) => {
+    setMessage(value);
+    
+    // Clear existing timeouts
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (startTypingTimeoutRef.current) {
+      clearTimeout(startTypingTimeoutRef.current);
+    }
+    
+    // Start typing indicator after 300ms of no input (debounced start)
+    if (value.trim() && !isTypingRef.current) {
+      startTypingTimeoutRef.current = setTimeout(() => {
+        handleStartTyping();
+      }, 300);
+    }
+    
+    // Set timeout to stop typing indicator after 2 seconds of no input
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTypingRef.current) {
+        handleStopTyping();
+      }
+    }, 2000);
+  }, [handleStartTyping, handleStopTyping]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (startTypingTimeoutRef.current) {
+        clearTimeout(startTypingTimeoutRef.current);
+      }
+      if (isTypingRef.current) {
+        handleStopTyping();
+      }
+    };
+  }, [handleStopTyping]);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -66,6 +137,16 @@ const GritChat = ({ gritId }: GritChatProps) => {
       </div>
     );
   }
+
+  // Get typing users list
+  const typingUsersList = Object.values(typingUsers);
+
+  // Auto-scroll to typing indicator when it appears
+  useEffect(() => {
+    if (typingUsersList.length > 0 && scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [typingUsersList.length]);
 
   return (
     <div className="flex flex-col h-full">
@@ -172,6 +253,35 @@ const GritChat = ({ gritId }: GritChatProps) => {
               );
             })}
           </AnimatePresence>
+          
+          {/* Typing indicators */}
+          {typingUsersList.map((typingUser: any) => (
+            <motion.div
+              key={typingUser.user.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex items-start gap-2"
+            >
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src={typingUser.user.avatar} />
+                <AvatarFallback>
+                  {typingUser.user ? (typingUser.user.first_name?.[0] || typingUser.user.last_name?.[0] || typingUser.user.username?.[0] || '?') : '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-2">
+                <div className="flex items-center gap-1">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  </div>
+                  <span className="text-xs text-muted-foreground ml-2">typing...</span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+          
           <div ref={scrollRef} />
         </div>
       </ScrollArea>
@@ -184,7 +294,7 @@ const GritChat = ({ gritId }: GritChatProps) => {
               ref={inputRef}
               placeholder="Type your message..."
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => handleTyping(e.target.value)}
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();

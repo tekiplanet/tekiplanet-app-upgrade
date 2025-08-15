@@ -391,6 +391,8 @@ Route::patch('/applications/{applicationId}/status/details', [ProfessionalDetail
     Route::get('/grits/{gritId}/messages', [GritMessageController::class, 'getMessages']);
     Route::post('/grits/{gritId}/messages', [GritMessageController::class, 'store']);
     Route::post('/grits/{gritId}/messages/mark-read', [GritMessageController::class, 'markAsRead']);
+    Route::post('/grits/{gritId}/messages/typing/start', [GritMessageController::class, 'startTyping']);
+    Route::post('/grits/{gritId}/messages/typing/stop', [GritMessageController::class, 'stopTyping']);
 });
 
 // Business Routes

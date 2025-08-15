@@ -155,6 +155,16 @@ export const gritService = {
     return data;
   },
 
+  startTyping: async (gritId: string) => {
+    const { data } = await api.post(`/grits/${gritId}/messages/typing/start`);
+    return data;
+  },
+
+  stopTyping: async (gritId: string) => {
+    const { data } = await api.post(`/grits/${gritId}/messages/typing/stop`);
+    return data;
+  },
+
   getMyGrits: async () => {
     const { data } = await api.get('/my-grits');
     // API returns { grits: { data: [...] }}

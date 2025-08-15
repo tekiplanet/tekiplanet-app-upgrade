@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -36,9 +36,10 @@ const ChatPage = () => {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const [message, setMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
 
   // Get GRIT details
   const { data: gritData, isLoading: gritLoading } = useQuery({
@@ -62,6 +63,8 @@ const ChatPage = () => {
     onSuccess: () => {
       setMessage('');
       queryClient.invalidateQueries({ queryKey: ['grit-messages', id] });
+      // Stop typing indicator when message is sent
+      handleStopTyping();
     },
     onError: () => {
       toast.error('Failed to send message');
@@ -69,7 +72,7 @@ const ChatPage = () => {
   });
 
   // Use real-time chat hook
-  useGritChat(id!);
+  const { typingUsers } = useGritChat(id!);
 
   // Mark messages as read when chat is opened
   useEffect(() => {
@@ -84,6 +87,64 @@ const ChatPage = () => {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Handle typing start with debouncing
+  const handleStartTyping = useCallback(async () => {
+    if (!id || isTypingRef.current) return;
+    
+    isTypingRef.current = true;
+    try {
+      await gritService.startTyping(id);
+    } catch (error) {
+      console.error('Failed to start typing indicator:', error);
+    }
+  }, [id]);
+
+  // Handle typing stop
+  const handleStopTyping = useCallback(async () => {
+    if (!id || !isTypingRef.current) return;
+    
+    isTypingRef.current = false;
+    try {
+      await gritService.stopTyping(id);
+    } catch (error) {
+      console.error('Failed to stop typing indicator:', error);
+    }
+  }, [id]);
+
+  // Debounced typing handler
+  const handleTyping = useCallback((value: string) => {
+    setMessage(value);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Start typing indicator
+    if (value.trim() && !isTypingRef.current) {
+      handleStartTyping();
+    }
+    
+    // Set timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTypingRef.current) {
+        handleStopTyping();
+      }
+    }, 1000); // Stop typing indicator after 1 second of no input
+  }, [handleStartTyping, handleStopTyping]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      if (isTypingRef.current) {
+        handleStopTyping();
+      }
+    };
+  }, [handleStopTyping]);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -149,6 +210,9 @@ const ChatPage = () => {
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     }
   };
+
+  // Get typing users list
+  const typingUsersList = Object.values(typingUsers);
 
   return (
     <div
@@ -316,16 +380,18 @@ const ChatPage = () => {
               );
             })}
             
-            {/* Typing indicator */}
-            {isTyping && (
+            {/* Typing indicators */}
+            {typingUsersList.map((typingUser: any) => (
               <motion.div
+                key={typingUser.user.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3"
               >
                 <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={typingUser.user.avatar} />
                   <AvatarFallback>
-                    {currentUser?.name?.charAt(0).toUpperCase()}
+                    {typingUser.user ? (typingUser.user.first_name?.[0] || typingUser.user.last_name?.[0] || typingUser.user.username?.[0] || '?') : '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3">
@@ -339,7 +405,7 @@ const ChatPage = () => {
                   </div>
                 </div>
               </motion.div>
-            )}
+            ))}
             
             <div ref={scrollRef} />
           </div>
@@ -355,7 +421,7 @@ const ChatPage = () => {
                 ref={inputRef}
                 placeholder="Type your message..."
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => handleTyping(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="pr-20 py-4 rounded-2xl border-2 focus:border-primary"
                 disabled={sendMessageMutation.isPending}
