@@ -17,7 +17,10 @@ export interface Grit {
   requirements?: string; // Added requirements field
   professional_budget: number;
   owner_budget: number;
-  currency: string;
+  currency: string; // Fallback currency code from API
+  owner_currency?: string; // Preferred: owner currency code
+  professional_currency?: string; // Optional: professional currency code
+  budget?: number; // Legacy field support
   deadline: string;
   status: 'open' | 'negotiation' | 'in_progress' | 'pending_completion_approval' | 'completed' | 'disputed' | 'closed';
   admin_approval_status: 'pending' | 'approved' | 'rejected';

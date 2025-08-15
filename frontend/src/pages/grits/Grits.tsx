@@ -19,6 +19,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { gritService, type Grit, type Category } from '@/services/gritService';
 import { formatCurrency } from '@/lib/utils';
 import { settingsService } from '@/services/settingsService';
+import { useCurrencyFormat } from '@/lib/currency';
 import { format } from 'date-fns';
 
 const container = {
@@ -41,6 +42,11 @@ const Grits = () => {
   const [search, setSearch] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
   const debouncedSearch = useDebounce(search, 500);
+
+  const BudgetAmount = ({ amount, currencyCode }: { amount: number | string; currencyCode?: string }) => {
+    const { formattedAmount } = useCurrencyFormat(amount, currencyCode);
+    return <>{formattedAmount}</>;
+  };
 
   const { data: grits, isLoading } = useQuery({
     queryKey: ['grits', debouncedSearch, selectedCategory?.id],
@@ -208,7 +214,7 @@ const Grits = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{grit.applications_count} applied</span>
+                          <span className="text-sm">{(grit.applications_count ?? 0)} applied</span>
                         </div>
                       </div>
 
@@ -216,7 +222,9 @@ const Grits = () => {
                       <div className="flex items-center justify-between pt-4">
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Budget</p>
-                          <p className="font-semibold">{formatCurrency(grit.professional_budget, settings?.default_currency)}</p>
+                          <p className="font-semibold">
+                            <BudgetAmount amount={grit.owner_budget ?? 0} currencyCode={(grit as any).owner_currency || grit.currency} />
+                          </p>
                         </div>
                         <Button 
                           size="sm" 

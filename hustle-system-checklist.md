@@ -106,16 +106,25 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **GRIT Messaging System**: Created GritMessageController and added message routes to handle chat functionality.
 - [x] **Database Fix**: Created migration to fix grit_messages table column structure (rename hustle_id to grit_id) - ✅ COMPLETED.
 - [ ] Ensure multicurrency amounts are handled correctly for display.
+    - [x] `BusinessGritDetails.tsx`: Display budget in `owner_currency` using shared `useCurrencyFormat` helper.
+    - [x] `Grits.tsx`: Display owner budget with correct owner currency (handles code vs symbol; graceful fallback) and added debug logging.
+    - [ ] Audit remaining views (e.g., all list cards, receipts, any legacy components) for consistent currency display.
 
 ### Role-based navigation & access
 - [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).
 - [x] Post-create redirect: Business → `/dashboard/grits/mine`; Professional → `/dashboard/grits`.
+- [x] Restrict GRIT creation route (`/dashboard/grits/create`) to Business accounts via `RequireAccountType` + `ProtectedRoute`.
+- [x] Show toast guidance when blocked: “Switch to Business profile to access this feature”.
+- [x] Hide “Create Grit” button in `Grits.tsx` for non-business users.
 
 ### Form and listing fixes
 - [x] `CreateGrit.tsx`: Use UUID string for `category_id`, prevent premature form submit on Enter, and register/validate `deadline`.
 - [x] `Grits.tsx`: Safely handle `categories` and `grits.data` mapping to avoid runtime errors when undefined.
+- [x] `Grits.tsx`: Format deadline as `15th August, 2025` using `date-fns` (`do MMMM, yyyy`).
+- [x] `Grits.tsx`: Show owner budget with correct currency (no USD fallback), using shared currency helpers.
 - [x] `BusinessGritDetails.tsx`: Removed chat tab, kept chat access via navigation buttons.
 - [x] `GritDetails.tsx`: Removed chat tab, simplified tab structure for professional view.
+ - [x] `ChatPage.tsx`: Mobile UX improvements (sticky header and input, hide global dashboard bars on chat route, empty-state when no messages).
 
 ## Phase 5: Real-time Features
 
