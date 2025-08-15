@@ -9,8 +9,6 @@ import {
   Smile, 
   Paperclip,
   MoreVertical,
-  Phone,
-  Video,
   Search,
   User,
   Calendar,
@@ -135,11 +133,18 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col">
+    <div
+      className="bg-background flex flex-col"
+      style={{
+        height: 'calc(100dvh - var(--shell-top, 0px) - var(--shell-bottom, 0px))',
+        marginTop: 'var(--shell-top, 0px)',
+        marginBottom: 'var(--shell-bottom, 0px)'
+      }}
+    >
       {/* Fixed Header */}
-      <div className="flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-50">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-4">
+      <div className="sticky top-4 flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-20">
+        <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <Button
               variant="ghost"
               size="icon"
@@ -148,19 +153,18 @@ const ChatPage = () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Avatar className="h-8 w-8">
                 <AvatarImage src={grit.user?.avatar} />
                 <AvatarFallback>
                   {grit.user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h1 className="font-semibold text-lg">{grit.title}</h1>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{grit.user?.name}</span>
-                  <span>•</span>
-                  <Badge variant="secondary" className={cn("text-xs", getStatusColor(grit.status))}>
+              <div className="min-w-0 flex-1">
+                <h1 className="font-semibold text-sm sm:text-base truncate">{grit.title}</h1>
+                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground">
+                  <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
+                  <Badge variant="secondary" className={cn("text-[10px]", getStatusColor(grit.status))}>
                     {grit.status.replace('_', ' ')}
                   </Badge>
                 </div>
@@ -168,34 +172,18 @@ const ChatPage = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <Search className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Search className="h-4 w-4"/>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Search messages</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <Phone className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Voice call</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <Video className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Video call</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
@@ -306,7 +294,7 @@ const ChatPage = () => {
       </div>
 
       {/* Fixed Message Input */}
-      <div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">

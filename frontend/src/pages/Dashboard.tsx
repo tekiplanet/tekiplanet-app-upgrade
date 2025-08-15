@@ -90,6 +90,9 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
   const [isDesktopNotificationPopoverOpen, setIsDesktopNotificationPopoverOpen] = useState(false);
   const [isMobileNotificationPopoverOpen, setIsMobileNotificationPopoverOpen] = useState(false);
 
+  // Determine if current route is the GRIT chat page
+  const isChatRoute = /^\/dashboard\/grits\/[^/]+\/chat$/.test(location.pathname);
+
   useEffect(() => {
     // console.log('Dashboard received notifications:', notifications);
     // console.log('Dashboard unread count:', unreadCount);
@@ -843,7 +846,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
           {/* Mobile Header */}
           <header className={cn(
             "flex h-16 items-center gap-4 border-b border-border/30 bg-background/30 backdrop-blur-[12px] px-4 md:hidden z-40 relative",
-            location.pathname === "/dashboard/settings" && "hidden"
+            (location.pathname === "/dashboard/settings" || isChatRoute) && "hidden"
           )}>
             <div className="flex-1 flex items-center gap-3">
               {location.pathname === "/dashboard" ? (
@@ -1101,7 +1104,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto bg-background">
-            <main className="min-h-[calc(100vh-5rem)] mb-24 md:mb-0">
+            <main className={cn("min-h-[calc(100vh-5rem)] md:mb-0", !isChatRoute && "mb-24")}> 
               <div className="container mx-auto px-3 py-0.5 md:px-4 md:py-1 max-w-7xl">
                 <PullToRefresh onRefresh={handleRefresh}>
                   <Outlet />
@@ -1111,6 +1114,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
           </div>
 
           {/* Mobile Bottom Navigation */}
+          {!isChatRoute && (
           <div className="fixed bottom-0 left-0 right-0 border-t border-border/5 bg-background/80 backdrop-blur-xl md:hidden">
             <div className="container mx-auto">
               <div className="flex items-center justify-around h-16 px-2 mb-1">
@@ -1506,6 +1510,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </>
