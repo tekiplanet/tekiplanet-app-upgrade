@@ -178,6 +178,24 @@ const ChatPage = () => {
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full p-4">
           <div className="space-y-4 max-w-4xl mx-auto">
+            {(!messages || messages.length === 0) && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center text-center py-16 text-muted-foreground"
+              >
+                <div className="mb-4 h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center">
+                  <Smile className="h-6 w-6" />
+                </div>
+                <h3 className="text-sm font-medium text-foreground mb-1">No messages yet</h3>
+                <p className="text-xs max-w-sm mb-4">
+                  Start the conversation by sending the first message.
+                </p>
+                <Button size="sm" onClick={() => inputRef.current?.focus()}>
+                  Say hello
+                </Button>
+              </motion.div>
+            )}
             <AnimatePresence>
               {messages?.map((msg, index) => {
                 const showDate = index === 0 || 
