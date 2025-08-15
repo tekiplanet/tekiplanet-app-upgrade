@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Star, 
@@ -29,6 +30,7 @@ interface ApplicationsTabProps {
 
 const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsCount, onViewAll }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedApplication, setSelectedApplication] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
@@ -53,6 +55,10 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
 
   const handleUpdateStatus = (applicationId: string, status: 'approved' | 'rejected') => {
     updateStatusMutation.mutate({ applicationId, status });
+  };
+
+  const handleProfessionalClick = (professionalId: string) => {
+    navigate(`/dashboard/professionals/${professionalId}?grit_id=${gritId}`);
   };
 
   const getStatusConfig = (status: string) => {
@@ -198,7 +204,7 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
                initial={{ opacity: 0, y: 10 }}
                animate={{ opacity: 1, y: 0 }}
                className="border rounded-lg p-3 hover:shadow-sm transition-shadow bg-background cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-               onClick={() => window.location.href = `/dashboard/professionals/${application.professional.id}?grit_id=${gritId}`}
+               onClick={() => handleProfessionalClick(application.professional.id)}
              >
               <div className="flex items-center gap-3">
                 {/* Avatar */}

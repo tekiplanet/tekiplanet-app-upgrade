@@ -324,6 +324,7 @@ const AppContent = () => {
                 </RequireAccountType>
               </ProtectedRoute>
             } />
+            <Route path="professionals/:id" element={<ProfessionalDetails />} />
             <Route path="grits/:id" element={
               <ProtectedRoute>
                 <GritDetailsWrapper />
@@ -332,7 +333,6 @@ const AppContent = () => {
             <Route path="grits/:id/edit" element={<EditGrit />} />
             <Route path="grits/:id/chat" element={<ChatPage />} />
             <Route path="grits/:id/applications" element={<GritApplications />} />
-            <Route path="professionals/:id" element={<ProfessionalDetails />} />
             <Route path="grits/applications" element={<MyGritApplications />} />
             <Route path="grits/create" element={
               <ProtectedRoute>

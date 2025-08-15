@@ -111,6 +111,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **`ApplicationsTab.tsx`**: For business owners to view and manage GRIT applications with professional profiles, stats, and approval/rejection functionality.
 - [x] **`GritApplications.tsx`**: Dedicated page for viewing all applications with pagination, search, filtering, and detailed professional information.
 - [x] **`ProfessionalDetails.tsx`**: Comprehensive professional details page for viewing complete applicant information, reviews, and application management.
+- [x] **Navigation Fix**: Fixed professional details navigation issue by replacing `window.location.href` with React Router's `navigate` function in ApplicationsTab and GritApplications components, and reordered routes to prevent conflicts.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
 - [ ] **`GritDisputeDialog.tsx`**: For raising and managing disputes.
@@ -138,8 +139,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).
 - [x] Post-create redirect: Business → `/dashboard/grits/mine`; Professional → `/dashboard/grits`.
 - [x] Restrict GRIT creation route (`/dashboard/grits/create`) to Business accounts via `RequireAccountType` + `ProtectedRoute`.
-- [x] Show toast guidance when blocked: “Switch to Business profile to access this feature”.
-- [x] Hide “Create Grit” button in `Grits.tsx` for non-business users.
+- [x] Show toast guidance when blocked: "Switch to Business profile to access this feature".
+- [x] Hide "Create Grit" button in `Grits.tsx` for non-business users.
 
 ### Form and listing fixes
 - [x] `CreateGrit.tsx`: Use UUID string for `category_id`, prevent premature form submit on Enter, and register/validate `deadline`.

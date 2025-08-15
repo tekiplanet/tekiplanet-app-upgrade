@@ -34,6 +34,7 @@ use App\Http\Controllers\HustleMessageController;
 use App\Http\Controllers\GritController;
 use App\Http\Controllers\GritMessageController;
 use App\Http\Controllers\GritApplicationController;
+use App\Http\Controllers\ProfessionalDetailsController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessCustomerController;
 use App\Http\Controllers\BusinessInvoiceController;

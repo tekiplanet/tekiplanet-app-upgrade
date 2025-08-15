@@ -60,6 +60,10 @@ const GritApplications = () => {
     updateStatusMutation.mutate({ applicationId, status });
   };
 
+  const handleProfessionalClick = (professionalId: string) => {
+    navigate(`/dashboard/professionals/${professionalId}?grit_id=${id}`);
+  };
+
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'pending':
@@ -223,7 +227,7 @@ const GritApplications = () => {
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                 onClick={() => window.location.href = `/dashboard/professionals/${application.professional.id}?grit_id=${id}`}
+                 onClick={() => handleProfessionalClick(application.professional.id)}
                >
                 <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                   {/* Professional Info */}
