@@ -250,17 +250,17 @@ const GritApplications = () => {
                  className="border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow bg-card cursor-pointer hover:bg-accent/50"
                  onClick={() => handleProfessionalClick(application.professional.id)}
                >
-                                 <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
-                   {/* Professional Info */}
+                                                  <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
+                   {/* Professional Info - Compact Layout */}
                    <div className="flex-1 min-w-0">
-                     <div className="flex items-start gap-3 sm:gap-4 mb-4">
-                       <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                         <span className="text-white font-semibold text-sm sm:text-lg">
+                     <div className="flex items-start gap-3 sm:gap-4 mb-3">
+                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                         <span className="text-white font-semibold text-sm sm:text-base">
                            {application.professional.name.charAt(0).toUpperCase()}
                          </span>
                        </div>
                        <div className="flex-1 min-w-0">
-                         <div className="flex items-center justify-between gap-2 mb-2">
+                         <div className="flex items-center justify-between gap-2 mb-1">
                            <h3 className="text-lg sm:text-xl font-semibold truncate">{application.professional.name}</h3>
                            <Badge className={cn("flex items-center gap-1 w-fit", statusConfig.bgColor)}>
                              {React.createElement(statusConfig.icon, { className: "w-3 h-3" })}
@@ -272,97 +272,86 @@ const GritApplications = () => {
                        </div>
                      </div>
 
-                    {/* Professional Stats */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-xs sm:text-sm text-muted-foreground">Completion Rate</p>
-                          <p className="font-medium text-sm sm:text-base">{formatCompletionRate(application.professional.completion_rate)}%</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-xs sm:text-sm text-muted-foreground">Rating</p>
-                          <p className="font-medium text-sm sm:text-base">{formatRating(application.professional.average_rating)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Award className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-xs sm:text-sm text-muted-foreground">Projects</p>
-                          <p className="font-medium text-sm sm:text-base">{formatProjectsCount(application.professional.total_projects_completed)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-xs sm:text-sm text-muted-foreground">Applied</p>
-                          <p className="font-medium text-sm sm:text-base">{application.applied_at}</p>
-                        </div>
-                      </div>
-                    </div>
+                     {/* Professional Stats - Compact Grid */}
+                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
+                       <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+                         <TrendingUp className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                         <div className="min-w-0">
+                           <p className="text-xs text-muted-foreground">Completion</p>
+                           <p className="font-medium text-sm">{formatCompletionRate(application.professional.completion_rate)}%</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+                         <Star className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                         <div className="min-w-0">
+                           <p className="text-xs text-muted-foreground">Rating</p>
+                           <p className="font-medium text-sm">{formatRating(application.professional.average_rating)}</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+                         <Award className="h-4 w-4 text-green-500 flex-shrink-0" />
+                         <div className="min-w-0">
+                           <p className="text-xs text-muted-foreground">Projects</p>
+                           <p className="font-medium text-sm">{formatProjectsCount(application.professional.total_projects_completed)}</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+                         <Calendar className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                         <div className="min-w-0">
+                           <p className="text-xs text-muted-foreground">Applied</p>
+                           <p className="font-medium text-sm">{application.applied_at}</p>
+                         </div>
+                       </div>
+                     </div>
 
-                    {/* Qualifications */}
-                    {application.professional.qualifications && (
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <p className="text-sm font-medium">Qualifications</p>
-                        </div>
-                        <div className="bg-muted p-3 rounded-lg">
-                          {Array.isArray(application.professional.qualifications) ? (
-                            <ul className="text-sm text-muted-foreground space-y-1">
-                              {application.professional.qualifications.map((qual: string, index: number) => (
-                                <li key={index} className="flex items-center gap-2">
-                                  <span className="w-1 h-1 bg-muted-foreground rounded-full flex-shrink-0"></span>
-                                  <span className="break-words">{qual}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-sm text-muted-foreground break-words">
+                                           {/* Qualifications - Compact */}
+                      {application.professional.qualifications && (
+                        <div className="mb-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-sm font-medium">Qualifications</p>
+                          </div>
+                          <div className="bg-muted/50 p-2 rounded-lg">
+                            <p className="text-sm text-muted-foreground break-words line-clamp-2">
                               {application.professional.qualifications}
                             </p>
-                          )}
+                          </div>
                         </div>
+                      )}
+                   </div>
+
+                                       {/* Action Buttons - Compact */}
+                    {application.status === 'pending' && (
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mt-3 lg:mt-0">
+                                                 <Button
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             handleConfirmAction('approve', application.id, application.professional.name);
+                           }}
+                           disabled={updateStatusMutation.isPending}
+                           className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none h-15 sm:h-10 text-lg sm:text-sm px-6 sm:px-4"
+                         >
+                           <CheckCircle className="h-5 w-5 sm:h-4 sm:w-4 mr-3 sm:mr-2" />
+                           <span className="hidden sm:inline">Approve</span>
+                           <span className="sm:hidden text-sm font-medium">Approve</span>
+                         </Button>
+                         <Button
+                           variant="outline"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             handleConfirmAction('reject', application.id, application.professional.name);
+                           }}
+                           disabled={updateStatusMutation.isPending}
+                           className="border-red-300 text-red-600 hover:bg-red-50 flex-1 sm:flex-none h-15 sm:h-10 text-lg sm:text-sm px-6 sm:px-4"
+                         >
+                           <XCircle className="h-5 w-5 sm:h-4 sm:w-4 mr-3 sm:mr-2" />
+                           <span className="hidden sm:inline">Reject</span>
+                           <span className="sm:hidden text-sm font-medium">Reject</span>
+                         </Button>
                       </div>
                     )}
-                  </div>
-
-                  {/* Action Buttons */}
-                  {application.status === 'pending' && (
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleConfirmAction('approve', application.id, application.professional.name);
-                        }}
-                        disabled={updateStatusMutation.isPending}
-                        className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none h-12 sm:h-10"
-                      >
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        <span className="hidden sm:inline">Approve Application</span>
-                        <span className="sm:hidden text-base font-medium">Approve</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleConfirmAction('reject', application.id, application.professional.name);
-                        }}
-                        disabled={updateStatusMutation.isPending}
-                        className="border-red-300 text-red-600 hover:bg-red-50 flex-1 sm:flex-none h-12 sm:h-10"
-                      >
-                        <XCircle className="h-5 w-5 mr-2" />
-                        <span className="hidden sm:inline">Reject Application</span>
-                        <span className="sm:hidden text-base font-medium">Reject</span>
-                      </Button>
-                    </div>
-                  )}
-                  
-                </div>
+                   
+                 </div>
               </motion.div>
             );
           })}
