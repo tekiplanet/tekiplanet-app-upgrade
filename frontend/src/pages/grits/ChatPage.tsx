@@ -133,12 +133,8 @@ const ChatPage = () => {
 
   return (
     <div
-      className="bg-background flex flex-col"
-      style={{
-        height: 'calc(100dvh - var(--shell-top, 0px) - var(--shell-bottom, 0px))',
-        marginTop: 'var(--shell-top, 0px)',
-        marginBottom: 'var(--shell-bottom, 0px)'
-      }}
+      className="bg-background flex flex-col overflow-hidden"
+      style={{ height: '100dvh' }}
     >
       {/* Fixed Header */}
       <div className="sticky top-4 flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-20">
@@ -293,7 +289,7 @@ const ChatPage = () => {
       </div>
 
       {/* Fixed Message Input */}
-      <div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
+      <div className="sticky bottom-0 flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
