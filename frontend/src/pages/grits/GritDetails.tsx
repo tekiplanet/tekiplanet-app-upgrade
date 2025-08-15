@@ -21,7 +21,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { gritService, type Grit } from '@/services/gritService';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { useCurrencyFormat } from '@/lib/currency';
 import ApplyGritDialog from '@/components/grits/ApplyGritDialog';
 
 import PaymentTab from '@/components/grits/PaymentTab';
@@ -174,6 +175,12 @@ const GritDetails = () => {
 
   const applicationStatus = getApplicationStatus(grit);
 
+  // Currency formatting helper (owner budget in owner currency)
+  const BudgetAmount = ({ amount, currencyCode }: { amount: number | string; currencyCode?: string }) => {
+    const { formattedAmount } = useCurrencyFormat(amount, currencyCode);
+    return <>{formattedAmount}</>;
+  };
+
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
       <motion.div 
@@ -311,7 +318,7 @@ const GritDetails = () => {
                   </div>
                 </div>
                 <p className="font-semibold text-sm px-2">
-                  {formatCurrency(grit.professional_budget, grit.currency)}
+                  <BudgetAmount amount={grit.owner_budget || grit.budget || 0} currencyCode={(grit as any).owner_currency || grit.currency} />
                 </p>
               </div>
             </CardContent>
@@ -327,7 +334,7 @@ const GritDetails = () => {
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Applications</p>
                   <p className="font-semibold text-sm truncate">
-                    {grit.applications_count}
+                    {grit.applications_count ?? 0}
                   </p>
                 </div>
               </div>

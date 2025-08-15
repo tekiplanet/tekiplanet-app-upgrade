@@ -37,7 +37,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { gritService, type Grit } from '@/services/gritService';
-import { formatCurrency, formatDate, cn } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
+import { useCurrencyFormat } from '@/lib/currency';
 
 const MyGrits = () => {
   const navigate = useNavigate();
@@ -189,6 +190,11 @@ const MyGrits = () => {
     }
   };
 
+  const BudgetAmount = ({ amount, currencyCode }: { amount: number | string; currencyCode?: string }) => {
+    const { formattedAmount } = useCurrencyFormat(amount, currencyCode);
+    return <>{formattedAmount}</>;
+  };
+
   const GritCard = ({ grit }: { grit: Grit }) => {
     const statusConfig = getStatusConfig(grit.status, grit.admin_approval_status);
     const progressPercentage = getProgressPercentage(grit.status);
@@ -264,7 +270,7 @@ const MyGrits = () => {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <DollarSign className="w-4 h-4" />
                 <span className="font-medium">
-                  {formatCurrency(grit.owner_budget || 0, grit.currency)}
+                  <BudgetAmount amount={grit.owner_budget || 0} currencyCode={(grit as any).owner_currency || grit.currency} />
                 </span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -368,7 +374,9 @@ const MyGrits = () => {
                   <div className="grid grid-cols-4 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">{formatCurrency(grit.owner_budget || 0, grit.currency)}</span>
+                      <span className="font-medium">
+                        <BudgetAmount amount={grit.owner_budget || 0} currencyCode={(grit as any).owner_currency || grit.currency} />
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
