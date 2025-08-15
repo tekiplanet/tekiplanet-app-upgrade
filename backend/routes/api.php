@@ -373,6 +373,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/grits/{id}', [GritController::class, 'update']);
     Route::get('/my-grits', [GritController::class, 'myGrits']);
     
+    // Grit applications (for business owners to view and manage)
+    Route::get('/grits/{gritId}/applications', [GritApplicationController::class, 'index']);
+    Route::get('/applications/{applicationId}', [GritApplicationController::class, 'show']);
+    Route::patch('/applications/{applicationId}/status', [GritApplicationController::class, 'updateStatus']);
+    
     // Grit messages
     Route::get('/grits/{gritId}/messages', [GritMessageController::class, 'getMessages']);
     Route::post('/grits/{gritId}/messages', [GritMessageController::class, 'store']);

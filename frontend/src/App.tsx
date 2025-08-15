@@ -82,6 +82,7 @@ const DashboardHome = React.lazy(() => import('@/pages/DashboardHome'));
 const Grits = React.lazy(() => import('@/pages/grits/Grits'));
 const GritDetails = React.lazy(() => import('@/pages/grits/GritDetails'));
 const BusinessGritDetails = React.lazy(() => import('@/pages/grits/BusinessGritDetails'));
+const GritApplications = React.lazy(() => import('@/pages/grits/GritApplications'));
 const EditGrit = React.lazy(() => import('@/pages/grits/EditGrit'));
 const MyGritApplications = React.lazy(() => import('@/pages/grits/MyApplications'));
 const CreateGrit = React.lazy(() => import('@/pages/grits/CreateGrit'));
@@ -329,6 +330,7 @@ const AppContent = () => {
             } />
             <Route path="grits/:id/edit" element={<EditGrit />} />
             <Route path="grits/:id/chat" element={<ChatPage />} />
+            <Route path="grits/:id/applications" element={<GritApplications />} />
             <Route path="grits/applications" element={<MyGritApplications />} />
             <Route path="grits/create" element={
               <ProtectedRoute>

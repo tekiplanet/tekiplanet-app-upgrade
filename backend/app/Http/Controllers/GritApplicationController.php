@@ -17,6 +17,176 @@ use App\Notifications\NewGritApplicationNotification;
 
 class GritApplicationController extends Controller
 {
+    /**
+     * Display a listing of applications for a specific GRIT
+     */
+    public function index(Request $request, string $gritId)
+    {
+        try {
+            $grit = Grit::findOrFail($gritId);
+            
+            // Check if user has permission to view applications
+            // Admin can view all, business owner can view their own GRITs
+            if (Auth::user()->role !== 'admin' && $grit->created_by_user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $applications = GritApplication::with(['professional.user', 'professional.category'])
+                ->where('grit_id', $gritId)
+                ->latest()
+                ->paginate($request->get('per_page', 10))
+                ->through(function($application) {
+                    return [
+                        'id' => $application->id,
+                        'professional' => [
+                            'id' => $application->professional->id,
+                            'name' => $application->professional->user->name,
+                            'email' => $application->professional->user->email,
+                            'category' => $application->professional->category->name ?? 'No Category',
+                            'completion_rate' => $application->professional->completion_rate ?? 0,
+                            'average_rating' => $application->professional->average_rating ?? 0,
+                            'total_projects_completed' => $application->professional->total_projects_completed ?? 0,
+                            'qualifications' => $application->professional->qualifications,
+                        ],
+                        'status' => $application->status,
+                        'applied_at' => $application->created_at->format('M d, Y'),
+                        'created_at' => $application->created_at->toISOString(),
+                    ];
+                });
+
+            return response()->json([
+                'applications' => $applications->items(),
+                'pagination' => [
+                    'current_page' => $applications->currentPage(),
+                    'last_page' => $applications->lastPage(),
+                    'per_page' => $applications->perPage(),
+                    'total' => $applications->total(),
+                    'from' => $applications->firstItem(),
+                    'to' => $applications->lastItem(),
+                ],
+                'grit' => [
+                    'id' => $grit->id,
+                    'title' => $grit->title,
+                    'status' => $grit->status,
+                    'admin_approval_status' => $grit->admin_approval_status,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching GRIT applications:', [
+                'grit_id' => $gritId,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Failed to fetch applications'], 500);
+        }
+    }
+
+    /**
+     * Display the specified application
+     */
+    public function show(string $applicationId)
+    {
+        try {
+            $application = GritApplication::with(['professional.user', 'professional.category', 'grit'])
+                ->findOrFail($applicationId);
+
+            // Check if user has permission to view this application
+            if (Auth::user()->role !== 'admin' && $application->grit->created_by_user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            return response()->json([
+                'application' => [
+                    'id' => $application->id,
+                    'professional' => [
+                        'id' => $application->professional->id,
+                        'name' => $application->professional->user->name,
+                        'email' => $application->professional->user->email,
+                        'category' => $application->professional->category->name ?? 'No Category',
+                        'completion_rate' => $application->professional->completion_rate ?? 0,
+                        'average_rating' => $application->professional->average_rating ?? 0,
+                        'total_projects_completed' => $application->professional->total_projects_completed ?? 0,
+                        'qualifications' => $application->professional->qualifications,
+                        'portfolio_items' => $application->professional->portfolio_items ?? [],
+                    ],
+                    'grit' => [
+                        'id' => $application->grit->id,
+                        'title' => $application->grit->title,
+                        'status' => $application->grit->status,
+                    ],
+                    'status' => $application->status,
+                    'applied_at' => $application->created_at->format('M d, Y'),
+                    'created_at' => $application->created_at->toISOString(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching GRIT application:', [
+                'application_id' => $applicationId,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Failed to fetch application'], 500);
+        }
+    }
+
+    /**
+     * Update the status of an application
+     */
+    public function updateStatus(Request $request, string $applicationId)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:approved,rejected,withdrawn'
+            ]);
+
+            $application = GritApplication::with(['grit', 'professional.user'])
+                ->findOrFail($applicationId);
+
+            // Check if user has permission to update this application
+            if (Auth::user()->role !== 'admin' && $application->grit->created_by_user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $oldStatus = $application->status;
+            $application->status = $request->status;
+            $application->save();
+
+            // If approved, assign the professional to the GRIT
+            if ($request->status === 'approved' && $application->grit->status === 'open') {
+                $application->grit->update([
+                    'assigned_professional_id' => $application->professional_id,
+                    'status' => 'in_progress'
+                ]);
+            }
+
+            // Send notifications
+            if ($request->status === 'approved') {
+                // Notify professional that their application was approved
+                // You can add notification logic here
+            } elseif ($request->status === 'rejected') {
+                // Notify professional that their application was rejected
+                // You can add notification logic here
+            }
+
+            return response()->json([
+                'message' => 'Application status updated successfully',
+                'application' => [
+                    'id' => $application->id,
+                    'status' => $application->status,
+                    'updated_at' => $application->updated_at->toISOString(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating GRIT application status:', [
+                'application_id' => $applicationId,
+                'status' => $request->status ?? 'unknown',
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Failed to update application status'], 500);
+        }
+    }
+
     public function store(Request $request, string $gritId)
     {
         try {

@@ -55,14 +55,18 @@ This checklist tracks the implementation of the GRIT system, including the integ
 
 - [ ] **Business Owner `GritController`**:
     - [x] `store()`: Create a new GRIT (pending admin approval).
-    - [ ] `approveApplication()`: Approve a professional and trigger initial escrow.
+    - [x] `approveApplication()`: Approve a professional and trigger initial escrow (implemented in GritApplicationController).
     - [ ] `startProject()`: Trigger project creation and main escrow flow.
     - [ ] `releasePayment()`: Authorize staged payments.
     - [ ] `increaseBudget()`: Add funds to the project.
     - [ ] `markComplete()`: Mark the GRIT as complete and provide feedback.
 - [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
+- [x] Add endpoints for business owners to manage applications (`GET /grits/{gritId}/applications`, `GET /applications/{applicationId}`, `PATCH /applications/{applicationId}/status`).
 - [x] **Professional `GritApplicationController`**:
     - [x] `store()` (POST `/api/grits/{gritId}/apply`): Create application with guards (open/unassigned, no duplicates, optional category match).
+    - [x] `index()` (GET `/api/grits/{gritId}/applications`): List applications for a GRIT with professional details.
+    - [x] `show()` (GET `/api/applications/{applicationId}`): View specific application details.
+    - [x] `updateStatus()` (PATCH `/api/applications/{applicationId}/status`): Approve/reject applications and auto-assign professional.
     - [x] Queued notifications on apply:
         - [x] If owner-created → email owner + in-app/push via `NotificationService`.
         - [x] If admin-created → notify active admins (mail + database) via `NewGritApplicationNotification`.
@@ -94,13 +98,14 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **`CreateGrit.tsx` page**: For business owners to create GRITs.
 - [x] **Add `Manage Grits` link to Business Dashboard**: Link added to `Dashboard.tsx` (goes to `/dashboard/grits/mine`).
 - [x] **`MyGrits.tsx` page and route (`/dashboard/grits/mine`)**: Business owners can view only their created GRITs.
-- [x] **`BusinessGritDetails.tsx`**: Business owner view for managing their GRITs with edit functionality.
+- [x] **`BusinessGritDetails.tsx`**: Business owner view for managing their GRITs with edit functionality and applications management.
 - [x] **`EditGrit.tsx`**: Business owner form for editing GRITs with admin approval reset.
 - [x] **Business vs Professional Views**: Different views based on user account type.
 - [x] **Edit Restrictions**: GRITs can only be edited when no professional is assigned and status is 'open'.
 - [x] **Admin Approval Reset**: When business edits GRIT, admin_approval_status resets to 'pending'.
 - [x] **Chat Integration**: Removed chat tabs from GRIT details pages, kept chat access via dropdown/sidebar buttons that navigate to dedicated chat page.
 - [x] **Dashboard Import Fix**: Fixed MessageSquare import error in Dashboard.tsx.
+- [x] **`ApplicationsTab.tsx`**: For business owners to view and manage GRIT applications with professional profiles, stats, and approval/rejection functionality.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
@@ -110,11 +115,13 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] Implement and wire up GRIT API endpoints (GritController, routes, etc.).
 - [x] **GRIT Messaging System**: Created GritMessageController and added message routes to handle chat functionality.
 - [x] **Database Fix**: Created migration to fix grit_messages table column structure (rename hustle_id to grit_id) - ✅ COMPLETED.
+- [x] **GRIT Applications API**: Added methods for fetching and managing applications (`getGritApplications`, `getApplicationDetails`, `updateApplicationStatus`).
 - [ ] Ensure multicurrency amounts are handled correctly for display.
     - [x] `BusinessGritDetails.tsx`: Display budget in `owner_currency` using shared `useCurrencyFormat` helper.
     - [x] `Grits.tsx`: Display owner budget with correct owner currency (handles code vs symbol; graceful fallback) and added debug logging.
     - [ ] Audit remaining views (e.g., all list cards, receipts, any legacy components) for consistent currency display.
 - [x] Applications count: use `withCount('applications')` in GRIT listings (`index`, `myGrits`) to provide reliable `applications_count`.
+- [x] **Applications Management**: Business owners can view, approve, and reject applications with professional profiles and stats display.
 
 ### Role-based navigation & access
 - [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).

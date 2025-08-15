@@ -78,6 +78,23 @@ export interface GritApplication {
   applied_at: string;
 }
 
+export interface GritApplicationForBusiness {
+  id: string;
+  professional: {
+    id: string;
+    name: string;
+    email: string;
+    category: string;
+    completion_rate: number;
+    average_rating: number;
+    total_projects_completed: number;
+    qualifications?: string;
+  };
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  applied_at: string;
+  created_at: string;
+}
+
 export const gritService = {
   getGrits: async (params?: { 
     category_id?: string;
@@ -145,6 +162,24 @@ export const gritService = {
 
   updateGrit: async (gritId: string, gritData: any) => {
     const { data } = await api.put(`/grits/${gritId}`, gritData);
+    return data;
+  },
+
+  // Applications API methods
+  getGritApplications: async (gritId: string, page: number = 1, perPage: number = 10) => {
+    const { data } = await api.get(`/grits/${gritId}/applications`, {
+      params: { page, per_page: perPage }
+    });
+    return data;
+  },
+
+  getApplicationDetails: async (applicationId: string) => {
+    const { data } = await api.get(`/applications/${applicationId}`);
+    return data;
+  },
+
+  updateApplicationStatus: async (applicationId: string, status: 'approved' | 'rejected' | 'withdrawn') => {
+    const { data } = await api.patch(`/applications/${applicationId}/status`, { status });
     return data;
   }
 }; 

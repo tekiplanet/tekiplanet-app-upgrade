@@ -35,6 +35,7 @@ import { cn, formatDate } from '@/lib/utils';
 import { useCurrencyFormat } from '@/lib/currency';
 
 import PaymentTab from '@/components/grits/PaymentTab';
+import ApplicationsTab from '@/components/grits/ApplicationsTab';
 import { settingsService } from '@/services/settingsService';
 import {
   DropdownMenu,
@@ -76,6 +77,12 @@ const BusinessGritDetails = () => {
   });
 
   const grit = data?.grit;
+
+  // Currency formatting for budget using shared hook (no hardcoding)
+  const { formattedAmount: formattedBudget } = useCurrencyFormat(
+    grit?.owner_budget || grit?.budget,
+    grit?.owner_currency
+  );
 
   // Check if GRIT can be edited (no professional assigned and status is open)
   const canEdit = grit && !grit.assigned_professional_id && grit.status === 'open';
@@ -172,12 +179,6 @@ const BusinessGritDetails = () => {
   }
 
   const statusConfig = getStatusConfig(grit.status, grit.admin_approval_status);
-
-  // Currency formatting for budget using shared hook (no hardcoding)
-  const { formattedAmount: formattedBudget } = useCurrencyFormat(
-    grit.owner_budget || grit.budget,
-    grit.owner_currency
-  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -362,24 +363,11 @@ const BusinessGritDetails = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {grit.applications_count > 0 ? (
-                      <div className="text-center py-8">
-                        <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Applications will be displayed here</p>
-                        <p className="text-sm text-gray-400">Feature coming soon</p>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">No applications yet</p>
-                        <p className="text-sm text-gray-400">
-                          {grit.admin_approval_status === 'approved' 
-                            ? 'Professionals will be able to apply once this GRIT is visible to them.'
-                            : 'Applications will be available once this GRIT is approved by admin.'
-                          }
-                        </p>
-                      </div>
-                    )}
+                    <ApplicationsTab 
+                      gritId={grit.id} 
+                      applicationsCount={grit.applications_count || 0} 
+                      onViewAll={() => navigate(`/dashboard/grits/${grit.id}/applications`)}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
