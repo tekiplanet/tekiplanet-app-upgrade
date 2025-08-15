@@ -32,7 +32,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import { gritService } from '@/services/gritService';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -45,17 +44,6 @@ const ProfessionalDetails = () => {
   const queryClient = useQueryClient();
   
   const gritId = searchParams.get('grit_id');
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    action: 'approve' | 'reject' | null;
-    applicationId: string | null;
-    professionalName: string | null;
-  }>({
-    open: false,
-    action: null,
-    applicationId: null,
-    professionalName: null
-  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['professional-details', id, gritId],
@@ -78,26 +66,6 @@ const ProfessionalDetails = () => {
 
   const handleUpdateStatus = (applicationId: string, status: 'approved' | 'rejected') => {
     updateStatusMutation.mutate({ applicationId, status });
-  };
-
-  const handleConfirmAction = (action: 'approve' | 'reject', applicationId: string, professionalName: string) => {
-    setConfirmDialog({
-      open: true,
-      action,
-      applicationId,
-      professionalName
-    });
-  };
-
-  const handleConfirmDialogConfirm = () => {
-    if (confirmDialog.action && confirmDialog.applicationId) {
-      const status = confirmDialog.action === 'approve' ? 'approved' : 'rejected';
-      updateStatusMutation.mutate({ 
-        applicationId: confirmDialog.applicationId, 
-        status 
-      });
-      setConfirmDialog({ open: false, action: null, applicationId: null, professionalName: null });
-    }
   };
 
   const formatRating = (rating: any) => {
@@ -214,7 +182,7 @@ const ProfessionalDetails = () => {
             {currentApplication && currentApplication.status === 'pending' && (
               <div className="flex gap-2">
                 <Button
-                  onClick={() => handleConfirmAction('approve', currentApplication.id, professional.name)}
+                  onClick={() => handleUpdateStatus(currentApplication.id, 'approved')}
                   disabled={updateStatusMutation.isPending}
                   className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
                   size="sm"
@@ -225,7 +193,7 @@ const ProfessionalDetails = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleConfirmAction('reject', currentApplication.id, professional.name)}
+                  onClick={() => handleUpdateStatus(currentApplication.id, 'rejected')}
                   disabled={updateStatusMutation.isPending}
                   className="border-red-300 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
                   size="sm"
@@ -583,29 +551,6 @@ const ProfessionalDetails = () => {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Confirmation Dialog */}
-        <ConfirmDialog
-          open={confirmDialog.open}
-          onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
-          onConfirm={handleConfirmDialogConfirm}
-          title={
-            confirmDialog.action === 'approve' 
-              ? 'Approve Application' 
-              : 'Reject Application'
-          }
-          description={
-            confirmDialog.action === 'approve'
-              ? `Are you sure you want to approve ${confirmDialog.professionalName}'s application? This will automatically reject all other pending applications for this GRIT.`
-              : `Are you sure you want to reject ${confirmDialog.professionalName}'s application? This action cannot be undone.`
-          }
-          actionLabel={
-            confirmDialog.action === 'approve' ? 'Approve' : 'Reject'
-          }
-          variant={
-            confirmDialog.action === 'approve' ? 'default' : 'destructive'
-          }
-        />
       </div>
     </div>
   );

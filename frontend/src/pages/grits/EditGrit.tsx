@@ -58,15 +58,7 @@ const EditGrit = () => {
       navigate(`/dashboard/grits/${id}`);
     },
     onError: (err: any) => {
-      if (err.response?.data?.errors) {
-        // Handle validation errors
-        const errorMessages = Object.values(err.response.data.errors).flat();
-        errorMessages.forEach((message: string) => {
-          toast.error(message);
-        });
-      } else {
-        toast.error(err.response?.data?.message || 'Failed to update GRIT');
-      }
+      toast.error(err.response?.data?.message || 'Failed to update GRIT');
     }
   });
 
@@ -83,19 +75,8 @@ const EditGrit = () => {
     }
 
     // Reset admin approval status when edited by creator
-    // Convert skills_required array to requirements string for backend
-    // Ensure deadline is at least tomorrow to pass backend validation
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const minDeadline = tomorrow.toISOString().split('T')[0];
-    
     const updateData = {
-      title: formData.title,
-      description: formData.description,
-      category_id: formData.category_id,
-      owner_budget: formData.owner_budget,
-      deadline: formData.deadline || minDeadline,
-      requirements: formData.skills_required.length > 0 ? formData.skills_required.join(', ') : (formData.requirements || ''),
+      ...formData,
       admin_approval_status: 'pending' // Reset to pending for admin approval
     };
 
@@ -254,33 +235,14 @@ const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit,
 
 
   
-  // Set default deadline to tomorrow if none exists
-  const getDefaultDeadline = () => {
-    if (grit.deadline) {
-      const deadlineDate = new Date(grit.deadline);
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      
-      // If the existing deadline is today or in the past, use tomorrow
-      if (deadlineDate < tomorrow) {
-        return tomorrow.toISOString().split('T')[0];
-      }
-      return deadlineDate.toISOString().split('T')[0];
-    }
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  };
-
   const [formData, setFormData] = useState({
     title: grit.title || '',
     description: grit.description || '',
     category_id: grit.category?.id || '',
     owner_budget: grit.owner_budget || 0,
-    deadline: getDefaultDeadline(),
+    deadline: grit.deadline ? new Date(grit.deadline).toISOString().split('T')[0] : '',
     requirements: grit.requirements || '',
-    skills_required: parseSkills(grit.requirements)
+    skills_required: parseSkills(grit.requirements) // Use requirements field instead of skills_required
   });
   
 
@@ -294,43 +256,6 @@ const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Client-side validation
-    if (!formData.title.trim()) {
-      toast.error('Title is required');
-      return;
-    }
-    
-    if (!formData.description.trim()) {
-      toast.error('Description is required');
-      return;
-    }
-    
-    if (!formData.category_id) {
-      toast.error('Category is required');
-      return;
-    }
-    
-    if (!formData.owner_budget || formData.owner_budget <= 0) {
-      toast.error('Budget must be greater than 0');
-      return;
-    }
-    
-    if (!formData.deadline) {
-      toast.error('Deadline is required');
-      return;
-    }
-    
-    // Check if deadline is at least tomorrow (backend requires after:today)
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    
-    if (new Date(formData.deadline) < tomorrow) {
-      toast.error('Deadline must be at least tomorrow');
-      return;
-    }
-    
     onSubmit(formData);
   };
 
@@ -438,12 +363,7 @@ const EditGritForm: React.FC<EditGritFormProps> = ({ grit, categories, onSubmit,
                 }
                 setIsDeadlineOpen(false);
               }}
-              disabled={(date) => {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(0, 0, 0, 0);
-                return date <= tomorrow;
-              }}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
               initialFocus
             />
           </div>

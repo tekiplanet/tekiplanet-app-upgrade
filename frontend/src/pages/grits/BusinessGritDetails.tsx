@@ -239,7 +239,7 @@ const BusinessGritDetails = () => {
                       Edit GRIT
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => setActiveTab('applications')}>
+                  <DropdownMenuItem onClick={() => navigate(`/dashboard/grits/${id}/applications`)}>
                     <Users className="h-4 w-4 mr-2" />
                     View Applications
                   </DropdownMenuItem>
@@ -468,7 +468,7 @@ const BusinessGritDetails = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => setActiveTab('applications')}
+                  onClick={() => navigate(`/dashboard/grits/${id}/applications`)}
                 >
                   <Users className="h-4 w-4 mr-2" />
                   View Applications

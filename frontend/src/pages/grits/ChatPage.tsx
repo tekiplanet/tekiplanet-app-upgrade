@@ -107,6 +107,24 @@ const ChatPage = () => {
     );
   }
 
+  // Check if chat is accessible (professional must be assigned)
+  if (grit && !grit.assigned_professional_id) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Chat Not Available</h2>
+          <p className="text-muted-foreground mb-4">
+            Chat is only available after a professional has been assigned to this GRIT.
+          </p>
+          <Button onClick={() => navigate(`/dashboard/grits/${id}`)}>
+            Back to GRIT Details
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!grit) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
