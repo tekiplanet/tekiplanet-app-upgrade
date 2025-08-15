@@ -84,8 +84,11 @@ const BusinessGritDetails = () => {
     grit?.owner_currency
   );
 
-  // Check if GRIT can be edited (no professional assigned and status is open)
-  const canEdit = grit && !grit.assigned_professional_id && grit.status === 'open';
+  // Check if GRIT can be edited (no professional assigned, no applications, and status is open)
+  const canEdit = grit && 
+    !grit.assigned_professional_id && 
+    grit.status === 'open' && 
+    (grit.applications_count || 0) === 0;
 
   const getStatusConfig = (status: string, adminStatus: string) => {
     if (adminStatus === 'pending') {
@@ -148,7 +151,13 @@ const BusinessGritDetails = () => {
     if (canEdit) {
       navigate(`/dashboard/grits/${id}/edit`);
     } else {
-      toast.error('This GRIT cannot be edited. It may have a professional assigned or be in progress.');
+      if (grit?.assigned_professional_id) {
+        toast.error('This GRIT cannot be edited because a professional has been assigned to it.');
+      } else if ((grit?.applications_count || 0) > 0) {
+        toast.error('This GRIT cannot be edited because professionals have already applied. Editing would be unfair to applicants.');
+      } else {
+        toast.error('This GRIT cannot be edited. It may not be in an editable state.');
+      }
     }
   };
 
@@ -431,11 +440,11 @@ const BusinessGritDetails = () => {
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                       <span className="text-white font-semibold">
-                        {grit.assigned_professional.name.charAt(0).toUpperCase()}
+                        {grit.assigned_professional.name?.charAt(0).toUpperCase() || '?'}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium">{grit.assigned_professional.name}</p>
+                      <p className="font-medium">{grit.assigned_professional.name || 'Unknown Professional'}</p>
                       <p className="text-sm text-gray-500">Professional</p>
                     </div>
                   </div>

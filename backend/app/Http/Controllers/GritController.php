@@ -149,9 +149,15 @@ class GritController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            // Check if GRIT can be edited (no professional assigned and status is open)
+            // Check if GRIT can be edited (no professional assigned, no applications, and status is open)
             if ($grit->assigned_professional_id || $grit->status !== 'open') {
                 return response()->json(['message' => 'This GRIT cannot be edited. It may have a professional assigned or be in progress.'], 400);
+            }
+
+            // Check if there are any applications (prevent manipulation)
+            $applicationsCount = $grit->applications()->count();
+            if ($applicationsCount > 0) {
+                return response()->json(['message' => 'This GRIT cannot be edited because professionals have already applied. Editing would be unfair to applicants.'], 400);
             }
 
             $validatedData = $request->validate([

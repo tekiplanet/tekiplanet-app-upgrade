@@ -232,17 +232,22 @@ const MyGrits = () => {
                   {grit.title}
                 </CardTitle>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/dashboard/grits/${grit.id}/edit`);
-                }}
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
+              {/* Only show edit button if GRIT can be edited */}
+              {!grit.assigned_professional_id && 
+               grit.status === 'open' && 
+               (grit.applications_count || 0) === 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/dashboard/grits/${grit.id}/edit`);
+                  }}
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </CardHeader>
 

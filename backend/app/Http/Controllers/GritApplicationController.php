@@ -8,6 +8,7 @@ use App\Models\Professional;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Jobs\SendGritApplicationNotification;
+use App\Jobs\SendGritApplicationStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -147,6 +148,11 @@ class GritApplicationController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
+            // Check if application can be updated (only pending applications can be approved/rejected)
+            if ($application->status !== 'pending' && in_array($request->status, ['approved', 'rejected'])) {
+                return response()->json(['message' => 'Application status cannot be changed'], 400);
+            }
+
             $oldStatus = $application->status;
             $application->status = $request->status;
             $application->save();
@@ -162,10 +168,26 @@ class GritApplicationController extends Controller
             // Send notifications
             if ($request->status === 'approved') {
                 // Notify professional that their application was approved
-                // You can add notification logic here
+                dispatch(new \App\Jobs\SendGritApplicationStatusNotification($application, 'approved'));
+                
+                // Reject all other pending applications for this GRIT
+                $otherApplications = GritApplication::where('grit_id', $application->grit_id)
+                    ->where('id', '!=', $application->id)
+                    ->where('status', 'pending')
+                    ->get();
+                
+                foreach ($otherApplications as $otherApplication) {
+                    $otherApplication->update(['status' => 'rejected']);
+                    // Notify other professionals that their applications were rejected
+                    dispatch(new \App\Jobs\SendGritApplicationStatusNotification(
+                        $otherApplication, 
+                        'rejected', 
+                        'Another professional has been assigned'
+                    ));
+                }
             } elseif ($request->status === 'rejected') {
                 // Notify professional that their application was rejected
-                // You can add notification logic here
+                dispatch(new \App\Jobs\SendGritApplicationStatusNotification($application, 'rejected'));
             }
 
             return response()->json([

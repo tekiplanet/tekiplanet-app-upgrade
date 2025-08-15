@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import { gritService } from '@/services/gritService';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -44,6 +45,17 @@ const ProfessionalDetails = () => {
   const queryClient = useQueryClient();
   
   const gritId = searchParams.get('grit_id');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    action: 'approve' | 'reject' | null;
+    applicationId: string | null;
+    professionalName: string | null;
+  }>({
+    open: false,
+    action: null,
+    applicationId: null,
+    professionalName: null
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['professional-details', id, gritId],
@@ -68,8 +80,38 @@ const ProfessionalDetails = () => {
     updateStatusMutation.mutate({ applicationId, status });
   };
 
-  const formatRating = (rating: number) => {
-    return rating.toFixed(1);
+  const handleConfirmAction = (action: 'approve' | 'reject', applicationId: string, professionalName: string) => {
+    setConfirmDialog({
+      open: true,
+      action,
+      applicationId,
+      professionalName
+    });
+  };
+
+  const handleConfirmDialogConfirm = () => {
+    if (confirmDialog.action && confirmDialog.applicationId) {
+      const status = confirmDialog.action === 'approve' ? 'approved' : 'rejected';
+      updateStatusMutation.mutate({ 
+        applicationId: confirmDialog.applicationId, 
+        status 
+      });
+      setConfirmDialog({ open: false, action: null, applicationId: null, professionalName: null });
+    }
+  };
+
+  const formatRating = (rating: any) => {
+    if (rating === null || rating === undefined || rating === '') {
+      return '0.0';
+    }
+    
+    const numRating = typeof rating === 'number' ? rating : parseFloat(rating);
+    
+    if (isNaN(numRating) || !isFinite(numRating)) {
+      return '0.0';
+    }
+    
+    return numRating.toFixed(1);
   };
 
   const getStatusConfig = (status: string) => {
@@ -131,296 +173,295 @@ const ProfessionalDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
+      <div className="container mx-auto px-4 py-4">
+        {/* Header - Mobile Optimized */}
         <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-          </div>
           
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-            <div className="flex items-start gap-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-3">
               {/* Avatar */}
-              <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-semibold text-2xl">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-semibold text-xl">
                   {professional.user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
               
               {/* Basic Info */}
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold">{professional.user.name}</h1>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h1 className="text-xl font-bold truncate">{professional.user.name}</h1>
                   {professional.verified_at && (
-                    <BadgeCheck className="h-5 w-5 text-blue-500" />
+                    <BadgeCheck className="h-4 w-4 text-blue-500 flex-shrink-0" />
                   )}
                 </div>
-                <p className="text-lg text-muted-foreground mb-1">{professional.title}</p>
-                <p className="text-sm text-muted-foreground">{professional.category.name}</p>
+                <p className="text-base text-muted-foreground mb-1 truncate">{professional.title}</p>
+                <p className="text-sm text-muted-foreground truncate">{professional.category.name}</p>
                 
-                {/* Contact Info */}
-                <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Mail className="h-4 w-4" />
-                    {professional.user.email}
-                  </span>
-                  {professional.user.phone && (
+                {/* Contact Info - Compact */}
+                {professional.user.phone && (
+                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" />
-                      {professional.user.phone}
+                      <Phone className="h-3 w-3" />
+                      <span className="hidden sm:inline">{professional.user.phone}</span>
+                      <span className="sm:hidden">Call</span>
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Application Actions */}
+            {/* Application Actions - Mobile Optimized */}
             {currentApplication && currentApplication.status === 'pending' && (
               <div className="flex gap-2">
                 <Button
-                  onClick={() => handleUpdateStatus(currentApplication.id, 'approved')}
+                  onClick={() => handleConfirmAction('approve', currentApplication.id, professional.name)}
                   disabled={updateStatusMutation.isPending}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+                  size="sm"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Approve Application
+                  <span className="hidden sm:inline">Approve Application</span>
+                  <span className="sm:hidden">Approve</span>
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleUpdateStatus(currentApplication.id, 'rejected')}
+                  onClick={() => handleConfirmAction('reject', currentApplication.id, professional.name)}
                   disabled={updateStatusMutation.isPending}
-                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  className="border-red-300 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
+                  size="sm"
                 >
                   <XCircle className="h-4 w-4 mr-2" />
-                  Reject Application
+                  <span className="hidden sm:inline">Reject Application</span>
+                  <span className="sm:hidden">Reject</span>
                 </Button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {/* Statistics Cards - Mobile Optimized */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <Star className="h-5 w-5 text-blue-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-blue-500/10 rounded-lg">
+                  <Star className="h-4 w-4 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Rating</p>
-                  <p className="text-xl font-semibold">{formatRating(statistics.average_rating)}</p>
+                  <p className="text-xs text-muted-foreground">Rating</p>
+                  <p className="text-lg font-semibold">{formatRating(statistics.average_rating)}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-green-500/10 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Completion Rate</p>
-                  <p className="text-xl font-semibold">{statistics.completion_rate}%</p>
+                  <p className="text-xs text-muted-foreground">Completion</p>
+                  <p className="text-lg font-semibold">{statistics.completion_rate}%</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded-lg">
-                  <Award className="h-5 w-5 text-purple-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-purple-500/10 rounded-lg">
+                  <Award className="h-4 w-4 text-purple-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Projects Completed</p>
-                  <p className="text-xl font-semibold">{statistics.total_grits_completed}</p>
+                  <p className="text-xs text-muted-foreground">Projects</p>
+                  <p className="text-lg font-semibold">{statistics.total_grits_completed}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-500/10 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-orange-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-orange-500/10 rounded-lg">
+                  <Calendar className="h-4 w-4 text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Earnings</p>
-                  <p className="text-xl font-semibold">
-                    {formatCurrency(statistics.total_earnings, 'USD')}
-                  </p>
+                  <p className="text-xs text-muted-foreground">Joined</p>
+                  <p className="text-lg font-semibold">{professional.user.created_at}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="projects">Recent Projects</TabsTrigger>
-            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+        {/* Main Content - Mobile Optimized */}
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="w-full h-10 p-1 bg-muted rounded-lg flex">
+            <TabsTrigger value="overview" className="flex-1 text-xs rounded-md data-[state=active]:bg-background">Overview</TabsTrigger>
+            <TabsTrigger value="reviews" className="flex-1 text-xs rounded-md data-[state=active]:bg-background">Reviews</TabsTrigger>
+            <TabsTrigger value="projects" className="flex-1 text-xs rounded-md data-[state=active]:bg-background">Projects</TabsTrigger>
+            <TabsTrigger value="portfolio" className="flex-1 text-xs rounded-md data-[state=active]:bg-background">Portfolio</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
               {/* Professional Info */}
-              <div className="lg:col-span-2 space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
-                      Professional Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <User className="h-5 w-5" />
+                    Professional Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Bio</h3>
+                    <p className="text-muted-foreground text-sm">
+                      {professional.bio || 'No bio available'}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <h3 className="font-semibold mb-2">Bio</h3>
-                      <p className="text-muted-foreground">
-                        {professional.bio || 'No bio available'}
+                      <p className="text-xs text-muted-foreground">Experience</p>
+                      <p className="font-medium">{professional.experience_years} years</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Hourly Rate</p>
+                      <p className="font-medium">
+                        {formatCurrency(professional.hourly_rate, 'USD')}/hr
                       </p>
                     </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Member Since</p>
+                      <p className="font-medium">{professional.user.created_at}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Status</p>
+                      <Badge variant={professional.status === 'active' ? 'default' : 'secondary'}>
+                        {professional.status}
+                      </Badge>
+                    </div>
+                  </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                                     {professional.qualifications && (
+                     <div>
+                       <h3 className="font-semibold mb-2">Qualifications</h3>
+                       <div className="bg-muted p-3 rounded-lg">
+                         {Array.isArray(professional.qualifications) ? (
+                           <ul className="space-y-1 text-sm">
+                             {professional.qualifications.map((qual: string, index: number) => (
+                               <li key={index} className="flex items-center gap-2">
+                                 <span className="w-1 h-1 bg-primary rounded-full"></span>
+                                 {qual}
+                               </li>
+                             ))}
+                           </ul>
+                         ) : (
+                           <p className="text-muted-foreground text-sm">{professional.qualifications}</p>
+                         )}
+                       </div>
+                     </div>
+                   )}
+
+                   {/* Expertise Areas */}
+                   {professional.expertise_areas && professional.expertise_areas.length > 0 && (
+                     <div>
+                       <h3 className="font-semibold mb-3">Areas of Expertise</h3>
+                       <div className="flex flex-wrap gap-2">
+                         {professional.expertise_areas.map((expertise: string, index: number) => (
+                           <Badge 
+                             key={index} 
+                             variant="secondary" 
+                             className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 px-3 py-1"
+                           >
+                             {expertise}
+                           </Badge>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+
+                   {/* Certifications */}
+                   {professional.certifications && professional.certifications.length > 0 && (
+                     <div>
+                       <h3 className="font-semibold mb-3">Certifications</h3>
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                         {professional.certifications.map((certification: string, index: number) => (
+                           <div 
+                             key={index} 
+                             className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg"
+                           >
+                             <div className="p-2 bg-green-100 rounded-full">
+                               <BadgeCheck className="h-4 w-4 text-green-600" />
+                             </div>
+                             <div>
+                               <p className="font-medium text-sm text-green-800">{certification}</p>
+                               <p className="text-xs text-green-600">Certified</p>
+                             </div>
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                </CardContent>
+              </Card>
+
+              {/* Application Status */}
+              {currentApplication && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Briefcase className="h-5 w-5" />
+                      Application Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Experience</p>
-                        <p className="font-medium">{professional.experience_years} years</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Hourly Rate</p>
-                        <p className="font-medium">
-                          {formatCurrency(professional.hourly_rate, 'USD')}/hr
+                        <p className="font-medium text-sm">{currentApplication.grit.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Applied on {currentApplication.applied_at}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Member Since</p>
-                        <p className="font-medium">{professional.user.created_at}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Status</p>
-                        <Badge variant={professional.status === 'active' ? 'default' : 'secondary'}>
-                          {professional.status}
-                        </Badge>
-                      </div>
+                      <Badge className={cn("", getStatusConfig(currentApplication.status).bgColor)}>
+                        {currentApplication.status}
+                      </Badge>
                     </div>
-
-                    {professional.qualifications && (
-                      <div>
-                        <h3 className="font-semibold mb-2">Qualifications</h3>
-                        <div className="bg-muted p-3 rounded-lg">
-                          {Array.isArray(professional.qualifications) ? (
-                            <ul className="space-y-1">
-                              {professional.qualifications.map((qual: string, index: number) => (
-                                <li key={index} className="flex items-center gap-2">
-                                  <span className="w-1 h-1 bg-primary rounded-full"></span>
-                                  {qual}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-muted-foreground">{professional.qualifications}</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
+              )}
 
-                {/* Application Status */}
-                {currentApplication && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Briefcase className="h-5 w-5" />
-                        Application Status
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{currentApplication.grit.title}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Applied on {currentApplication.applied_at}
-                          </p>
-                        </div>
-                        <Badge className={cn("", getStatusConfig(currentApplication.status).bgColor)}>
-                          {currentApplication.status}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5" />
-                      Verification
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Email Verified</span>
+              {/* Verification */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Shield className="h-5 w-5" />
+                    Verification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Email Verified</span>
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Profile Verified</span>
+                      {professional.verified_at ? (
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Profile Verified</span>
-                        {professional.verified_at ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Clock className="h-4 w-4 text-yellow-500" />
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Active Projects</span>
-                        <Badge variant="outline">{statistics.active_projects}</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5" />
-                      Contact
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <Button variant="outline" className="w-full justify-start">
-                        <Mail className="h-4 w-4 mr-2" />
-                        Send Message
-                      </Button>
-                      {professional.user.phone && (
-                        <Button variant="outline" className="w-full justify-start">
-                          <Phone className="h-4 w-4 mr-2" />
-                          Call
-                        </Button>
+                      ) : (
+                        <Clock className="h-4 w-4 text-yellow-500" />
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -448,7 +489,7 @@ const ProfessionalDetails = () => {
                                 key={i}
                                 className={cn(
                                   "h-4 w-4",
-                                  i < review.rating ? "text-yellow-500 fill-current" : "text-gray-300"
+                                  i < (parseInt(review.rating) || 0) ? "text-yellow-500 fill-current" : "text-gray-300"
                                 )}
                               />
                             ))}
@@ -472,26 +513,33 @@ const ProfessionalDetails = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5" />
-                  Recent Projects ({recentProjects.length})
+                  Recent Projects ({recentProjects?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentProjects.map((project: any) => (
-                    <div key={project.id} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-semibold">{project.title}</h4>
-                          <p className="text-sm text-muted-foreground">{project.business_name}</p>
+                  {recentProjects && recentProjects.length > 0 ? (
+                    recentProjects.map((project: any) => (
+                      <div key={project.id} className="border rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="font-semibold">{project.title}</h4>
+                            <p className="text-sm text-muted-foreground">{project.business_name}</p>
+                          </div>
+                          <Badge variant="outline">{project.status}</Badge>
                         </div>
-                        <Badge variant="outline">{project.status}</Badge>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>{project.category}</span>
+                          <span>{formatCurrency(project.budget, project.currency)}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>{project.category}</span>
-                        <span>{formatCurrency(project.budget, project.currency)}</span>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-muted-foreground">No recent projects available</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -535,6 +583,29 @@ const ProfessionalDetails = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          open={confirmDialog.open}
+          onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+          onConfirm={handleConfirmDialogConfirm}
+          title={
+            confirmDialog.action === 'approve' 
+              ? 'Approve Application' 
+              : 'Reject Application'
+          }
+          description={
+            confirmDialog.action === 'approve'
+              ? `Are you sure you want to approve ${confirmDialog.professionalName}'s application? This will automatically reject all other pending applications for this GRIT.`
+              : `Are you sure you want to reject ${confirmDialog.professionalName}'s application? This action cannot be undone.`
+          }
+          actionLabel={
+            confirmDialog.action === 'approve' ? 'Approve' : 'Reject'
+          }
+          variant={
+            confirmDialog.action === 'approve' ? 'default' : 'destructive'
+          }
+        />
       </div>
     </div>
   );

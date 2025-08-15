@@ -171,6 +171,19 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] Job `SendGritApplicationNotification` (email + in-app/push) dispatched on apply
     - [x] Owner-created GRIT → email owner (`NewGritApplicationSubmitted`) + in-app/push
     - [x] Admin-created GRIT → notify active admins via `NewGritApplicationNotification` (mail + database)
+    - [x] **Application Status Notifications (Queued)**:
+        - [x] Job `SendGritApplicationStatusNotification` (email + in-app/push) dispatched on approval/rejection
+        - [x] Email templates: `emails/applications/approved.blade.php` and `emails/applications/rejected.blade.php`
+        - [x] Mail classes: `GritApplicationApproved` and `GritApplicationRejected`
+        - [x] Auto-rejection logic: When one application is approved, all other pending applications are automatically rejected
+        - [x] Rejection reason: "Another professional has been assigned" for auto-rejected applications
+        - [x] **Confirmation Dialogs**: Added confirmation dialogs for application approval/rejection actions
+        - [x] Frontend components updated: `GritApplications.tsx`, `ApplicationsTab.tsx`, and `ProfessionalDetails.tsx`
+        - [x] User-friendly confirmation messages explaining the consequences of each action
+        - [x] Proper UX: approval dialog warns about auto-rejecting other applications, rejection dialog warns about irreversibility
+        - [x] Notifications sent to both approved and rejected professionals
+        - [x] Controllers updated: `GritApplicationController` and `ProfessionalDetailsController`
+        - [x] Admin interface automatically benefits from notification system
     - [x] Create form now includes `owner_budget`, `owner_currency`, `requirements` fields
     - [x] Edit form now includes all new GRIT fields including `admin_approval_status`
     - [x] Both forms properly handle multicurrency support with dynamic currency loading

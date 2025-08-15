@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Professional;
 use App\Models\GritApplication;
 use App\Models\Grit;
+use App\Jobs\SendGritApplicationStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ProfessionalDetailsController extends Controller
 {
@@ -116,12 +118,14 @@ class ProfessionalDetailsController extends Controller
                     ],
                     'title' => $professional->title,
                     'bio' => $professional->bio,
-                    'experience_years' => $professional->experience_years,
+                    'experience_years' => $professional->years_of_experience,
                     'hourly_rate' => $professional->hourly_rate,
                     'completion_rate' => $completionRate,
                     'average_rating' => $averageRating,
                     'total_projects_completed' => $professional->total_projects_completed ?? 0,
                     'qualifications' => $professional->qualifications,
+                    'expertise_areas' => $professional->expertise_areas ?? [],
+                    'certifications' => $professional->certifications ?? [],
                     'portfolio_items' => $professional->portfolio_items ?? [],
                     'status' => $professional->status,
                     'verified_at' => $professional->verified_at,
@@ -170,6 +174,16 @@ class ProfessionalDetailsController extends Controller
             $application = GritApplication::with(['grit', 'professional.user'])
                 ->findOrFail($applicationId);
 
+            // Check if user has permission to update this application
+            if (Auth::user()->role !== 'admin' && $application->grit->created_by_user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Check if application can be updated (only pending applications can be approved/rejected)
+            if ($application->status !== 'pending') {
+                return response()->json(['message' => 'Application status cannot be changed'], 400);
+            }
+
             $oldStatus = $application->status;
             $application->status = $request->status;
             $application->save();
@@ -180,6 +194,28 @@ class ProfessionalDetailsController extends Controller
                     'assigned_professional_id' => $application->professional_id,
                     'status' => 'in_progress'
                 ]);
+                
+                // Notify professional that their application was approved
+                dispatch(new \App\Jobs\SendGritApplicationStatusNotification($application, 'approved'));
+                
+                // Reject all other pending applications for this GRIT
+                $otherApplications = GritApplication::where('grit_id', $application->grit_id)
+                    ->where('id', '!=', $application->id)
+                    ->where('status', 'pending')
+                    ->get();
+                
+                foreach ($otherApplications as $otherApplication) {
+                    $otherApplication->update(['status' => 'rejected']);
+                    // Notify other professionals that their applications were rejected
+                    dispatch(new \App\Jobs\SendGritApplicationStatusNotification(
+                        $otherApplication, 
+                        'rejected', 
+                        'Another professional has been assigned'
+                    ));
+                }
+            } elseif ($request->status === 'rejected') {
+                // Notify professional that their application was rejected
+                dispatch(new \App\Jobs\SendGritApplicationStatusNotification($application, 'rejected'));
             }
 
             return response()->json([

@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import { gritService, type GritApplicationForBusiness } from '@/services/gritService';
 import { cn, formatDate } from '@/lib/utils';
@@ -36,6 +37,17 @@ const GritApplications = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    action: 'approve' | 'reject' | null;
+    applicationId: string | null;
+    professionalName: string | null;
+  }>({
+    open: false,
+    action: null,
+    applicationId: null,
+    professionalName: null
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['grit-applications', id, currentPage, statusFilter, searchTerm],
@@ -58,6 +70,26 @@ const GritApplications = () => {
 
   const handleUpdateStatus = (applicationId: string, status: 'approved' | 'rejected') => {
     updateStatusMutation.mutate({ applicationId, status });
+  };
+
+  const handleConfirmAction = (action: 'approve' | 'reject', applicationId: string, professionalName: string) => {
+    setConfirmDialog({
+      open: true,
+      action,
+      applicationId,
+      professionalName
+    });
+  };
+
+  const handleConfirmDialogConfirm = () => {
+    if (confirmDialog.action && confirmDialog.applicationId) {
+      const status = confirmDialog.action === 'approve' ? 'approved' : 'rejected';
+      updateStatusMutation.mutate({ 
+        applicationId: confirmDialog.applicationId, 
+        status 
+      });
+      setConfirmDialog({ open: false, action: null, applicationId: null, professionalName: null });
+    }
   };
 
   const handleProfessionalClick = (professionalId: string) => {
@@ -310,6 +342,34 @@ const GritApplications = () => {
                     )}
                   </div>
 
+                  {/* Action Buttons */}
+                  {application.status === 'pending' && (
+                    <div className="flex items-center gap-3 mt-4">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConfirmAction('approve', application.id, application.professional.name);
+                        }}
+                        disabled={updateStatusMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Approve Application
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConfirmAction('reject', application.id, application.professional.name);
+                        }}
+                        disabled={updateStatusMutation.isPending}
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Reject Application
+                      </Button>
+                    </div>
+                  )}
                   
                 </div>
               </motion.div>
@@ -391,6 +451,29 @@ const GritApplications = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          open={confirmDialog.open}
+          onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+          onConfirm={handleConfirmDialogConfirm}
+          title={
+            confirmDialog.action === 'approve' 
+              ? 'Approve Application' 
+              : 'Reject Application'
+          }
+          description={
+            confirmDialog.action === 'approve'
+              ? `Are you sure you want to approve ${confirmDialog.professionalName}'s application? This will automatically reject all other pending applications for this GRIT.`
+              : `Are you sure you want to reject ${confirmDialog.professionalName}'s application? This action cannot be undone.`
+          }
+          actionLabel={
+            confirmDialog.action === 'approve' ? 'Approve' : 'Reject'
+          }
+          variant={
+            confirmDialog.action === 'approve' ? 'default' : 'destructive'
+          }
+        />
       </div>
     </div>
   );

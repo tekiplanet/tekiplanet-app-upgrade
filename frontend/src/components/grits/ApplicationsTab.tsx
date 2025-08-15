@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { toast } from 'sonner';
 import { gritService, type GritApplicationForBusiness } from '@/services/gritService';
 import { cn, formatDate } from '@/lib/utils';
@@ -32,6 +33,17 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [selectedApplication, setSelectedApplication] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    action: 'approve' | 'reject' | null;
+    applicationId: string | null;
+    professionalName: string | null;
+  }>({
+    open: false,
+    action: null,
+    applicationId: null,
+    professionalName: null
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['grit-applications', gritId, 'preview'],
@@ -55,6 +67,26 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
 
   const handleUpdateStatus = (applicationId: string, status: 'approved' | 'rejected') => {
     updateStatusMutation.mutate({ applicationId, status });
+  };
+
+  const handleConfirmAction = (action: 'approve' | 'reject', applicationId: string, professionalName: string) => {
+    setConfirmDialog({
+      open: true,
+      action,
+      applicationId,
+      professionalName
+    });
+  };
+
+  const handleConfirmDialogConfirm = () => {
+    if (confirmDialog.action && confirmDialog.applicationId) {
+      const status = confirmDialog.action === 'approve' ? 'approved' : 'rejected';
+      updateStatusMutation.mutate({ 
+        applicationId: confirmDialog.applicationId, 
+        status 
+      });
+      setConfirmDialog({ open: false, action: null, applicationId: null, professionalName: null });
+    }
   };
 
   const handleProfessionalClick = (professionalId: string) => {
@@ -225,28 +257,57 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
                     </Badge>
                   </div>
                   
-                                     <div className="flex items-center gap-3 text-xs text-gray-500 mb-2 flex-wrap">
-                     <span className="flex items-center gap-1">
-                       <Star className="h-3 w-3 text-yellow-500" />
-                       {formatRating(application.professional.average_rating)}
-                     </span>
-                     <span className="flex items-center gap-1">
-                       <TrendingUp className="h-3 w-3 text-blue-500" />
-                       {formatCompletionRate(application.professional.completion_rate)}%
-                     </span>
-                     <span className="flex items-center gap-1">
-                       <Award className="h-3 w-3 text-green-500" />
-                       {formatProjectsCount(application.professional.total_projects_completed)} projects
-                     </span>
-                   </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-500 mb-2 flex-wrap">
+                    <span className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      {formatRating(application.professional.average_rating)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3 text-blue-500" />
+                      {formatCompletionRate(application.professional.completion_rate)}%
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Award className="h-3 w-3 text-green-500" />
+                      {formatProjectsCount(application.professional.total_projects_completed)} projects
+                    </span>
+                  </div>
 
-                                     <div className="flex flex-col gap-2">
-                     <span className="text-xs text-gray-400">
-                       Applied {application.applied_at}
-                     </span>
-                     
-                     
-                   </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs text-gray-400">
+                      Applied {application.applied_at}
+                    </span>
+                    
+                    {/* Action Buttons */}
+                    {application.status === 'pending' && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleConfirmAction('approve', application.id, application.professional.name);
+                          }}
+                          disabled={updateStatusMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-6"
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleConfirmAction('reject', application.id, application.professional.name);
+                          }}
+                          disabled={updateStatusMutation.isPending}
+                          className="border-red-300 text-red-600 hover:bg-red-50 text-xs px-2 py-1 h-6"
+                        >
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -264,6 +325,29 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
           </p>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        onConfirm={handleConfirmDialogConfirm}
+        title={
+          confirmDialog.action === 'approve' 
+            ? 'Approve Application' 
+            : 'Reject Application'
+        }
+        description={
+          confirmDialog.action === 'approve'
+            ? `Are you sure you want to approve ${confirmDialog.professionalName}'s application? This will automatically reject all other pending applications for this GRIT.`
+            : `Are you sure you want to reject ${confirmDialog.professionalName}'s application? This action cannot be undone.`
+        }
+        actionLabel={
+          confirmDialog.action === 'approve' ? 'Approve' : 'Reject'
+        }
+        variant={
+          confirmDialog.action === 'approve' ? 'default' : 'destructive'
+        }
+      />
     </div>
   );
 };
