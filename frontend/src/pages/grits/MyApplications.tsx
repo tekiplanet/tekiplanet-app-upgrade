@@ -30,7 +30,6 @@ import { gritService, type GritApplication } from '@/services/gritService';
 import { settingsService } from '@/services/settingsService';
 import { formatCurrency, formatDate, formatShortDate, cn } from '@/lib/utils';
 import WithdrawApplicationDialog from '@/components/grits/WithdrawApplicationDialog';
-import { useCurrencyFormat } from '@/lib/currency';
 
 const MyApplications = () => {
   const navigate = useNavigate();
@@ -221,10 +220,6 @@ const MyApplications = () => {
         <div className="space-y-4">
           {applications.map((application: GritApplication, index: number) => {
             const statusConfig = getStatusConfig(application.status);
-            const { formattedAmount } = useCurrencyFormat(
-              application.grit.budget,
-              settings?.default_currency
-            );
             
             return (
               <motion.div
@@ -280,10 +275,10 @@ const MyApplications = () => {
                           </div>
                           <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-3">
                             <DollarSign className="h-4 w-4 text-green-500 flex-shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs text-muted-foreground">Budget</p>
-                              <p className="font-medium text-sm">{formattedAmount}</p>
-                            </div>
+                                                         <div className="min-w-0">
+                               <p className="text-xs text-muted-foreground">Budget</p>
+                               <p className="font-medium text-sm">{formatCurrency(application.grit.budget, settings?.default_currency)}</p>
+                             </div>
                           </div>
                           <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-3 sm:col-span-1 col-span-2">
                             <TrendingUp className="h-4 w-4 text-purple-500 flex-shrink-0" />
