@@ -19,6 +19,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { gritService, type Grit, type Category } from '@/services/gritService';
 import { formatCurrency } from '@/lib/utils';
 import { settingsService } from '@/services/settingsService';
+import { format } from 'date-fns';
 
 const container = {
   hidden: { opacity: 0 },
@@ -203,7 +204,7 @@ const Grits = () => {
                       <div className="grid grid-cols-2 gap-4 pt-4">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{grit.deadline}</span>
+                          <span className="text-sm">{grit.deadline ? format(new Date(grit.deadline), 'do MMMM, yyyy') : 'No deadline'}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
