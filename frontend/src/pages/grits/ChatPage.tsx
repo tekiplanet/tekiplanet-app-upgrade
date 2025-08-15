@@ -9,7 +9,6 @@ import {
   Smile, 
   Paperclip,
   MoreVertical,
-  Search,
   User,
   Calendar,
   Clock,
@@ -143,7 +142,7 @@ const ChatPage = () => {
     >
       {/* Fixed Header */}
       <div className="sticky top-4 flex-shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-20">
-        <div className="flex items-center justify-between px-3 py-2">
+        <div className="flex items-start justify-between px-3 py-2">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <Button
               variant="ghost"
@@ -161,8 +160,8 @@ const ChatPage = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <h1 className="font-semibold text-sm sm:text-base truncate">{grit.title}</h1>
-                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground">
+                <h1 className="font-semibold text-sm sm:text-base leading-snug break-words whitespace-normal">{grit.title}</h1>
+                <div className="mt-0.5 flex items-center gap-2 text-[11px] sm:text-xs text-muted-foreground">
                   <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
                   <Badge variant="secondary" className={cn("text-[10px]", getStatusColor(grit.status))}>
                     {grit.status.replace('_', ' ')}
@@ -172,24 +171,6 @@ const ChatPage = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Search className="h-4 w-4"/>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Search messages</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>More options</TooltipContent>
-            </Tooltip>
-          </div>
         </div>
       </div>
 
