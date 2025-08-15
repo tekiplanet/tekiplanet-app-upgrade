@@ -2099,3 +2099,41 @@
 #46 {main}"} 
 [2025-08-15 08:52:48] production.INFO: SendGritApplicationNotification starting {"grit_id":"9f9c0464-3e06-41eb-8248-8d2c9ae0d6a9","professional_id":"9f9beeb6-eeb7-4e60-b222-593b0a9fd763"} 
 [2025-08-15 08:52:48] production.INFO: SendGritApplicationNotification completed  
+[2025-08-15 08:57:14] production.INFO: SendGritApplicationNotification starting {"grit_id":"9f9c0464-3e06-41eb-8248-8d2c9ae0d6a9","professional_id":"9f9beeb6-eeb7-4e60-b222-593b0a9fd763"} 
+[2025-08-15 08:57:14] production.INFO: SendGritApplicationNotification completed  
+[2025-08-15 08:59:38] production.INFO: SendGritApplicationNotification starting {"grit_id":"9f9c0464-3e06-41eb-8248-8d2c9ae0d6a9","professional_id":"9f9beeb6-eeb7-4e60-b222-593b0a9fd763"} 
+[2025-08-15 08:59:39] production.INFO: SendGritApplicationNotification completed  
+[2025-08-15 09:01:54] production.ERROR: Unable to locate a class or view for component [app-layout]. {"exception":"[object] (InvalidArgumentException(code: 0): Unable to locate a class or view for component [app-layout]. at C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\ComponentTagCompiler.php:311)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\ComponentTagCompiler.php(235): Illuminate\\View\\Compilers\\ComponentTagCompiler->componentClass('app-layout')
+#1 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\ComponentTagCompiler.php(156): Illuminate\\View\\Compilers\\ComponentTagCompiler->componentString('app-layout', Array)
+#2 [internal function]: Illuminate\\View\\Compilers\\ComponentTagCompiler->Illuminate\\View\\Compilers\\{closure}(Array)
+#3 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\ComponentTagCompiler.php(151): preg_replace_callback('/\\n            <...', Object(Closure), '<x-app-layout>\\n...')
+#4 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\ComponentTagCompiler.php(90): Illuminate\\View\\Compilers\\ComponentTagCompiler->compileOpeningTags('<x-app-layout>\\n...')
+#5 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\ComponentTagCompiler.php(76): Illuminate\\View\\Compilers\\ComponentTagCompiler->compileTags('<x-app-layout>\\n...')
+#6 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\BladeCompiler.php(438): Illuminate\\View\\Compilers\\ComponentTagCompiler->compile('<x-app-layout>\\n...')
+#7 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\BladeCompiler.php(271): Illuminate\\View\\Compilers\\BladeCompiler->compileComponentTags('<x-app-layout>\\n...')
+#8 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\BladeCompiler.php(184): Illuminate\\View\\Compilers\\BladeCompiler->compileString('<x-app-layout>\\n...')
+#9 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ViewCacheCommand.php(64): Illuminate\\View\\Compilers\\BladeCompiler->compile('C:\\\\xampp\\\\htdocs...')
+#10 [internal function]: Illuminate\\Foundation\\Console\\ViewCacheCommand->Illuminate\\Foundation\\Console\\{closure}(Object(Symfony\\Component\\Finder\\SplFileInfo), 'C:\\\\xampp\\\\htdocs...')
+#11 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Collections\\Arr.php(600): array_map(Object(Closure), Array, Array)
+#12 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Collections\\Collection.php(778): Illuminate\\Support\\Arr::map(Array, Object(Closure))
+#13 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ViewCacheCommand.php(65): Illuminate\\Support\\Collection->map(Object(Closure))
+#14 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ViewCacheCommand.php(43): Illuminate\\Foundation\\Console\\ViewCacheCommand->compileViews(Object(Illuminate\\Support\\Collection))
+#15 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Collections\\Traits\\EnumeratesValues.php(240): Illuminate\\Foundation\\Console\\ViewCacheCommand->Illuminate\\Foundation\\Console\\{closure}('C:\\\\xampp\\\\htdocs...', 0)
+#16 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ViewCacheCommand.php(44): Illuminate\\Support\\Collection->each(Object(Closure))
+#17 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Foundation\\Console\\ViewCacheCommand->handle()
+#18 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#19 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#20 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#21 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#22 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#23 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#24 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#25 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#26 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Foundation\\Console\\ViewCacheCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#27 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\tekiplanet\\backend\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 {main}
+"} 
