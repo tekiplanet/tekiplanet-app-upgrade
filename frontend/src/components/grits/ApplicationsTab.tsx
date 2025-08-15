@@ -193,12 +193,13 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
           const statusConfig = getStatusConfig(application.status);
           
           return (
-            <motion.div
-              key={application.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="border rounded-lg p-3 hover:shadow-sm transition-shadow bg-white dark:bg-gray-800"
-            >
+                         <motion.div
+               key={application.id}
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="border rounded-lg p-3 hover:shadow-sm transition-shadow bg-background cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+               onClick={() => window.location.href = `/dashboard/professionals/${application.professional.id}?grit_id=${gritId}`}
+             >
               <div className="flex items-center gap-3">
                 {/* Avatar */}
                 <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
@@ -238,30 +239,7 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
                        Applied {application.applied_at}
                      </span>
                      
-                     {application.status === 'pending' && (
-                       <div className="flex gap-2">
-                         <Button
-                           size="sm"
-                           variant="ghost"
-                           onClick={() => handleUpdateStatus(application.id, 'approved')}
-                           disabled={updateStatusMutation.isPending}
-                           className="flex-1 h-7 px-2 text-xs bg-green-50 text-green-700 hover:bg-green-100"
-                         >
-                           <CheckCircle className="h-3 w-3 mr-1" />
-                           Approve
-                         </Button>
-                         <Button
-                           size="sm"
-                           variant="ghost"
-                           onClick={() => handleUpdateStatus(application.id, 'rejected')}
-                           disabled={updateStatusMutation.isPending}
-                           className="flex-1 h-7 px-2 text-xs bg-red-50 text-red-700 hover:bg-red-100"
-                         >
-                           <XCircle className="h-3 w-3 mr-1" />
-                           Reject
-                         </Button>
-                       </div>
-                     )}
+                     
                    </div>
                 </div>
               </div>

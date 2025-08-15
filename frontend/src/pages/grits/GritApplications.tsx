@@ -218,12 +218,13 @@ const GritApplications = () => {
             const statusConfig = getStatusConfig(application.status);
             
             return (
-              <motion.div
-                key={application.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800"
-              >
+                             <motion.div
+                 key={application.id}
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                 onClick={() => window.location.href = `/dashboard/professionals/${application.professional.id}?grit_id=${id}`}
+               >
                 <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                   {/* Professional Info */}
                   <div className="flex-1">
@@ -305,30 +306,7 @@ const GritApplications = () => {
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col gap-3 lg:w-48">
-                    {application.status === 'pending' && (
-                      <div className="space-y-2">
-                        <Button
-                          onClick={() => handleUpdateStatus(application.id, 'approved')}
-                          disabled={updateStatusMutation.isPending}
-                          className="w-full bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve Application
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleUpdateStatus(application.id, 'rejected')}
-                          disabled={updateStatusMutation.isPending}
-                          className="w-full border-red-300 text-red-600 hover:bg-red-50"
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Reject Application
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+                  
                 </div>
               </motion.div>
             );

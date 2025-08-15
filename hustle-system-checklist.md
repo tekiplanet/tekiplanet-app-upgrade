@@ -63,6 +63,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
 - [x] Add endpoints for business owners to manage applications (`GET /grits/{gritId}/applications`, `GET /applications/{applicationId}`, `PATCH /applications/{applicationId}/status`).
 - [x] **Enhanced Applications API**: Added pagination support with proper metadata and query parameters.
+- [x] **Professional Details API**: New controller and routes for fetching complete professional information with reviews and application status.
 - [x] **Professional `GritApplicationController`**:
     - [x] `store()` (POST `/api/grits/{gritId}/apply`): Create application with guards (open/unassigned, no duplicates, optional category match).
     - [x] `index()` (GET `/api/grits/{gritId}/applications`): List applications for a GRIT with professional details and pagination support.
@@ -109,7 +110,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **Applications Tab Integration**: Integrated compact ApplicationsTab with "View All" navigation to dedicated page.
 - [x] **`ApplicationsTab.tsx`**: For business owners to view and manage GRIT applications with professional profiles, stats, and approval/rejection functionality.
 - [x] **`GritApplications.tsx`**: Dedicated page for viewing all applications with pagination, search, filtering, and detailed professional information.
-- [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
+- [x] **`ProfessionalDetails.tsx`**: Comprehensive professional details page for viewing complete applicant information, reviews, and application management.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
 - [ ] **`GritDisputeDialog.tsx`**: For raising and managing disputes.
@@ -130,6 +131,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **Mobile-Responsive Applications**: Compact design for mobile devices with proper responsive layouts.
 - [x] **Applications Preview Tab**: Shows 2 most recent applications with "View All" button for full list.
 - [x] **Dedicated Applications Page**: Full-featured page with pagination, search, filtering, and detailed professional information.
+- [x] **Professional Details Page**: Comprehensive page for viewing complete professional information including reviews, statistics, portfolio, and application management.
+- [x] **Application Management Redesign**: Moved approve/reject functionality from application cards to professional details page with "View Applicant" buttons.
 
 ### Role-based navigation & access
 - [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).

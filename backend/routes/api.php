@@ -374,9 +374,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-grits', [GritController::class, 'myGrits']);
     
     // Grit applications (for business owners to view and manage)
-    Route::get('/grits/{gritId}/applications', [GritApplicationController::class, 'index']);
-    Route::get('/applications/{applicationId}', [GritApplicationController::class, 'show']);
-    Route::patch('/applications/{applicationId}/status', [GritApplicationController::class, 'updateStatus']);
+Route::get('/grits/{gritId}/applications', [GritApplicationController::class, 'index']);
+Route::get('/applications/{applicationId}', [GritApplicationController::class, 'show']);
+Route::patch('/applications/{applicationId}/status', [GritApplicationController::class, 'updateStatus']);
+
+// Professional details (for viewing complete professional info)
+Route::get('/professionals/{professionalId}', [ProfessionalDetailsController::class, 'show']);
+Route::patch('/applications/{applicationId}/status/details', [ProfessionalDetailsController::class, 'updateApplicationStatus']);
     
     // Grit messages
     Route::get('/grits/{gritId}/messages', [GritMessageController::class, 'getMessages']);

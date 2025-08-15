@@ -181,5 +181,17 @@ export const gritService = {
   updateApplicationStatus: async (applicationId: string, status: 'approved' | 'rejected' | 'withdrawn') => {
     const { data } = await api.patch(`/applications/${applicationId}/status`, { status });
     return data;
+  },
+
+  // Professional details methods
+  getProfessionalDetails: async (professionalId: string, gritId?: string) => {
+    const params = gritId ? { grit_id: gritId } : {};
+    const { data } = await api.get(`/professionals/${professionalId}`, { params });
+    return data;
+  },
+
+  updateApplicationStatusFromDetails: async (applicationId: string, status: 'approved' | 'rejected') => {
+    const { data } = await api.patch(`/applications/${applicationId}/status/details`, { status });
+    return data;
   }
 }; 
