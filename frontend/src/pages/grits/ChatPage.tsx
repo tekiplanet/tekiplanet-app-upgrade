@@ -182,7 +182,7 @@ const ChatPage = () => {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center text-center py-16 text-muted-foreground"
+                className="flex flex-col items-center justify-center text-center min-h-[60vh] py-8 text-muted-foreground"
               >
                 <div className="mb-4 h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center">
                   <Smile className="h-6 w-6" />
