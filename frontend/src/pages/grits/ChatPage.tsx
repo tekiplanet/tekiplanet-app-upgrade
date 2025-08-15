@@ -29,6 +29,7 @@ import { format } from 'date-fns';
 import { useGritChat } from '@/hooks/useGritChat';
 import { useAuthStore } from '@/store/useAuthStore';
 import { cn } from '@/lib/utils';
+import EmojiPicker from 'emoji-picker-react';
 
 const ChatPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +37,7 @@ const ChatPage = () => {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const [message, setMessage] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -146,6 +148,20 @@ const ChatPage = () => {
     };
   }, [handleStopTyping]);
 
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showEmojiPicker && !event.target) return;
+      const target = event.target as Element;
+      if (!target.closest('.emoji-picker-container') && !target.closest('button[onclick*="setShowEmojiPicker"]')) {
+        setShowEmojiPicker(false);
+      }
+    };
+  
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEmojiPicker]);
+
   const handleSendMessage = () => {
     if (!message.trim()) return;
     sendMessageMutation.mutate(message);
@@ -156,6 +172,12 @@ const ChatPage = () => {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleEmojiSelect = (emojiObject: any) => {
+    setMessage(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
   };
 
   if (gritLoading || messagesLoading) {
@@ -437,6 +459,7 @@ const ChatPage = () => {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 rounded-full opacity-70 hover:opacity-100"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                     >
                       <Smile className="h-4 w-4" />
                     </Button>
@@ -445,6 +468,22 @@ const ChatPage = () => {
                 </Tooltip>
               </div>
             </div>
+            
+            {/* Emoji Picker */}
+            {showEmojiPicker && (
+              <div className="absolute bottom-full right-0 mb-2 z-30 emoji-picker-container">
+                <div className="bg-background border rounded-lg shadow-lg">
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiSelect}
+                    autoFocusSearch={false}
+                    searchDisabled={true}
+                    skinTonesDisabled={true}
+                    width={window.innerWidth < 768 ? 280 : 320}
+                    height={window.innerWidth < 768 ? 350 : 400}
+                  />
+                </div>
+              </div>
+            )}
             
             <Button
               size="icon"
