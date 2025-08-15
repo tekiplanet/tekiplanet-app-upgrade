@@ -43,6 +43,7 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['grit-applications', gritId] });
       queryClient.invalidateQueries({ queryKey: ['grit', gritId] });
+      queryClient.invalidateQueries({ queryKey: ['grit-applications', gritId, 'preview'] });
       toast.success('Application status updated successfully');
     },
     onError: (error: any) => {
@@ -170,7 +171,6 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
       {/* Header with View All button */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Recent Applications</h3>
           <p className="text-sm text-gray-500">
             Showing {applications.length} of {applicationsCount} applications
           </p>
@@ -218,51 +218,51 @@ const ApplicationsTab: React.FC<ApplicationsTabProps> = ({ gritId, applicationsC
                     </Badge>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
-                    <span className="flex items-center gap-1">
-                      <Star className="h-3 w-3 text-yellow-500" />
-                      {formatRating(application.professional.average_rating)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3 text-blue-500" />
-                      {formatCompletionRate(application.professional.completion_rate)}%
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Award className="h-3 w-3 text-green-500" />
-                      {formatProjectsCount(application.professional.total_projects_completed)} projects
-                    </span>
-                  </div>
+                                     <div className="flex items-center gap-3 text-xs text-gray-500 mb-2 flex-wrap">
+                     <span className="flex items-center gap-1">
+                       <Star className="h-3 w-3 text-yellow-500" />
+                       {formatRating(application.professional.average_rating)}
+                     </span>
+                     <span className="flex items-center gap-1">
+                       <TrendingUp className="h-3 w-3 text-blue-500" />
+                       {formatCompletionRate(application.professional.completion_rate)}%
+                     </span>
+                     <span className="flex items-center gap-1">
+                       <Award className="h-3 w-3 text-green-500" />
+                       {formatProjectsCount(application.professional.total_projects_completed)} projects
+                     </span>
+                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
-                      Applied {application.applied_at}
-                    </span>
-                    
-                    {application.status === 'pending' && (
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleUpdateStatus(application.id, 'approved')}
-                          disabled={updateStatusMutation.isPending}
-                          className="h-6 px-2 text-xs bg-green-50 text-green-700 hover:bg-green-100"
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleUpdateStatus(application.id, 'rejected')}
-                          disabled={updateStatusMutation.isPending}
-                          className="h-6 px-2 text-xs bg-red-50 text-red-700 hover:bg-red-100"
-                        >
-                          <XCircle className="h-3 w-3 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+                                     <div className="flex flex-col gap-2">
+                     <span className="text-xs text-gray-400">
+                       Applied {application.applied_at}
+                     </span>
+                     
+                     {application.status === 'pending' && (
+                       <div className="flex gap-2">
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => handleUpdateStatus(application.id, 'approved')}
+                           disabled={updateStatusMutation.isPending}
+                           className="flex-1 h-7 px-2 text-xs bg-green-50 text-green-700 hover:bg-green-100"
+                         >
+                           <CheckCircle className="h-3 w-3 mr-1" />
+                           Approve
+                         </Button>
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => handleUpdateStatus(application.id, 'rejected')}
+                           disabled={updateStatusMutation.isPending}
+                           className="flex-1 h-7 px-2 text-xs bg-red-50 text-red-700 hover:bg-red-100"
+                         >
+                           <XCircle className="h-3 w-3 mr-1" />
+                           Reject
+                         </Button>
+                       </div>
+                     )}
+                   </div>
                 </div>
               </div>
             </motion.div>

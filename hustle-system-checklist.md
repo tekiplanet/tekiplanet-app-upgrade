@@ -62,9 +62,10 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [ ] `markComplete()`: Mark the GRIT as complete and provide feedback.
 - [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
 - [x] Add endpoints for business owners to manage applications (`GET /grits/{gritId}/applications`, `GET /applications/{applicationId}`, `PATCH /applications/{applicationId}/status`).
+- [x] **Enhanced Applications API**: Added pagination support with proper metadata and query parameters.
 - [x] **Professional `GritApplicationController`**:
     - [x] `store()` (POST `/api/grits/{gritId}/apply`): Create application with guards (open/unassigned, no duplicates, optional category match).
-    - [x] `index()` (GET `/api/grits/{gritId}/applications`): List applications for a GRIT with professional details.
+    - [x] `index()` (GET `/api/grits/{gritId}/applications`): List applications for a GRIT with professional details and pagination support.
     - [x] `show()` (GET `/api/applications/{applicationId}`): View specific application details.
     - [x] `updateStatus()` (PATCH `/api/applications/{applicationId}/status`): Approve/reject applications and auto-assign professional.
     - [x] Queued notifications on apply:
@@ -105,7 +106,9 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **Admin Approval Reset**: When business edits GRIT, admin_approval_status resets to 'pending'.
 - [x] **Chat Integration**: Removed chat tabs from GRIT details pages, kept chat access via dropdown/sidebar buttons that navigate to dedicated chat page.
 - [x] **Dashboard Import Fix**: Fixed MessageSquare import error in Dashboard.tsx.
+- [x] **Applications Tab Integration**: Integrated compact ApplicationsTab with "View All" navigation to dedicated page.
 - [x] **`ApplicationsTab.tsx`**: For business owners to view and manage GRIT applications with professional profiles, stats, and approval/rejection functionality.
+- [x] **`GritApplications.tsx`**: Dedicated page for viewing all applications with pagination, search, filtering, and detailed professional information.
 - [ ] **`ProfessionalProfileModal.tsx`**: For owners to view applicant profiles.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
@@ -116,12 +119,17 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **GRIT Messaging System**: Created GritMessageController and added message routes to handle chat functionality.
 - [x] **Database Fix**: Created migration to fix grit_messages table column structure (rename hustle_id to grit_id) - ✅ COMPLETED.
 - [x] **GRIT Applications API**: Added methods for fetching and managing applications (`getGritApplications`, `getApplicationDetails`, `updateApplicationStatus`).
+- [x] **Applications Pagination**: Backend pagination support with proper metadata and frontend pagination controls.
+- [x] **Applications Search & Filtering**: Search by professional name and filter by application status.
 - [ ] Ensure multicurrency amounts are handled correctly for display.
     - [x] `BusinessGritDetails.tsx`: Display budget in `owner_currency` using shared `useCurrencyFormat` helper.
     - [x] `Grits.tsx`: Display owner budget with correct owner currency (handles code vs symbol; graceful fallback) and added debug logging.
     - [ ] Audit remaining views (e.g., all list cards, receipts, any legacy components) for consistent currency display.
 - [x] Applications count: use `withCount('applications')` in GRIT listings (`index`, `myGrits`) to provide reliable `applications_count`.
 - [x] **Applications Management**: Business owners can view, approve, and reject applications with professional profiles and stats display.
+- [x] **Mobile-Responsive Applications**: Compact design for mobile devices with proper responsive layouts.
+- [x] **Applications Preview Tab**: Shows 2 most recent applications with "View All" button for full list.
+- [x] **Dedicated Applications Page**: Full-featured page with pagination, search, filtering, and detailed professional information.
 
 ### Role-based navigation & access
 - [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).

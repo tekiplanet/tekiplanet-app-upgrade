@@ -251,10 +251,13 @@ const BusinessGritDetails = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="applications">
+                <TabsTrigger value="applications" className="relative">
                   Applications
                   {grit.applications_count > 0 && (
-                    <Badge variant="secondary" className="ml-2">
+                    <Badge 
+                      variant="secondary" 
+                      className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center rounded-full"
+                    >
                       {grit.applications_count}
                     </Badge>
                   )}

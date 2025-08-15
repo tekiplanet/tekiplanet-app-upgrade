@@ -13,7 +13,8 @@ class GritController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Grit::with(['category', 'applications', 'user'])
+            $query = Grit::with(['category', 'user'])
+                ->withCount('applications')
                 ->where('status', 'open')
                 ->where('admin_approval_status', 'approved');
 
@@ -42,7 +43,8 @@ class GritController extends Controller
     public function myGrits(Request $request)
     {
         try {
-            $grits = Grit::with(['category', 'applications', 'user'])
+            $grits = Grit::with(['category', 'user'])
+                ->withCount('applications')
                 ->where('created_by_user_id', Auth::id())
                 ->latest()
                 ->paginate(10);
@@ -125,7 +127,9 @@ class GritController extends Controller
                 'negotiations',
                 'disputes',
                 'escrowTransactions'
-            ])->findOrFail($id);
+            ])
+            ->withCount('applications')
+            ->findOrFail($id);
 
             return response()->json(['grit' => $grit]);
 
