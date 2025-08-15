@@ -61,6 +61,11 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [ ] `increaseBudget()`: Add funds to the project.
     - [ ] `markComplete()`: Mark the GRIT as complete and provide feedback.
 - [x] Add endpoint to list only GRITs created by the authenticated business owner (`GET /my-grits`).
+- [x] **Professional `GritApplicationController`**:
+    - [x] `store()` (POST `/api/grits/{gritId}/apply`): Create application with guards (open/unassigned, no duplicates, optional category match).
+    - [x] Queued notifications on apply:
+        - [x] If owner-created → email owner + in-app/push via `NotificationService`.
+        - [x] If admin-created → notify active admins (mail + database) via `NewGritApplicationNotification`.
 - [x] **Admin `GritController`**:
     - [x] `updateApprovalStatus()`: Approve/reject newly created GRITs with queued email + in-app notifications.
     - [x] `getPendingCount()`: Get count of pending GRITs for admin dashboard.
@@ -109,6 +114,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] `BusinessGritDetails.tsx`: Display budget in `owner_currency` using shared `useCurrencyFormat` helper.
     - [x] `Grits.tsx`: Display owner budget with correct owner currency (handles code vs symbol; graceful fallback) and added debug logging.
     - [ ] Audit remaining views (e.g., all list cards, receipts, any legacy components) for consistent currency display.
+- [x] Applications count: use `withCount('applications')` in GRIT listings (`index`, `myGrits`) to provide reliable `applications_count`.
 
 ### Role-based navigation & access
 - [x] Business users are redirected away from the public grits listing (`/dashboard/grits`) to their private listing (`/dashboard/grits/mine`).
@@ -142,6 +148,10 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] Notifications sent when admin creates GRITs (auto-approved)
     - [x] Both email and in-app notifications sent asynchronously
 - [x] **Admin GRIT Forms Updated**: 
+- [x] **Application Notifications (Queued)**:
+    - [x] Job `SendGritApplicationNotification` (email + in-app/push) dispatched on apply
+    - [x] Owner-created GRIT → email owner (`NewGritApplicationSubmitted`) + in-app/push
+    - [x] Admin-created GRIT → notify active admins via `NewGritApplicationNotification` (mail + database)
     - [x] Create form now includes `owner_budget`, `owner_currency`, `requirements` fields
     - [x] Edit form now includes all new GRIT fields including `admin_approval_status`
     - [x] Both forms properly handle multicurrency support with dynamic currency loading

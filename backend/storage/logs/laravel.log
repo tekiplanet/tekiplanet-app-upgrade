@@ -2097,3 +2097,5 @@
 #44 C:\\xampp\\htdocs\\tekiplanet\\backend\\public\\index.php(52): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
 #45 C:\\xampp\\htdocs\\tekiplanet\\backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\xampp\\\\htdocs...')
 #46 {main}"} 
+[2025-08-15 08:52:48] production.INFO: SendGritApplicationNotification starting {"grit_id":"9f9c0464-3e06-41eb-8248-8d2c9ae0d6a9","professional_id":"9f9beeb6-eeb7-4e60-b222-593b0a9fd763"} 
+[2025-08-15 08:52:48] production.INFO: SendGritApplicationNotification completed  

@@ -33,6 +33,7 @@ use App\Http\Controllers\HustleApplicationController;
 use App\Http\Controllers\HustleMessageController;
 use App\Http\Controllers\GritController;
 use App\Http\Controllers\GritMessageController;
+use App\Http\Controllers\GritApplicationController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessCustomerController;
 use App\Http\Controllers\BusinessInvoiceController;
@@ -366,6 +367,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/grits', [GritController::class, 'index']);
     Route::get('/grits/{id}', [GritController::class, 'show']);
+    // Professional applies for a GRIT
+    Route::post('/grits/{gritId}/apply', [GritApplicationController::class, 'store']);
     Route::post('/grits', [GritController::class, 'store']);
     Route::put('/grits/{id}', [GritController::class, 'update']);
     Route::get('/my-grits', [GritController::class, 'myGrits']);

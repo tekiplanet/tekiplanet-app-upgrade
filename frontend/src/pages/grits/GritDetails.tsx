@@ -11,9 +11,10 @@ import {
   DollarSign,
   Timer,
   UserCheck,
-  Users
+  Users,
+  FileText
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -359,10 +360,34 @@ const GritDetails = () => {
 
             <TabsContent value="details" className="space-y-4">
               <Card>
-                <CardContent className="p-4 md:p-6 prose dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: grit.description }} />
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Description
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    {grit.description}
+                  </p>
                 </CardContent>
               </Card>
+
+              {grit.requirements && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Requirements & Skills
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                      {grit.requirements}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {grit.application_status === 'approved' && (
