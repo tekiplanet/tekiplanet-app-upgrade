@@ -31,7 +31,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { gritService, type Grit } from '@/services/gritService';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
+import { useCurrencyFormat } from '@/lib/currency';
 
 import PaymentTab from '@/components/grits/PaymentTab';
 import { settingsService } from '@/services/settingsService';
@@ -171,6 +172,12 @@ const BusinessGritDetails = () => {
   }
 
   const statusConfig = getStatusConfig(grit.status, grit.admin_approval_status);
+
+  // Currency formatting for budget using shared hook (no hardcoding)
+  const { formattedAmount: formattedBudget } = useCurrencyFormat(
+    grit.owner_budget || grit.budget,
+    grit.owner_currency
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -384,7 +391,7 @@ const BusinessGritDetails = () => {
                   <CardContent className="p-0">
                     <PaymentTab 
                       payments={grit.payments || []} 
-                      currency={grit.owner_currency || '₦'} 
+                      currency={grit.owner_currency} 
                     />
                   </CardContent>
                 </Card>
@@ -405,9 +412,7 @@ const BusinessGritDetails = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Budget</p>
-                  <p className="text-2xl font-bold">
-                    {formatCurrency(grit.owner_budget || grit.budget, grit.owner_currency || '₦')}
-                  </p>
+                  <p className="text-2xl font-bold">{formattedBudget}</p>
                 </div>
                 
                 <div>
