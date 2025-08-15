@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
   Send, 
@@ -210,71 +210,70 @@ const ChatPage = () => {
                 </Button>
               </motion.div>
             )}
-            <AnimatePresence>
-              {messages?.map((msg, index) => {
-                const showDate = index === 0 || 
-                  new Date(msg.created_at).toDateString() !== 
-                  new Date(messages[index - 1]?.created_at).toDateString();
+            {messages?.map((msg, index) => {
+              const showDate = index === 0 || 
+                new Date(msg.created_at).toDateString() !== 
+                new Date(messages[index - 1]?.created_at).toDateString();
 
-                return (
-                  <React.Fragment key={msg.id}>
-                    {showDate && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex justify-center my-6"
-                      >
-                        <Badge variant="outline" className="text-xs">
-                          {format(new Date(msg.created_at), 'EEEE, MMMM d, yyyy')}
-                        </Badge>
-                      </motion.div>
-                    )}
-                    
+              return (
+                <React.Fragment key={msg.id}>
+                  {showDate && (
                     <motion.div
+                      key={`date-${msg.id}`}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className={cn(
-                        'flex items-start gap-3 group',
-                        msg.sender_type === 'professional' ? 'flex-row-reverse' : ''
-                      )}
+                      className="flex justify-center my-6"
                     >
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={msg.user?.avatar} />
-                        <AvatarFallback>
-                          {msg.user?.name?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex flex-col gap-1 max-w-[70%]">
-                        <div
-                          className={cn(
-                            'relative rounded-2xl px-4 py-3 shadow-sm',
-                            msg.sender_type === 'professional'
-                              ? 'bg-primary text-primary-foreground rounded-tr-none'
-                              : 'bg-muted rounded-tl-none'
-                          )}
-                        >
-                          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                            {msg.message}
-                          </p>
-                        </div>
-                        
-                        <div className={cn(
-                          'flex items-center gap-2 text-xs text-muted-foreground',
-                          msg.sender_type === 'professional' ? 'justify-end' : 'justify-start'
-                        )}>
-                          <span>{format(new Date(msg.created_at), 'HH:mm')}</span>
-                          {msg.is_read && (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          )}
-                        </div>
-                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {format(new Date(msg.created_at), 'EEEE, MMMM d, yyyy')}
+                      </Badge>
                     </motion.div>
-                  </React.Fragment>
-                );
-              })}
-            </AnimatePresence>
+                  )}
+                  
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn(
+                      'flex items-start gap-3 group',
+                      msg.sender_type === 'professional' ? 'flex-row-reverse' : ''
+                    )}
+                  >
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarImage src={msg.user?.avatar} />
+                      <AvatarFallback>
+                        {msg.user?.name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex flex-col gap-1 max-w-[70%]">
+                      <div
+                        className={cn(
+                          'relative rounded-2xl px-4 py-3 shadow-sm',
+                          msg.sender_type === 'professional'
+                            ? 'bg-primary text-primary-foreground rounded-tr-none'
+                            : 'bg-muted rounded-tl-none'
+                        )}
+                      >
+                        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                          {msg.message}
+                        </p>
+                      </div>
+                      
+                      <div className={cn(
+                        'flex items-center gap-2 text-xs text-muted-foreground',
+                        msg.sender_type === 'professional' ? 'justify-end' : 'justify-start'
+                      )}>
+                        <span>{format(new Date(msg.created_at), 'HH:mm')}</span>
+                        {msg.is_read && (
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </React.Fragment>
+              );
+            })}
             
             {/* Typing indicator */}
             {isTyping && (
