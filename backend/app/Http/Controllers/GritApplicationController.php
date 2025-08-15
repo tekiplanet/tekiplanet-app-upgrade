@@ -207,6 +207,127 @@ class GritApplicationController extends Controller
         }
     }
 
+    /**
+     * Get applications for the authenticated professional
+     */
+    public function getMyApplications(Request $request)
+    {
+        try {
+            $professional = Professional::where('user_id', Auth::id())->first();
+            
+            if (!$professional) {
+                return response()->json([
+                    'applications' => [],
+                    'pagination' => null,
+                    'message' => 'No professional profile found'
+                ]);
+            }
+
+            $query = GritApplication::with(['grit.category', 'grit.user'])
+                ->where('professional_id', $professional->id);
+
+            // Search by GRIT title
+            if ($request->has('search') && $request->search) {
+                $query->whereHas('grit', function($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->search . '%');
+                });
+            }
+
+            // Filter by status
+            if ($request->has('status') && $request->status && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+
+            // Filter by category
+            if ($request->has('category') && $request->category && $request->category !== 'all') {
+                $query->whereHas('grit', function($q) use ($request) {
+                    $q->whereHas('category', function($categoryQuery) use ($request) {
+                        $categoryQuery->where('id', $request->category);
+                    });
+                });
+            }
+
+            $perPage = $request->get('per_page', 10);
+            $applications = $query->latest()->paginate($perPage);
+
+            $applications->getCollection()->transform(function($application) {
+                return [
+                    'id' => $application->id,
+                    'grit' => [
+                        'id' => $application->grit->id,
+                        'title' => $application->grit->title,
+                        'category' => $application->grit->category->name,
+                        'budget' => $application->grit->owner_budget ?? $application->grit->budget,
+                        'deadline' => $application->grit->deadline->format('Y-m-d'),
+                        'status' => $application->grit->status
+                    ],
+                    'status' => $application->status,
+                    'applied_at' => $application->created_at->format('M d, Y'),
+                    'created_at' => $application->created_at->toISOString(),
+                ];
+            });
+
+            return response()->json([
+                'applications' => $applications->items(),
+                'pagination' => [
+                    'current_page' => $applications->currentPage(),
+                    'last_page' => $applications->lastPage(),
+                    'per_page' => $applications->perPage(),
+                    'total' => $applications->total(),
+                    'from' => $applications->firstItem(),
+                    'to' => $applications->lastItem(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching professional applications:', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Failed to fetch applications'], 500);
+        }
+    }
+
+    /**
+     * Withdraw an application
+     */
+    public function withdraw(string $applicationId)
+    {
+        try {
+            $application = GritApplication::with(['grit', 'professional.user'])
+                ->findOrFail($applicationId);
+
+            // Check if user has permission to withdraw this application
+            if ($application->professional->user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Check if application can be withdrawn (only pending applications can be withdrawn)
+            if ($application->status !== 'pending') {
+                return response()->json(['message' => 'Application cannot be withdrawn'], 400);
+            }
+
+            $application->status = 'withdrawn';
+            $application->save();
+
+            return response()->json([
+                'message' => 'Application withdrawn successfully',
+                'application' => [
+                    'id' => $application->id,
+                    'status' => $application->status,
+                    'updated_at' => $application->updated_at->toISOString(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error withdrawing application:', [
+                'application_id' => $applicationId,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Failed to withdraw application'], 500);
+        }
+    }
+
     public function store(Request $request, string $gritId)
     {
         try {

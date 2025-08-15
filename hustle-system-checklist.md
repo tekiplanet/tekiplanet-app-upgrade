@@ -69,6 +69,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] `index()` (GET `/api/grits/{gritId}/applications`): List applications for a GRIT with professional details and pagination support.
     - [x] `show()` (GET `/api/applications/{applicationId}`): View specific application details.
     - [x] `updateStatus()` (PATCH `/api/applications/{applicationId}/status`): Approve/reject applications and auto-assign professional.
+    - [x] `getMyApplications()` (GET `/api/grit-applications`): Get all applications for the authenticated professional.
+    - [x] `withdraw()` (POST `/api/grit-applications/{id}/withdraw`): Allow professionals to withdraw their pending applications.
     - [x] Queued notifications on apply:
         - [x] If owner-created → email owner + in-app/push via `NotificationService`.
         - [x] If admin-created → notify active admins (mail + database) via `NewGritApplicationNotification`.
@@ -111,7 +113,12 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] **`ApplicationsTab.tsx`**: For business owners to view and manage GRIT applications with professional profiles, stats, and approval/rejection functionality.
 - [x] **`GritApplications.tsx`**: Dedicated page for viewing all applications with pagination, search, filtering, and detailed professional information.
 - [x] **`ProfessionalDetails.tsx`**: Comprehensive professional details page for viewing complete applicant information, reviews, and application management.
+- [x] **`MyApplications.tsx`**: For professionals to view and manage their own GRIT applications with status tracking, withdrawal functionality, search, filtering, and pagination.
 - [x] **Navigation Fix**: Fixed professional details navigation issue by replacing `window.location.href` with React Router's `navigate` function in ApplicationsTab and GritApplications components, and reordered routes to prevent conflicts.
+- [x] **Professional Chat Access**: Added "Open Chat" button to `GritDetails.tsx` when professional is assigned to GRIT, allowing direct access to chat functionality.
+- [x] **View Applications Navigation**: Updated "View Applications" buttons in `BusinessGritDetails.tsx` to navigate to dedicated applications page instead of applications tab.
+- [x] **MyApplications Backend Fix**: Added missing `/api/grit-applications` endpoint and controller methods for professionals to view and withdraw their applications.
+- [x] **MyApplications Enhanced Features**: Added pagination, search by GRIT title, status filtering, and improved design with better UX and mobile responsiveness.
 - [ ] **`GritNegotiationDialog.tsx`**: For modifying terms.
 - [ ] **`EscrowStatusCard.tsx`**: To visualize payment stages.
 - [ ] **`GritDisputeDialog.tsx`**: For raising and managing disputes.
@@ -184,6 +191,8 @@ This checklist tracks the implementation of the GRIT system, including the integ
         - [x] Notifications sent to both approved and rejected professionals
         - [x] Controllers updated: `GritApplicationController` and `ProfessionalDetailsController`
         - [x] Admin interface automatically benefits from notification system
+        - [x] **Auto-Rejection Notifications**: Added notification dispatch for automatically rejected applications when one is approved
+        - [x] **Complete Notification System**: Both `GritApplicationController` and `ProfessionalDetailsController` now dispatch notifications for all status changes
     - [x] Create form now includes `owner_budget`, `owner_currency`, `requirements` fields
     - [x] Edit form now includes all new GRIT fields including `admin_approval_status`
     - [x] Both forms properly handle multicurrency support with dynamic currency loading

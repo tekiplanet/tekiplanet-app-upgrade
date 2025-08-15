@@ -129,9 +129,15 @@ export const gritService = {
     return data;
   },
 
-  getMyGritApplications: async () => {
-    const { data } = await api.get('/grit-applications');
-    return data.applications;
+  getMyGritApplications: async (params?: { 
+    page?: number;
+    per_page?: number;
+    search?: string;
+    status?: string;
+    category?: string;
+  }) => {
+    const { data } = await api.get('/grit-applications', { params });
+    return data;
   },
 
   getGritMessages: async (gritId: string) => {

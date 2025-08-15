@@ -379,6 +379,10 @@ Route::get('/grits/{gritId}/applications', [GritApplicationController::class, 'i
 Route::get('/applications/{applicationId}', [GritApplicationController::class, 'show']);
 Route::patch('/applications/{applicationId}/status', [GritApplicationController::class, 'updateStatus']);
 
+// Professional applications (for professionals to view their own applications)
+Route::get('/grit-applications', [GritApplicationController::class, 'getMyApplications']);
+Route::post('/grit-applications/{id}/withdraw', [GritApplicationController::class, 'withdraw']);
+
 // Professional details (for viewing complete professional info)
 Route::get('/professionals/{professionalId}', [ProfessionalDetailsController::class, 'show']);
 Route::patch('/applications/{applicationId}/status/details', [ProfessionalDetailsController::class, 'updateApplicationStatus']);

@@ -12,7 +12,8 @@ import {
   Timer,
   UserCheck,
   Users,
-  FileText
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -235,36 +236,55 @@ const GritDetails = () => {
                 )}
               </div>
 
-              <Button 
-                size="lg"
-                onClick={() => setIsApplyDialogOpen(true)}
-                disabled={!applicationStatus.can_apply || applyMutation.isPending}
-                className={cn(
-                  "w-full h-12 rounded-xl text-sm font-medium transition-all",
-                  applicationStatus.can_apply 
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                    : grit.application_status === 'approved'
-                      ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 hover:bg-green-200 dark:hover:bg-green-700"
-                      : "bg-muted text-muted-foreground"
-                )}
-              >
-                {applyMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Submitting Application...
-                  </>
-                ) : (
-                  <>
+              {grit.assigned_professional_id === profileData?.profile?.id ? (
+                <div className="flex gap-3">
+                  <Button 
+                    size="lg"
+                    onClick={() => navigate(`/dashboard/grits/${id}/chat`)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Open Chat
+                  </Button>
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 hover:bg-green-200 dark:hover:bg-green-700"
+                    disabled
+                  >
                     <UserCheck className="h-5 w-5 mr-2" />
-                    {applicationStatus.can_apply ? 'Apply for Grit' : (
-                      grit.application_status === 'pending' ? 'Application Pending' :
-                      grit.application_status === 'approved' ? 'Application Approved' :
-                      grit.application_status === 'rejected' ? 'Application Rejected' :
-                      'Cannot Apply'
-                    )}
-                  </>
-                )}
-              </Button>
+                    Application Approved
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  size="lg"
+                  onClick={() => setIsApplyDialogOpen(true)}
+                  disabled={!applicationStatus.can_apply || applyMutation.isPending}
+                  className={cn(
+                    "w-full h-12 rounded-xl text-sm font-medium transition-all",
+                    applicationStatus.can_apply 
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {applyMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Submitting Application...
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-5 w-5 mr-2" />
+                      {applicationStatus.can_apply ? 'Apply for Grit' : (
+                        grit.application_status === 'pending' ? 'Application Pending' :
+                        grit.application_status === 'rejected' ? 'Application Rejected' :
+                        'Cannot Apply'
+                      )}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </motion.div>
