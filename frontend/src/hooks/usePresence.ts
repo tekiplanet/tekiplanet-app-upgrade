@@ -193,7 +193,21 @@ export const usePresence = () => {
 
     const handlePageHide = () => {
       // Page is being unloaded (more reliable than beforeunload)
-      markUserOffline();
+      // Use synchronous request to ensure it completes
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/presence/update`, false); // synchronous
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
+      xhr.send(JSON.stringify({ status: 'offline' }));
+    };
+
+    const handleUnload = () => {
+      // Additional fallback for page unload
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/presence/update`, false); // synchronous
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
+      xhr.send(JSON.stringify({ status: 'offline' }));
     };
 
     // Listen for page visibility changes
@@ -204,11 +218,15 @@ export const usePresence = () => {
     
     // Listen for page hide (more reliable)
     window.addEventListener('pagehide', handlePageHide);
+    
+    // Additional fallback for unload
+    window.addEventListener('unload', handleUnload);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('unload', handleUnload);
     };
   }, [currentUser, markUserOffline, sendHeartbeat]);
 
@@ -221,14 +239,14 @@ export const usePresence = () => {
   useEffect(() => {
     if (!currentUser) return;
 
-    // Refresh presence data every 30 seconds as a fallback
+    // Refresh presence data every 15 seconds as a fallback (more frequent for better accuracy)
     const interval = setInterval(() => {
       // Only refresh if we have users in usersPresence
       const userIds = Object.keys(usersPresence);
       if (userIds.length > 0) {
         getUsersPresence(userIds);
       }
-    }, 30000); // 30 seconds
+    }, 15000); // 15 seconds
 
     return () => clearInterval(interval);
   }, [currentUser, usersPresence, getUsersPresence]);

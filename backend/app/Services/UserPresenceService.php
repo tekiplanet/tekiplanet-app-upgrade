@@ -32,6 +32,9 @@ class UserPresenceService
     public function updateUserActivity(User $user, string $status = 'online'): void
     {
         try {
+            // Clear any existing cache first
+            Cache::forget("user_presence_{$user->id}");
+            
             // Update user model
             $user->update([
                 'online_status' => $status,
@@ -73,6 +76,9 @@ class UserPresenceService
     public function markUserOffline(User $user): void
     {
         $this->updateUserActivity($user, 'offline');
+        
+        // Clear any cached presence data to ensure fresh data
+        Cache::forget("user_presence_{$user->id}");
     }
 
     /**
@@ -80,20 +86,26 @@ class UserPresenceService
      */
     public function getUserPresence(User $user): array
     {
-        $cached = Cache::get("user_presence_{$user->id}");
+        // Always calculate current online status based on activity
+        $isCurrentlyOnline = $this->isUserOnline($user);
         
-        if ($cached) {
-            return $cached;
+        // If user is marked as online but hasn't been active recently, update their status
+        if ($user->online_status === 'online' && !$isCurrentlyOnline) {
+            $user->update([
+                'online_status' => 'offline',
+                'last_seen_at' => now(),
+            ]);
         }
-
+        
         $presence = [
             'user_id' => $user->id,
             'online_status' => $user->online_status,
             'last_seen_at' => $user->last_seen_at,
             'last_activity_at' => $user->last_activity_at,
-            'is_online' => $this->isUserOnline($user),
+            'is_online' => $isCurrentlyOnline,
         ];
 
+        // Cache the updated presence data
         $this->cacheUserPresence($user, $presence);
         return $presence;
     }
@@ -103,7 +115,7 @@ class UserPresenceService
      */
     public function isUserOnline(User $user): bool
     {
-        // Consider user online if they've been active in the last 5 minutes
+        // Consider user online if they've been active in the last 5 minutes (matches cleanup timing)
         $lastActivity = $user->last_activity_at;
         if (!$lastActivity) {
             return false;
@@ -121,17 +133,37 @@ class UserPresenceService
             return 'Never';
         }
 
-        $diff = $user->last_seen_at->diff(now());
+        $lastSeen = $user->last_seen_at;
+        $now = now();
+        $diff = $lastSeen->diff($now);
 
-        if ($diff->days > 0) {
-            return $diff->days . ' day' . ($diff->days > 1 ? 's' : '') . ' ago';
-        } elseif ($diff->h > 0) {
-            return $diff->h . ' hour' . ($diff->h > 1 ? 's' : '') . ' ago';
-        } elseif ($diff->i > 0) {
-            return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
-        } else {
+        // Just now (less than 1 minute)
+        if ($diff->i < 1) {
             return 'Just now';
         }
+
+        // Minutes ago (less than 1 hour)
+        if ($diff->h < 1) {
+            return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
+        }
+
+        // Hours ago (less than 24 hours)
+        if ($diff->days < 1) {
+            return $diff->h . ' hour' . ($diff->h > 1 ? 's' : '') . ' ago';
+        }
+
+        // Yesterday
+        if ($diff->days === 1) {
+            return 'Yesterday, ' . $lastSeen->format('g:i A');
+        }
+
+        // Within same week (2-6 days ago)
+        if ($diff->days < 7) {
+            return $lastSeen->format('l, g:i A'); // Monday, 5:45 PM
+        }
+
+        // Older than a week
+        return $lastSeen->format('jS F, g:i A'); // 7th August, 5:13 PM
     }
 
     /**
@@ -143,7 +175,7 @@ class UserPresenceService
             $presence = $this->getUserPresence($user);
         }
 
-        Cache::put("user_presence_{$user->id}", $presence, now()->addMinutes(10));
+        Cache::put("user_presence_{$user->id}", $presence, now()->addMinutes(5));
     }
 
     /**
@@ -183,12 +215,15 @@ class UserPresenceService
      */
     public function cleanupOldPresence(): void
     {
-        // Mark users as offline if they haven't been active for more than 10 minutes
-        User::where('last_activity_at', '<', now()->subMinutes(10))
+        // Get users who should be marked offline
+        $inactiveUsers = User::where('last_activity_at', '<', now()->subMinutes(5))
             ->where('online_status', '!=', 'offline')
-            ->update([
-                'online_status' => 'offline',
-                'last_seen_at' => now(),
-            ]);
+            ->get();
+
+        foreach ($inactiveUsers as $user) {
+            // Mark user as offline and broadcast the update
+            $this->markUserOffline($user);
+            Log::info("Marked user {$user->id} as offline due to inactivity");
+        }
     }
 }

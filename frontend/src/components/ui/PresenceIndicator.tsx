@@ -49,17 +49,49 @@ export const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
     const lastSeen = new Date(lastSeenAt);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
     
+    // Just now (less than 1 minute)
     if (diffInMinutes < 1) return 'Just now';
+    
+    // Minutes ago (less than 1 hour)
     if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
     
-    const diffInHours = Math.floor(diffInMinutes / 60);
+    // Hours ago (less than 24 hours)
     if (diffInHours < 24) return `${diffInHours}h ago`;
     
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d ago`;
+    // Yesterday
+    if (diffInDays === 1) {
+      return `Yesterday, ${lastSeen.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    }
     
-    return lastSeen.toLocaleDateString();
+    // Within same week (2-6 days ago)
+    if (diffInDays < 7) {
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayName = dayNames[lastSeen.getDay()];
+      return `${dayName}, ${lastSeen.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    }
+    
+    // Older than a week
+    const day = lastSeen.getDate();
+    const suffix = ['th', 'st', 'nd', 'rd'][day % 10 > 3 ? 0 : (day % 100 - day % 10 != 10 ? day % 10 : 0)] || 'th';
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthName = monthNames[lastSeen.getMonth()];
+    
+    return `${day}${suffix} ${monthName}, ${lastSeen.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    })}`;
   };
 
   const sizeClasses = {

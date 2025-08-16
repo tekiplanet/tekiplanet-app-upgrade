@@ -255,9 +255,15 @@ This checklist tracks the implementation of the GRIT system, including the integ
         - [x] **Scheduled Tasks**: Automated cleanup every 5 minutes via Laravel scheduler
         - [x] **Logout Integration**: Users marked offline immediately upon logout via LoginController
         - [x] **Page Leave Detection**: Frontend detects when users close browser or navigate away
-            - [x] **Event Listeners**: Multiple detection methods (pagehide, beforeunload, visibilitychange)
+            - [x] **Event Listeners**: Multiple detection methods (pagehide, beforeunload, visibilitychange, unload)
             - [x] **Synchronous Requests**: Uses synchronous XMLHttpRequest for beforeunload to ensure completion
             - [x] **Smart Tab Handling**: Doesn't mark users offline when switching tabs, only when leaving page
+    - [x] **Bug Fixes**: Fixed timing inconsistencies and cache issues
+        - [x] **Timing Consistency**: Aligned `isUserOnline()` (10 minutes) with cleanup timing (10 minutes)
+        - [x] **Cache Management**: Clear cached presence data when users go offline
+        - [x] **Real-time Updates**: Enhanced cleanup to broadcast presence updates when marking users offline
+        - [x] **Improved Detection**: Added multiple page leave event listeners for better reliability
+        - [x] **Faster Fallback**: Reduced presence refresh interval from 30s to 15s for better accuracy
 - [x] **Frontend Integration**: Complete presence display implementation in chat interfaces
     - [x] **PresenceService**: Frontend service for presence API calls
     - [x] **usePresence Hook**: React hook for managing presence state and heartbeat
@@ -266,7 +272,7 @@ This checklist tracks the implementation of the GRIT system, including the integ
     - [x] **Real-time Updates**: Live presence updates via Pusher integration
     - [x] **Mobile Responsive**: Presence indicators work seamlessly on all screen sizes
     - [x] **Theme Support**: Full light/dark theme compatibility for presence indicators
-    - [x] **Fallback System**: Periodic presence refresh (30 seconds) if Pusher connection fails
+    - [x] **Fallback System**: Periodic presence refresh (15 seconds) if Pusher connection fails
     - [x] **Heartbeat System**: Automatic heartbeat every 2 minutes to maintain online status
 - [ ] **WebSocket Enhancements**: Create new channels and events for GRITs.
 - [ ] **Additional System Messages**: Integrate system messages for other key actions (payment releases, budget changes, etc.).
