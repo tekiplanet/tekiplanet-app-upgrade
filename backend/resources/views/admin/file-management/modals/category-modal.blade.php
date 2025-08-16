@@ -5,7 +5,7 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
 
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg max-w-[90vw] w-[90vw]">
             <!-- Header -->
             <div class="bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between">
@@ -63,7 +63,7 @@
                     <!-- Allowed Extensions -->
                     <div class="mt-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Allowed Extensions *</label>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 gap-4">
                             <!-- Image Extensions -->
                             <div class="space-y-2">
                                 <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Images</h4>
@@ -216,77 +216,3 @@
         </div>
     </div>
 </div>
-
-<script>
-// Category modal functions
-function closeCategoryModal() {
-    const modal = document.getElementById('categoryModal');
-    modal.classList.add('hidden');
-}
-
-function setDefaultExtensions() {
-    const resourceType = document.getElementById('category-resource-type').value;
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    
-    // Uncheck all first
-    checkboxes.forEach(cb => cb.checked = false);
-    
-    // Set defaults based on resource type
-    switch(resourceType) {
-        case 'image':
-            ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].forEach(ext => {
-                const checkbox = document.getElementById(`ext-${ext}`);
-                if (checkbox) checkbox.checked = true;
-            });
-            break;
-        case 'video':
-            ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].forEach(ext => {
-                const checkbox = document.getElementById(`ext-${ext}`);
-                if (checkbox) checkbox.checked = true;
-            });
-            break;
-        case 'raw':
-            ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', '7z'].forEach(ext => {
-                const checkbox = document.getElementById(`ext-${ext}`);
-                if (checkbox) checkbox.checked = true;
-            });
-            break;
-    }
-}
-
-// Form submission
-document.getElementById('categoryForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const extensions = [];
-    
-    // Collect checked extensions
-    document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-        extensions.push(cb.value);
-    });
-    
-    formData.append('extensions', JSON.stringify(extensions));
-    
-    // Submit form data
-    console.log('Submitting category form:', Object.fromEntries(formData));
-    
-    // Close modal after successful submission
-    closeCategoryModal();
-});
-
-// Close modal when clicking outside
-document.getElementById('categoryModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeCategoryModal();
-    }
-});
-
-// Add event listener for resource type change
-document.addEventListener('DOMContentLoaded', function() {
-    const resourceTypeSelect = document.getElementById('category-resource-type');
-    if (resourceTypeSelect) {
-        resourceTypeSelect.addEventListener('change', setDefaultExtensions);
-    }
-});
-</script>

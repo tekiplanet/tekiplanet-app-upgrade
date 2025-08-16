@@ -624,12 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editCategory: function(categoryId) {
             console.log('Editing category:', categoryId);
             // Open the category modal in edit mode
-            if (typeof openCategoryModal === 'function') {
-                openCategoryModal(categoryId);
-            } else {
-                console.error('openCategoryModal function not found');
-                alert('Edit functionality not available');
-            }
+            this.openCategoryModal(categoryId);
         },
 
         // Delete category
@@ -838,13 +833,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('category-name').value = category.name || '';
                         document.getElementById('category-description').value = category.description || '';
                         document.getElementById('category-resource-type').value = category.resource_type || 'raw';
-                        document.getElementById('category-max-size').value = category.max_file_size || '';
+                                                 // Convert bytes to MB for display in the form
+                         const maxSizeInMB = category.max_file_size ? (category.max_file_size / (1024 * 1024)).toFixed(1) : '';
+                         document.getElementById('category-max-size').value = maxSizeInMB;
                         document.getElementById('category-sort-order').value = category.sort_order || 0;
                         document.getElementById('category-is-active').checked = category.is_active || false;
                         
                         // Set extensions if available
-                        if (category.extensions) {
-                            this.setCategoryExtensions(category.extensions);
+                        if (category.allowed_extensions) {
+                            this.setCategoryExtensions(category.allowed_extensions);
                         }
                     } else {
                         console.error('Failed to load category data:', data.message);
@@ -870,6 +867,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     const checkbox = document.getElementById(`ext-${ext.toLowerCase()}`);
                     if (checkbox) checkbox.checked = true;
                 });
+            } else if (typeof extensions === 'string') {
+                // Handle case where extensions might be a JSON string
+                try {
+                    const parsed = JSON.parse(extensions);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(ext => {
+                            const checkbox = document.getElementById(`ext-${ext.toLowerCase()}`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Could not parse extensions:', extensions);
+                }
             }
         },
 
@@ -882,12 +892,236 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('categories-tab').addEventListener('click', () => this.loadCategories());
             document.getElementById('settings-tab').addEventListener('click', () => this.loadSettings());
             document.getElementById('files-tab').addEventListener('click', () => this.loadFiles());
+            
+            // Set up form submission
+            this.setupFormSubmission();
+        },
+
+        // Set up form submission
+        setupFormSubmission: function() {
+            const form = document.getElementById('categoryForm');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitCategoryForm();
+                });
+            }
+            
+            // Set up resource type change handler
+            this.setupResourceTypeHandler();
+            
+            // Set up modal click outside to close
+            this.setupModalClickOutside();
+        },
+
+        // Set up resource type change handler
+        setupResourceTypeHandler: function() {
+            const resourceTypeSelect = document.getElementById('category-resource-type');
+            if (resourceTypeSelect) {
+                resourceTypeSelect.addEventListener('change', (e) => {
+                    this.setDefaultExtensions(e.target.value);
+                });
+            }
+        },
+
+        // Set default extensions based on resource type
+        setDefaultExtensions: function(resourceType) {
+            // Uncheck all first
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            // Set defaults based on resource type
+            switch(resourceType) {
+                case 'image':
+                    ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].forEach(ext => {
+                        const checkbox = document.getElementById(`ext-${ext}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    break;
+                case 'video':
+                    ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].forEach(ext => {
+                        const checkbox = document.getElementById(`ext-${ext}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    break;
+                case 'raw':
+                    ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', '7z'].forEach(ext => {
+                        const checkbox = document.getElementById(`ext-${ext}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    break;
+            }
+        },
+
+        // Set up modal click outside to close
+        setupModalClickOutside: function() {
+            const modal = document.getElementById('categoryModal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        this.closeCategoryModal();
+                    }
+                });
+            }
+        },
+
+        // Submit category form
+        submitCategoryForm: function() {
+            const form = document.getElementById('categoryForm');
+            const formData = new FormData(form);
+            
+            // Get selected extensions
+            const selectedExtensions = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+                selectedExtensions.push(cb.value);
+            });
+            
+            // Prepare data
+            const data = {
+                id: formData.get('id') || null,
+                name: formData.get('name'),
+                description: formData.get('description'),
+                resource_type: formData.get('resource_type'),
+                max_file_size: Math.round(parseFloat(formData.get('max_file_size')) * 1024 * 1024), // Convert MB to bytes and ensure integer
+                sort_order: parseInt(formData.get('sort_order')) || 0,
+                is_active: formData.get('is_active') === 'on',
+                allowed_extensions: selectedExtensions
+            };
+            
+            // Validate required fields
+            if (!data.name || !data.resource_type || !data.max_file_size || selectedExtensions.length === 0) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Please fill in all required fields and select at least one file extension.'
+                    });
+                } else {
+                    alert('Please fill in all required fields and select at least one file extension.');
+                }
+                return;
+            }
+            
+            // Show loading state
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Saving...',
+                    text: 'Please wait while we save the category.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            }
+            
+            // Determine if this is a create or update
+            const url = data.id ? `/admin/file-categories/${data.id}` : '/admin/file-categories';
+            const method = data.id ? 'PUT' : 'POST';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(JSON.stringify(errorData));
+                    });
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (typeof Swal !== 'undefined') {
+                    Swal.close();
+                }
+                
+                if (result.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.id ? 'Category updated successfully' : 'Category created successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(data.id ? 'Category updated successfully' : 'Category created successfully');
+                    }
+                    
+                    // Close modal and reload categories
+                    this.closeCategoryModal();
+                    this.loadCategories();
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: result.message || 'Failed to save category'
+                        });
+                    } else {
+                        alert(result.message || 'Failed to save category');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (typeof Swal !== 'undefined') {
+                    Swal.close();
+                    
+                    let errorMessage = 'An error occurred while saving the category';
+                    
+                    try {
+                        const errorData = JSON.parse(error.message);
+                        if (errorData.errors) {
+                            // Show validation errors
+                            const errorDetails = Object.entries(errorData.errors)
+                                .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                                .join('\n');
+                            errorMessage = `Validation failed:\n${errorDetails}`;
+                        } else if (errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (e) {
+                        // If parsing fails, use the original error message
+                        if (error.message && error.message !== 'An error occurred while saving the category') {
+                            errorMessage = error.message;
+                        }
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: errorMessage,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    alert('An error occurred while saving the category');
+                }
+            });
+        },
+
+        // Close category modal
+        closeCategoryModal: function() {
+            const modal = document.getElementById('categoryModal');
+            modal.classList.add('hidden');
         }
     };
 
     // Initialize the system
     window.FileManagementSystem.init();
 });
+
+// Global functions for modal interactions
+function closeCategoryModal() {
+    if (window.FileManagementSystem) {
+        window.FileManagementSystem.closeCategoryModal();
+    }
+}
 
 // Tab switching functionality
 function switchTab(tabName) {
