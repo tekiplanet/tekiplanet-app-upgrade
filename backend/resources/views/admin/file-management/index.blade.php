@@ -215,14 +215,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Load categories
         loadCategories: function() {
+            console.log('Loading categories from /admin/file-categories/list');
             fetch('/admin/file-categories/list')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Categories API response:', data);
                     if (data.success) {
                         this.renderCategories(data.data);
+                    } else {
+                        console.error('Categories API returned success: false:', data);
                     }
                 })
-                .catch(error => console.error('Error loading categories:', error));
+                .catch(error => {
+                    console.error('Error loading categories:', error);
+                    // Show error message to user
+                    const tbody = document.getElementById('categories-table-body');
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-sm text-red-500">
+                                    Error loading categories: ${error.message}
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
         },
 
         // Load settings
@@ -313,33 +333,31 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = categories.map(category => {
                 // Debug: Log each category to see the structure
                 console.log('Processing category:', category);
+                console.log('Category allowed_extensions:', category.allowed_extensions, 'Type:', typeof category.allowed_extensions);
+                console.log('Category is_active:', category.is_active, 'Type:', typeof category.is_active, 'Value:', category.is_active);
+                console.log('Category max_file_size:', category.max_file_size, 'Type:', typeof category.max_file_size);
                 
-                // Handle extensions display
+                // Handle extensions display - check for allowed_extensions field from database
                 let extensionsDisplay = '-';
-                if (category.extensions_string) {
-                    extensionsDisplay = category.extensions_string;
-                } else if (category.allowed_extensions && Array.isArray(category.allowed_extensions)) {
-                    extensionsDisplay = category.allowed_extensions.join(', ');
-                } else if (category.extensions && Array.isArray(category.extensions)) {
-                    extensionsDisplay = category.extensions.join(', ');
-                } else if (typeof category.allowed_extensions === 'string') {
-                    // Handle case where it might be a JSON string
-                    try {
-                        const parsed = JSON.parse(category.allowed_extensions);
-                        if (Array.isArray(parsed)) {
-                            extensionsDisplay = parsed.join(', ');
+                if (category.allowed_extensions) {
+                    if (Array.isArray(category.allowed_extensions)) {
+                        extensionsDisplay = category.allowed_extensions.join(', ');
+                    } else if (typeof category.allowed_extensions === 'string') {
+                        // Handle case where it might be a JSON string
+                        try {
+                            const parsed = JSON.parse(category.allowed_extensions);
+                            if (Array.isArray(parsed)) {
+                                extensionsDisplay = parsed.join(', ');
+                            }
+                        } catch (e) {
+                            extensionsDisplay = category.allowed_extensions;
                         }
-                    } catch (e) {
-                        extensionsDisplay = category.allowed_extensions;
                     }
                 }
                 
-                // Handle max size display
+                // Handle max size display - convert bytes to MB
                 let maxSizeDisplay = '-';
-                if (category.formatted_max_size) {
-                    maxSizeDisplay = category.formatted_max_size;
-                } else if (category.max_file_size) {
-                    // Convert bytes to MB for display
+                if (category.max_file_size) {
                     const sizeInMB = (category.max_file_size / (1024 * 1024)).toFixed(1);
                     maxSizeDisplay = sizeInMB + ' MB';
                 }
@@ -357,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" ${category.is_active ? 'checked' : ''} onchange="FileManagementSystem.toggleCategoryStatus('${category.id}', this.checked)">
+                                <input type="checkbox" class="sr-only peer" ${this.isCategoryActive(category.is_active) ? 'checked' : ''} onchange="FileManagementSystem.toggleCategoryStatus('${category.id}', this.checked)">
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                             </label>
                         </td>
@@ -495,8 +513,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         },
 
+        // Check if category is active (handles different data types)
+        isCategoryActive: function(isActive) {
+            if (isActive === true || isActive === 1 || isActive === '1' || isActive === 'true') {
+                return true;
+            }
+            return false;
+        },
+
         // Toggle category status
         toggleCategoryStatus: function(id, status) {
+            // Show loading state
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Updating...',
+                    text: 'Please wait while we update the category status.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            }
+            
             fetch(`/admin/file-categories/${id}/toggle-status`, {
                 method: 'POST',
                 headers: {
@@ -508,13 +546,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    if (typeof toastr !== 'undefined') {
+                    if (typeof Swal !== 'undefined') {
+                        // Close loading dialog first
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Category status updated successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else if (typeof toastr !== 'undefined') {
                         toastr.success('Category status updated successfully');
                     } else {
                         alert('Category status updated successfully');
                     }
                 } else {
-                    if (typeof toastr !== 'undefined') {
+                    if (typeof Swal !== 'undefined') {
+                        // Close loading dialog first
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to update category status'
+                        });
+                    } else if (typeof toastr !== 'undefined') {
                         toastr.error('Failed to update category status');
                     } else {
                         alert('Failed to update category status');
@@ -523,7 +579,15 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                if (typeof toastr !== 'undefined') {
+                if (typeof Swal !== 'undefined') {
+                    // Close loading dialog first
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while updating status'
+                    });
+                } else if (typeof toastr !== 'undefined') {
                     toastr.error('An error occurred');
                 } else {
                     alert('An error occurred');
@@ -547,8 +611,31 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteCategory: function(categoryId) {
             console.log('Deleting category:', categoryId);
             
-            // Show confirmation dialog
-            if (confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+            // Show confirmation dialog using SweetAlert if available
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Are you sure you want to delete this category? This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.performCategoryDeletion(categoryId);
+                    }
+                });
+            } else {
+                // Fallback to regular confirm
+                if (confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+                    this.performCategoryDeletion(categoryId);
+                }
+            }
+        },
+
+        // Perform the actual category deletion
+        performCategoryDeletion: function(categoryId) {
                 fetch(`/admin/file-categories/${categoryId}`, {
                     method: 'DELETE',
                     headers: {
@@ -559,7 +646,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        if (typeof toastr !== 'undefined') {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Category deleted successfully',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else if (typeof toastr !== 'undefined') {
                             toastr.success('Category deleted successfully');
                         } else {
                             alert('Category deleted successfully');
@@ -567,7 +662,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Reload categories
                         this.loadCategories();
                     } else {
-                        if (typeof toastr !== 'undefined') {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Failed to delete category'
+                            });
+                        } else if (typeof toastr !== 'undefined') {
                             toastr.error(data.message || 'Failed to delete category');
                         } else {
                             alert(data.message || 'Failed to delete category');
@@ -576,7 +677,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (typeof toastr !== 'undefined') {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the category'
+                        });
+                    } else if (typeof toastr !== 'undefined') {
                         toastr.error('An error occurred while deleting the category');
                     } else {
                         alert('An error occurred while deleting the category');
@@ -596,7 +703,31 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteFile: function(fileId) {
             console.log('Deleting file:', fileId);
             
-            if (confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+            // Show confirmation dialog using SweetAlert if available
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Are you sure you want to delete this file? This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.performFileDeletion(fileId);
+                    }
+                });
+            } else {
+                // Fallback to regular confirm
+                if (confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+                    this.performFileDeletion(fileId);
+                }
+            }
+        },
+
+        // Perform the actual file deletion
+        performFileDeletion: function(fileId) {
                 fetch(`/admin/file-management/files/${fileId}`, {
                     method: 'DELETE',
                     headers: {
@@ -607,7 +738,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        if (typeof toastr !== 'undefined') {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'File deleted successfully',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else if (typeof toastr !== 'undefined') {
                             toastr.success('File deleted successfully');
                         } else {
                             alert('File deleted successfully');
@@ -615,7 +754,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Reload files
                         this.loadCategories();
                     } else {
-                        if (typeof toastr !== 'undefined') {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Failed to delete file'
+                            });
+                        } else if (typeof toastr !== 'undefined') {
                             toastr.error(data.message || 'Failed to delete file');
                         } else {
                             alert(data.message || 'Failed to delete file');
@@ -624,7 +769,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (typeof toastr !== 'undefined') {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while deleting the file'
+                        });
+                    } else if (typeof toastr !== 'undefined') {
                         toastr.error('An error occurred while deleting the file');
                     } else {
                         alert('An error occurred while deleting the file');
