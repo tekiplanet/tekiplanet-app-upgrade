@@ -222,7 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Categories API response:', data);
                     if (data.success) {
                         this.renderCategories(data.data);
                     } else {
@@ -331,11 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             tbody.innerHTML = categories.map(category => {
-                // Debug: Log each category to see the structure
-                console.log('Processing category:', category);
-                console.log('Category allowed_extensions:', category.allowed_extensions, 'Type:', typeof category.allowed_extensions);
-                console.log('Category is_active:', category.is_active, 'Type:', typeof category.is_active, 'Value:', category.is_active);
-                console.log('Category max_file_size:', category.max_file_size, 'Type:', typeof category.max_file_size);
+
                 
                 // Handle extensions display - check for allowed_extensions field from database
                 let extensionsDisplay = '-';
@@ -376,8 +371,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="px-6 py-4 whitespace-nowrap">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" class="sr-only peer" ${this.isCategoryActive(category.is_active) ? 'checked' : ''} onchange="FileManagementSystem.toggleCategoryStatus('${category.id}', this.checked)">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                <div class="w-11 h-6 rounded-full transition-all duration-200 ease-in-out ${this.isCategoryActive(category.is_active) ? 'bg-primary' : 'bg-gray-200'} peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary peer dark:bg-gray-700">
+                                    <div class="w-5 h-5 bg-white border border-gray-300 rounded-full transition-all duration-200 ease-in-out transform ${this.isCategoryActive(category.is_active) ? 'translate-x-5' : 'translate-x-0'}"></div>
+                                </div>
                             </label>
+
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button onclick="FileManagementSystem.editCategory('${category.id}')" class="text-primary hover:text-primary-dark mr-3">
@@ -515,9 +513,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Check if category is active (handles different data types)
         isCategoryActive: function(isActive) {
-            if (isActive === true || isActive === 1 || isActive === '1' || isActive === 'true') {
+            // Handle null/undefined
+            if (isActive === null || isActive === undefined) {
+                return false;
+            }
+            
+            // Handle boolean true
+            if (isActive === true) {
                 return true;
             }
+            
+            // Handle numeric 1
+            if (isActive === 1 || isActive === 1.0) {
+                return true;
+            }
+            
+            // Handle string '1'
+            if (isActive === '1') {
+                return true;
+            }
+            
+            // Handle string 'true'
+            if (isActive === 'true') {
+                return true;
+            }
+            
+            // Handle string 'on' (sometimes checkbox values)
+            if (isActive === 'on') {
+                return true;
+            }
+            
             return false;
         },
 
@@ -636,60 +661,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Perform the actual category deletion
         performCategoryDeletion: function(categoryId) {
-                fetch(`/admin/file-categories/${categoryId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Category deleted successfully',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else if (typeof toastr !== 'undefined') {
-                            toastr.success('Category deleted successfully');
-                        } else {
-                            alert('Category deleted successfully');
-                        }
-                        // Reload categories
-                        this.loadCategories();
+            fetch(`/admin/file-categories/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Category deleted successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.success('Category deleted successfully');
                     } else {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: data.message || 'Failed to delete category'
-                            });
-                        } else if (typeof toastr !== 'undefined') {
-                            toastr.error(data.message || 'Failed to delete category');
-                        } else {
-                            alert(data.message || 'Failed to delete category');
-                        }
+                        alert('Category deleted successfully');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+                    // Reload categories
+                    this.loadCategories();
+                } else {
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
-                            text: 'An error occurred while deleting the category'
+                            text: data.message || 'Failed to delete category'
                         });
                     } else if (typeof toastr !== 'undefined') {
-                        toastr.error('An error occurred while deleting the category');
+                        toastr.error(data.message || 'Failed to delete category');
                     } else {
-                        alert('An error occurred while deleting the category');
+                        alert(data.message || 'Failed to delete category');
                     }
-                });
-            }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while deleting the category'
+                    });
+                } else if (typeof toastr !== 'undefined') {
+                    toastr.error('An error occurred while deleting the category');
+                } else {
+                    alert('An error occurred while deleting the category');
+                }
+            });
         },
 
         // View file details
@@ -728,60 +752,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Perform the actual file deletion
         performFileDeletion: function(fileId) {
-                fetch(`/admin/file-management/files/${fileId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'File deleted successfully',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else if (typeof toastr !== 'undefined') {
-                            toastr.success('File deleted successfully');
-                        } else {
-                            alert('File deleted successfully');
-                        }
-                        // Reload files
-                        this.loadCategories();
+            fetch(`/admin/file-management/files/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'File deleted successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.success('File deleted successfully');
                     } else {
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: data.message || 'Failed to delete file'
-                            });
-                        } else if (typeof toastr !== 'undefined') {
-                            toastr.error(data.message || 'Failed to delete file');
-                        } else {
-                            alert(data.message || 'Failed to delete file');
-                        }
+                        alert('File deleted successfully');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+                    // Reload files
+                    this.loadCategories();
+                } else {
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
-                            text: 'An error occurred while deleting the file'
+                            text: data.message || 'Failed to delete file'
                         });
                     } else if (typeof toastr !== 'undefined') {
-                        toastr.error('An error occurred while deleting the file');
+                        toastr.error(data.message || 'Failed to delete file');
                     } else {
-                        alert('An error occurred while deleting the file');
+                        alert(data.message || 'Failed to delete file');
                     }
-                });
-            }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while deleting the file'
+                    });
+                } else if (typeof toastr !== 'undefined') {
+                    toastr.error('An error occurred while deleting the file');
+                } else {
+                    alert('An error occurred while deleting the file');
+                }
+            });
         },
 
         // Open category modal
