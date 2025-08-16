@@ -30,6 +30,7 @@ import { useGritChat } from '@/hooks/useGritChat';
 import { useAuthStore } from '@/store/useAuthStore';
 import { usePresence } from '@/hooks/usePresence';
 import { PresenceIndicator } from '@/components/ui/PresenceIndicator';
+import { ReplyMessage } from '@/components/ui/ReplyMessage';
 import { cn } from '@/lib/utils';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -40,6 +41,7 @@ const ChatPage = () => {
   const { user: currentUser } = useAuthStore();
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,9 +65,11 @@ const ChatPage = () => {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (message: string) => gritService.sendGritMessage(id!, message),
+    mutationFn: ({ message, replyToMessageId }: { message: string; replyToMessageId?: string }) => 
+      gritService.sendGritMessage(id!, message, replyToMessageId),
     onSuccess: () => {
       setMessage('');
+      setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['grit-messages', id] });
       // Stop typing indicator when message is sent
       handleStopTyping();
@@ -217,7 +221,10 @@ const ChatPage = () => {
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
-    sendMessageMutation.mutate(message);
+    sendMessageMutation.mutate({
+      message: message.trim(),
+      replyToMessageId: replyingTo?.id
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -438,6 +445,13 @@ const ChatPage = () => {
                     </div>
                     
                     <div className="flex flex-col gap-1 max-w-[70%]">
+                      {/* Reply preview */}
+                      {msg.reply_to && (
+                        <ReplyMessage 
+                          replyTo={msg.reply_to} 
+                          className={isCurrentUser ? 'mr-2' : 'ml-2'}
+                        />
+                      )}
                       
                       <div
                         className={cn(
@@ -460,6 +474,16 @@ const ChatPage = () => {
                         {msg.is_read && (
                           <CheckCircle className="h-3 w-3 text-green-500" />
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setReplyingTo(msg)}
+                        >
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                          </svg>
+                        </Button>
                       </div>
                     </div>
                   </motion.div>
@@ -514,6 +538,33 @@ const ChatPage = () => {
       {/* Fixed Message Input */}
       <div className="sticky bottom-0 flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
         <div className="max-w-4xl mx-auto p-4">
+          {/* Reply Preview */}
+          {replyingTo && (
+            <div className="mb-3 p-3 bg-muted/50 rounded-lg border-l-2 border-primary/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Replying to</span>
+                  <span className="text-xs text-muted-foreground">
+                    {replyingTo.user?.first_name} {replyingTo.user?.last_name}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setReplyingTo(null)}
+                >
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {replyingTo.message}
+              </p>
+            </div>
+          )}
+          
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
               <Input

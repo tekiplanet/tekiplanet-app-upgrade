@@ -43,7 +43,7 @@ class GritMessageController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
             
-            $messages = GritMessage::with(['user'])
+            $messages = GritMessage::with(['user', 'replyTo.user'])
                 ->where('grit_id', $gritId)
                 ->orderBy('created_at', 'asc')
                 ->get();
@@ -63,7 +63,8 @@ class GritMessageController extends Controller
     {
         try {
             $request->validate([
-                'message' => 'required|string|max:1000'
+                'message' => 'required|string|max:1000',
+                'reply_to_message_id' => 'nullable|uuid|exists:grit_messages,id'
             ]);
             
             $grit = Grit::findOrFail($gritId);
@@ -100,10 +101,11 @@ class GritMessageController extends Controller
                 'user_id' => $user->id,
                 'message' => $request->message,
                 'sender_type' => $senderType,
+                'reply_to_message_id' => $request->reply_to_message_id,
                 'is_read' => false
             ]);
             
-            $message->load('user');
+            $message->load(['user', 'replyTo.user']);
             
             // Broadcast the new message to all users in the GRIT chat
             broadcast(new NewGritMessage($message))->toOthers();

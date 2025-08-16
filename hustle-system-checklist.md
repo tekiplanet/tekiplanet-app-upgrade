@@ -127,6 +127,14 @@ This checklist tracks the implementation of the GRIT system, including the integ
 - [x] Implement and wire up GRIT API endpoints (GritController, routes, etc.).
 - [x] **GRIT Messaging System**: Created GritMessageController and added message routes to handle chat functionality.
 - [x] **Database Fix**: Created migration to fix grit_messages table column structure (rename hustle_id to grit_id) - ✅ COMPLETED.
+- [x] **Message Reply Feature**: Complete implementation of message reply functionality
+    - [x] **Database Migration**: Added `reply_to_message_id` column to `grit_messages` table with foreign key relationship
+    - [x] **Model Updates**: Added `replyTo()` and `replies()` relationships to `GritMessage` model
+    - [x] **Controller Updates**: Updated `GritMessageController` to handle reply validation and creation
+    - [x] **Frontend Components**: Created `ReplyMessage` component for displaying reply previews
+    - [x] **Service Updates**: Updated `gritService.sendGritMessage()` to accept optional `replyToMessageId`
+    - [x] **UI Integration**: Added reply buttons, reply preview in input area, and reply context display
+    - [x] **Real-time Support**: Reply messages work with existing Pusher real-time updates
 - [x] **GRIT Applications API**: Added methods for fetching and managing applications (`getGritApplications`, `getApplicationDetails`, `updateApplicationStatus`).
 - [x] **Applications Pagination**: Backend pagination support with proper metadata and frontend pagination controls.
 - [x] **Applications Search & Filtering**: Search by professional name and filter by application status.

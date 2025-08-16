@@ -14,6 +14,7 @@ class GritMessage extends Model
         'user_id',
         'message',
         'sender_type',
+        'reply_to_message_id',
         'is_read'
     ];
 
@@ -29,5 +30,21 @@ class GritMessage extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the message this is replying to
+     */
+    public function replyTo()
+    {
+        return $this->belongsTo(GritMessage::class, 'reply_to_message_id');
+    }
+
+    /**
+     * Get all replies to this message
+     */
+    public function replies()
+    {
+        return $this->hasMany(GritMessage::class, 'reply_to_message_id');
     }
 } 

@@ -145,8 +145,12 @@ export const gritService = {
     return data.messages;
   },
 
-  sendGritMessage: async (gritId: string, message: string) => {
-    const { data } = await api.post(`/grits/${gritId}/messages`, { message });
+  sendGritMessage: async (gritId: string, message: string, replyToMessageId?: string) => {
+    const payload: any = { message };
+    if (replyToMessageId) {
+      payload.reply_to_message_id = replyToMessageId;
+    }
+    const { data } = await api.post(`/grits/${gritId}/messages`, payload);
     return data;
   },
 
