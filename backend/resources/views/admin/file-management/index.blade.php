@@ -246,14 +246,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Load settings
         loadSettings: function() {
+            console.log('Loading settings from /admin/file-settings/list');
             fetch('/admin/file-settings/list')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Settings response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Settings data received:', data);
                     if (data.success) {
                         this.renderSettings(data.data);
+                    } else {
+                        console.error('Settings API returned success: false:', data);
                     }
                 })
-                .catch(error => console.error('Error loading settings:', error));
+                .catch(error => {
+                    console.error('Error loading settings:', error);
+                    // Show error message to user
+                    const container = document.getElementById('settings-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="text-center py-12">
+                                <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error loading settings</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Error: ${error.message}</p>
+                            </div>
+                        `;
+                    }
+                });
         },
 
         // Load files
@@ -399,35 +421,283 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('settings-container');
             if (!container) return;
 
-            container.innerHTML = settings.map(setting => `
-                <div class="border-b border-gray-200 dark:border-gray-700 py-4 last:border-b-0">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">${setting.setting_key.replace(/_/g, ' ').toUpperCase()}</label>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">${setting.description}</p>
+            // Debug: Log the settings data to see what we're receiving
+            console.log('Settings data received:', settings);
+            console.log('First setting structure:', settings[0]);
+            console.log('Setting keys available:', Object.keys(settings[0] || {}));
+
+            if (!settings || settings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No settings found</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No system settings are configured.</p>
                         </div>
-                        <div class="lg:col-span-2">
-                            ${this.renderSettingInput(setting)}
+                `;
+                return;
+            }
+
+            // Group settings by category for better organization
+            const groupedSettings = this.groupSettingsByCategory(settings);
+            
+            try {
+                container.innerHTML = Object.entries(groupedSettings).map(([category, categorySettings]) => `
+                    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                        <h4 class="text-md font-medium text-gray-900 dark:text-white mb-4">${this.formatCategoryName(category)}</h4>
+                        <div class="space-y-4">
+                            ${categorySettings.map(setting => {
+                                try {
+                                                                         return `
+                                         <div class="py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                                             <div class="mb-3">
+                                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">${this.formatSettingKey(setting.setting_key)}</label>
+                                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">${setting.description || 'No description available'}</p>
+                                             </div>
+                                             <div class="w-full">
+                                                 ${this.renderSettingInput(setting)}
+                                             </div>
+                                         </div>
+                                     `;
+                                } catch (settingError) {
+                                    console.error('Error rendering setting:', setting, settingError);
+                                                                         return `
+                                         <div class="py-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                                             <div class="mb-3">
+                                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">${setting.setting_key || 'Unknown'}</label>
+                                                 <p class="mt-1 text-xs text-red-500">Error rendering setting</p>
+                                             </div>
+                                             <div class="w-full">
+                                                 <span class="text-red-500 text-sm">Error</span>
+                                             </div>
+                                         </div>
+                                     `;
+                                }
+                            }).join('')}
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                console.error('Error rendering settings:', error);
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error rendering settings</h3>
+                        <p class="mt-1 text-sm text-red-500">${error.message}</p>
+                    </div>
+                `;
+            }
+        },
+
+        // Group settings by category
+        groupSettingsByCategory: function(settings) {
+            const groups = {
+                'storage': [],
+                'security': [],
+                'cloudinary': [],
+                'performance': [],
+                'general': []
+            };
+
+            settings.forEach(setting => {
+                if (setting.setting_key.includes('storage') || setting.setting_key.includes('size')) {
+                    groups.storage.push(setting);
+                } else if (setting.setting_key.includes('virus') || setting.setting_key.includes('expiration')) {
+                    groups.security.push(setting);
+                } else if (setting.setting_key.includes('cloudinary')) {
+                    groups.cloudinary.push(setting);
+                } else if (setting.setting_key.includes('compression') || setting.setting_key.includes('concurrent')) {
+                    groups.performance.push(setting);
+                } else {
+                    groups.general.push(setting);
+                }
+            });
+
+            // Remove empty categories
+            Object.keys(groups).forEach(key => {
+                if (groups[key].length === 0) {
+                    delete groups[key];
+                }
+            });
+
+            return groups;
+        },
+
+        // Format category name for display
+        formatCategoryName: function(category) {
+            const names = {
+                'storage': 'Storage & Limits',
+                'security': 'Security & Safety',
+                'cloudinary': 'Cloudinary Configuration',
+                'performance': 'Performance & Optimization',
+                'general': 'General Settings'
+            };
+            return names[category] || category.charAt(0).toUpperCase() + category.slice(1);
+        },
+
+        // Format setting key for display
+        formatSettingKey: function(key) {
+            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         },
 
         // Render setting input based on type
         renderSettingInput: function(setting) {
+            // Use setting_value instead of typed_value (API returns setting_value)
+            const isActive = this.isSettingActive(setting.setting_value);
+            
             switch (setting.setting_type) {
                 case 'boolean':
                     return `
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" id="setting-${setting.setting_key}" ${setting.typed_value ? 'checked' : ''}>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                            <input type="checkbox" class="sr-only peer" id="setting-${setting.setting_key}" ${isActive ? 'checked' : ''} onchange="FileManagementSystem.updateSetting('${setting.setting_key}', this.checked)">
+                            <div class="w-11 h-6 rounded-full transition-all duration-200 ease-in-out ${isActive ? 'bg-primary' : 'bg-gray-200'} peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary peer dark:bg-gray-700">
+                                <div class="w-5 h-5 bg-white border border-gray-300 rounded-full transition-all duration-200 ease-in-out transform ${isActive ? 'translate-x-5' : 'translate-x-0'}"></div>
+                            </div>
                         </label>
                     `;
                 case 'integer':
-                    return `<input type="number" class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="setting-${setting.setting_key}" value="${setting.typed_value}" ${!setting.is_editable ? 'disabled' : ''}>`;
+                    // For storage values, convert bytes to MB for display
+                    let displayValue = setting.setting_value;
+                    if (setting.setting_key.includes('storage') || setting.setting_key.includes('size')) {
+                        // Ensure we have a valid number before conversion
+                        if (displayValue && !isNaN(parseFloat(displayValue)) && parseFloat(displayValue) > 0) {
+                            displayValue = Math.round(parseFloat(displayValue) / (1024 * 1024));
+                        } else {
+                            displayValue = 0; // Default to 0 if invalid
+                        }
+                    } else {
+                        // For non-storage integers, just parse the value
+                        displayValue = displayValue ? parseInt(displayValue) : 0;
+                    }
+                    return `<input type="number" class="block w-full max-w-md rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="setting-${setting.setting_key}" value="${displayValue}" ${setting.is_editable === false ? 'disabled' : ''} onchange="FileManagementSystem.updateSetting('${setting.setting_key}', this.value)">`;
                 default:
-                    return `<input type="text" class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="setting-${setting.setting_key}" value="${setting.typed_value}" ${!setting.is_editable ? 'disabled' : ''}>`;
+                    return `<input type="text" class="block w-full max-w-md rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="setting-${setting.setting_key}" value="${setting.setting_value || ''}" ${setting.is_editable === false ? 'disabled' : ''} onchange="FileManagementSystem.updateSetting('${setting.setting_key}', this.value)">`;
+            }
+        },
+
+        // Check if a setting is active (for boolean values)
+        isSettingActive: function(value) {
+            if (value === null || value === undefined) return false;
+            if (value === true) return true;
+            if (value === 1 || value === 1.0) return true;
+            if (value === '1') return true;
+            if (value === 'true') return true;
+            if (value === 'on') return true;
+            return false;
+        },
+
+        // Update a setting value
+        updateSetting: function(key, value) {
+            // For storage values, convert MB back to bytes
+            if (key.includes('storage') || key.includes('size')) {
+                value = Math.round(parseFloat(value) * 1024 * 1024);
+            }
+
+            fetch(`/admin/file-settings/${key}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ setting_value: value })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Setting updated successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        console.log('Setting updated successfully');
+                    }
+                } else {
+                    console.error('Failed to update setting:', result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating setting:', error);
+            });
+        },
+
+        // Reset settings to defaults
+        resetSettingsToDefaults: function() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Reset to Defaults?',
+                    text: 'This will reset all settings to their default values. This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, reset!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.performResetToDefaults();
+                    }
+                });
+            } else {
+                if (confirm('Reset all settings to defaults? This action cannot be undone.')) {
+                    this.performResetToDefaults();
+                }
+            }
+        },
+
+        // Perform the actual reset to defaults
+        performResetToDefaults: function() {
+            fetch('/admin/file-settings/reset-defaults', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Settings reset to defaults successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert('Settings reset to defaults successfully');
+                    }
+                    // Reload settings to show updated values
+                    this.loadSettings();
+                } else {
+                    console.error('Failed to reset settings:', result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error resetting settings:', error);
+            });
+        },
+
+        // Save all settings
+        saveAllSettings: function() {
+            // This function can be used to save multiple settings at once if needed
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Settings Saved',
+                    text: 'All settings are automatically saved when changed.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                alert('All settings are automatically saved when changed.');
             }
         },
 

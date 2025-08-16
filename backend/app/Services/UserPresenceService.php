@@ -48,7 +48,7 @@ class UserPresenceService
             // Broadcast presence update
             $this->broadcastPresenceUpdate($user);
 
-            Log::info("User {$user->id} presence updated to {$status}");
+            // Log::info("User {$user->id} presence updated to {$status}");
         } catch (\Exception $e) {
             Log::error("Failed to update user presence: " . $e->getMessage());
         }
@@ -191,12 +191,12 @@ class UserPresenceService
         try {
             $presence = $this->getUserPresence($user);
             
-            Log::info("Broadcasting presence update for user {$user->id}", [
-                'user_id' => $user->id,
-                'presence' => $presence,
-                'channel' => 'presence',
-                'event' => 'user-presence-updated'
-            ]);
+            // Log::info("Broadcasting presence update for user {$user->id}", [
+            //     'user_id' => $user->id,
+            //     'presence' => $presence,
+            //     'channel' => 'presence',
+            //     'event' => 'user-presence-updated'
+            // ]);
             
             $this->pusher->trigger('presence', 'user-presence-updated', [
                 'user_id' => $user->id,
@@ -204,7 +204,7 @@ class UserPresenceService
                 'timestamp' => now()->toISOString(),
             ]);
             
-            Log::info("Successfully broadcasted presence update for user {$user->id}");
+            // Log::info("Successfully broadcasted presence update for user {$user->id}");
         } catch (\Exception $e) {
             Log::error('Failed to broadcast presence update: ' . $e->getMessage());
         }
@@ -223,7 +223,7 @@ class UserPresenceService
         foreach ($inactiveUsers as $user) {
             // Mark user as offline and broadcast the update
             $this->markUserOffline($user);
-            Log::info("Marked user {$user->id} as offline due to inactivity");
+            // Log::info("Marked user {$user->id} as offline due to inactivity");
         }
     }
 }

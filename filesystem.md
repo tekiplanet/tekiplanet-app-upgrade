@@ -61,8 +61,26 @@ Internal file sharing system for professionals and business owners using Cloudin
     - ✅ Toggle state reflects actual database values
     - ✅ Success/error messages shown after status change
 
+### **LATEST FIXES APPLIED (Validation Errors & Form Data):**
+17. **Fixed Category Update Validation Errors** - Resolved "max_file_size must be an integer" errors:
+    - ✅ **Root Cause Identified**: Form was loading raw bytes value instead of converting to MB
+    - ✅ **Solution Applied**: Updated `loadCategoryData()` to convert bytes back to MB for display
+    - ✅ **Data Conversion**: `(category.max_file_size / (1024 * 1024)).toFixed(1)` converts bytes to MB
+    - ✅ **Form Submission**: `Math.round(parseFloat(value) * 1024 * 1024)` ensures integer bytes
+    - ✅ **Validation**: Backend now receives proper integer values, eliminating 422 errors
+18. **Enhanced Error Handling & User Feedback** - Improved validation error display:
+    - ✅ **Detailed Error Messages**: Now shows specific validation errors (e.g., "max_file_size: The max file size field must be an integer")
+    - ✅ **Better HTTP Response Handling**: Properly catches 422 validation errors and parses error details
+    - ✅ **User-Friendly Messages**: Converts technical validation errors into readable user messages
+    - ✅ **SweetAlert Integration**: Beautiful error dialogs with detailed error information
+19. **Fixed Form Data Loading Issues** - Resolved data conversion problems:
+    - ✅ **Bytes to MB Conversion**: Edit form now shows correct values (e.g., "25.0" instead of "109951162777600")
+    - ✅ **Integer Validation**: Ensures `max_file_size` is always sent as integer to backend
+    - ✅ **Data Consistency**: Form display values now match expected user input format
+    - ✅ **Round-Trip Data**: Create → Edit → Update now works seamlessly without data corruption
+
 ### **LATEST FIXES APPLIED (Status Toggle & SweetAlert):**
-17. **Fixed Status Toggle Visual Display** - Resolved toggle switch appearance issues:
+20. **Fixed Status Toggle Visual Display** - Resolved toggle switch appearance issues:
     - ✅ **Root Cause Identified**: CSS styling issue with Tailwind's `peer-checked:` classes
     - ✅ **Solution Applied**: Replaced with explicit conditional styling using direct CSS classes
     - ✅ **Toggle Logic**: `isCategoryActive()` function correctly handles all data types (boolean, integer, string)
@@ -107,6 +125,9 @@ Internal file sharing system for professionals and business owners using Cloudin
 ✅ **SweetAlert Integration**: **ENHANCED** - Beautiful notifications and confirmations  
 ✅ **Error Handling**: **IMPROVED** - Better debugging and user feedback  
 ✅ **Code Quality**: **OPTIMIZED** - Clean, maintainable, and performant code
+✅ **Validation Errors**: **COMPLETELY RESOLVED** - No more "max_file_size must be an integer" errors  
+✅ **Form Data Loading**: **FIXED** - Edit forms now show correct values in MB instead of raw bytes  
+✅ **Category Updates**: **FULLY FUNCTIONAL** - Create, edit, and update operations work seamlessly
 
 ## Cloud Storage: Cloudinary
 - **Free Tier**: 25GB storage, 25GB bandwidth/month (forever)
