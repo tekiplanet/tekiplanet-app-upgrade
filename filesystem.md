@@ -42,19 +42,70 @@ Internal file sharing system for professionals and business owners using Cloudin
   - [x] Cloudinary configuration placeholders
 
 ### Backend Models
-- [ ] Create `UserFile` model
-  - [ ] Relationships (sender, receiver, permissions)
-  - [ ] Fillable fields and casts
-  - [ ] Scopes for sent/received files
-  - [ ] Access control methods
+- [x] Create `UserFile` model
+  - [x] Relationships (sender, receiver, permissions)
+  - [x] Fillable fields and casts
+  - [x] Scopes for sent/received files
+  - [x] Access control methods
 
-- [ ] Create `FileCategory` model
-  - [ ] Category validation methods
-  - [ ] Extension and size validation
+- [x] Create `FileCategory` model
+  - [x] Category validation methods
+  - [x] Extension and size validation
 
-- [ ] Create `FilePermission` model
-  - [ ] Permission checking methods
-  - [ ] Expiration handling
+- [x] Create `FilePermission` model
+  - [x] Permission checking methods
+  - [x] Expiration handling
+
+- [x] Create `FileSystemSetting` model
+  - [x] Admin-controlled system settings
+  - [x] Type casting and caching
+  - [x] Sensitive data handling
+
+### Admin API Controllers
+- [ ] Create `AdminFileCategoryController`
+  - [ ] List all categories
+  - [ ] Create new category
+  - [ ] Update category
+  - [ ] Delete category
+  - [ ] Toggle category status
+
+- [ ] Create `AdminFileSystemSettingController`
+  - [ ] List all settings
+  - [ ] Update setting values
+  - [ ] Reset to defaults
+  - [ ] Export/import settings
+
+- [ ] Create `AdminFileManagementController`
+  - [ ] List all files with filters
+  - [ ] View file details
+  - [ ] Delete files
+  - [ ] File statistics
+  - [ ] User storage usage
+
+### Admin Frontend Components
+- [ ] Create admin file management dashboard
+  - [ ] File categories management
+  - [ ] System settings panel
+  - [ ] File overview and statistics
+  - [ ] User storage monitoring
+
+- [ ] Create `AdminFileCategoryManager` component
+  - [ ] Category list with CRUD operations
+  - [ ] Category form with validation
+  - [ ] Extension and size limit configuration
+  - [ ] Cloudinary options setup
+
+- [ ] Create `AdminSystemSettings` component
+  - [ ] Settings form with type-specific inputs
+  - [ ] Cloudinary credentials management
+  - [ ] File limits configuration
+  - [ ] Security settings
+
+- [ ] Create `AdminFileOverview` component
+  - [ ] File statistics dashboard
+  - [ ] Storage usage charts
+  - [ ] Popular file types
+  - [ ] System health indicators
 
 ### Cloudinary Integration
 - [ ] Install Cloudinary PHP SDK
@@ -77,7 +128,7 @@ Internal file sharing system for professionals and business owners using Cloudin
   - [ ] File deletion and cleanup
   - [ ] Permission management
 
-### API Controllers
+### User API Controllers
 - [ ] Create `FileController`
   - [ ] Upload endpoint with validation
   - [ ] Download endpoint with security
