@@ -15,7 +15,7 @@ class AdminFileSystemSettingController extends Controller
      */
     public function index()
     {
-        return view('admin.file-management.settings');
+        return view('admin.file-management.partials.settings');
     }
 
     /**

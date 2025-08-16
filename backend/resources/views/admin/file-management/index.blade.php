@@ -13,7 +13,7 @@
             </p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <button type="button" onclick="openCategoryModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+            <button type="button" onclick="FileManagementSystem.openCategoryModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
@@ -186,15 +186,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        this.updateOverviewCharts(data.data);
+                        // Wait for charts to be initialized before updating
+                        this.waitForChartsAndUpdate(data.data);
                     }
                 })
                 .catch(error => console.error('Error loading overview:', error));
         },
 
+        // Wait for charts to be ready before updating
+        waitForChartsAndUpdate: function(data) {
+            const maxAttempts = 10;
+            let attempts = 0;
+            
+            const checkCharts = () => {
+                if (window.filesByCategoryChart && window.storageUsageChart) {
+                    this.updateOverviewCharts(data);
+                } else if (attempts < maxAttempts) {
+                    attempts++;
+                    setTimeout(checkCharts, 100);
+                } else {
+                    console.warn('Charts not ready after maximum attempts, updating without charts');
+                    this.updateOverviewCharts(data);
+                }
+            };
+            
+            checkCharts();
+        },
+
         // Load categories
         loadCategories: function() {
-            fetch('/admin/file-categories')
+            fetch('/admin/file-categories/list')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -206,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Load settings
         loadSettings: function() {
-            fetch('/admin/file-settings')
+            fetch('/admin/file-settings/list')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -232,16 +253,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update overview charts
         updateOverviewCharts: function(data) {
             // Update statistics cards
-            document.getElementById('total-files').textContent = data.total_files || 0;
-            document.getElementById('active-files').textContent = data.active_files || 0;
-            document.getElementById('total-storage').textContent = this.formatBytes(data.total_storage_used || 0);
-            document.getElementById('total-downloads').textContent = data.total_downloads || 0;
+            const totalFilesEl = document.getElementById('total-files');
+            const activeFilesEl = document.getElementById('active-files');
+            const totalStorageEl = document.getElementById('total-storage');
+            const totalDownloadsEl = document.getElementById('total-downloads');
+            
+            if (totalFilesEl) totalFilesEl.textContent = data.total_files || 0;
+            if (activeFilesEl) activeFilesEl.textContent = data.active_files || 0;
+            if (totalStorageEl) totalStorageEl.textContent = this.formatBytes(data.total_storage_used || 0);
+            if (totalDownloadsEl) totalDownloadsEl.textContent = data.total_downloads || 0;
 
-            // Update charts if they exist
-            if (window.filesByCategoryChart) {
-                window.filesByCategoryChart.data.labels = data.files_by_category.map(item => item.category?.name || 'Unknown');
-                window.filesByCategoryChart.data.datasets[0].data = data.files_by_category.map(item => item.count);
-                window.filesByCategoryChart.update();
+            // Update charts if they exist and are properly initialized
+            if (window.filesByCategoryChart && window.filesByCategoryChart.data && window.filesByCategoryChart.data.datasets) {
+                try {
+                    window.filesByCategoryChart.data.labels = data.files_by_category?.map(item => item.category?.name || 'Unknown') || [];
+                    window.filesByCategoryChart.data.datasets[0].data = data.files_by_category?.map(item => item.count) || [];
+                    window.filesByCategoryChart.update();
+                } catch (error) {
+                    console.warn('Error updating files by category chart:', error);
+                }
+            }
+            
+            if (window.storageUsageChart && window.storageUsageChart.data && window.storageUsageChart.data.datasets) {
+                try {
+                    window.storageUsageChart.data.labels = data.files_by_category?.map(item => item.category?.name || 'Unknown') || [];
+                    window.storageUsageChart.data.datasets[0].data = data.files_by_category?.map(item => item.storage_used || 0) || [];
+                    window.storageUsageChart.update();
+                } catch (error) {
+                    console.warn('Error updating storage usage chart:', error);
+                }
             }
         },
 
@@ -250,15 +290,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const tbody = document.getElementById('categories-table-body');
             if (!tbody) return;
 
+            if (!categories || categories.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center justify-center">
+                                <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                                </svg>
+                            </div>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No categories found</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new file category.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             tbody.innerHTML = categories.map(category => `
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${category.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${category.name || '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.description || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.extensions_string}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.formatted_max_size}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.extensions_string || category.extensions || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.formatted_max_size || category.max_file_size ? (category.max_file_size + ' MB') : '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${category.resource_type === 'image' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : category.resource_type === 'video' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}">
-                            ${category.resource_type}
+                            ${category.resource_type || 'raw'}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -436,9 +493,178 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         },
 
+        // Edit category
+        editCategory: function(categoryId) {
+            console.log('Editing category:', categoryId);
+            // Open the category modal in edit mode
+            if (typeof openCategoryModal === 'function') {
+                openCategoryModal(categoryId);
+            } else {
+                console.error('openCategoryModal function not found');
+                alert('Edit functionality not available');
+            }
+        },
+
+        // Delete category
+        deleteCategory: function(categoryId) {
+            console.log('Deleting category:', categoryId);
+            
+            // Show confirmation dialog
+            if (confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+                fetch(`/admin/file-categories/${categoryId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success('Category deleted successfully');
+                        } else {
+                            alert('Category deleted successfully');
+                        }
+                        // Reload categories
+                        this.loadCategories();
+                    } else {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error(data.message || 'Failed to delete category');
+                        } else {
+                            alert(data.message || 'Failed to delete category');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('An error occurred while deleting the category');
+                    } else {
+                        alert('An error occurred while deleting the category');
+                    }
+                });
+            }
+        },
+
+        // View file details
+        viewFile: function(fileId) {
+            console.log('Viewing file:', fileId);
+            // Implementation for viewing file details
+            alert('View file functionality not yet implemented');
+        },
+
+        // Delete file
+        deleteFile: function(fileId) {
+            console.log('Deleting file:', fileId);
+            
+            if (confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+                fetch(`/admin/file-management/files/${fileId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success('File deleted successfully');
+                        } else {
+                            alert('File deleted successfully');
+                        }
+                        // Reload files
+                        this.loadCategories();
+                    } else {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error(data.message || 'Failed to delete file');
+                        } else {
+                            alert(data.message || 'Failed to delete file');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('An error occurred while deleting the file');
+                    } else {
+                        alert('An error occurred while deleting the file');
+                    }
+                });
+            }
+        },
+
+        // Open category modal
+        openCategoryModal: function(categoryId = null) {
+            const modal = document.getElementById('categoryModal');
+            const modalLabel = document.getElementById('categoryModalLabel');
+            const form = document.getElementById('categoryForm');
+            
+            if (categoryId) {
+                // Edit mode
+                modalLabel.textContent = 'Edit Category';
+                this.loadCategoryData(categoryId);
+            } else {
+                // Add mode
+                modalLabel.textContent = 'Add Category';
+                form.reset();
+                document.getElementById('category-id').value = '';
+            }
+            
+            modal.classList.remove('hidden');
+        },
+
+        // Load category data for editing
+        loadCategoryData: function(categoryId) {
+            fetch(`/admin/file-categories/${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const category = data.data;
+                        document.getElementById('category-id').value = category.id;
+                        document.getElementById('category-name').value = category.name || '';
+                        document.getElementById('category-description').value = category.description || '';
+                        document.getElementById('category-resource-type').value = category.resource_type || 'raw';
+                        document.getElementById('category-max-size').value = category.max_file_size || '';
+                        document.getElementById('category-sort-order').value = category.sort_order || 0;
+                        document.getElementById('category-is-active').checked = category.is_active || false;
+                        
+                        // Set extensions if available
+                        if (category.extensions) {
+                            this.setCategoryExtensions(category.extensions);
+                        }
+                    } else {
+                        console.error('Failed to load category data:', data.message);
+                        alert('Failed to load category data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading category data:', error);
+                    alert('Error loading category data');
+                });
+        },
+
+        // Set category extensions in the form
+        setCategoryExtensions: function(extensions) {
+            // Reset all checkboxes first
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            // Check the ones that match the category extensions
+            if (Array.isArray(extensions)) {
+                extensions.forEach(ext => {
+                    const checkbox = document.getElementById(`ext-${ext.toLowerCase()}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        },
+
         // Initialize the system
         init: function() {
-            this.loadOverview();
+            // Don't load overview immediately - wait for tab to be shown
+            // this.loadOverview();
             
             // Load data when tabs are clicked
             document.getElementById('categories-tab').addEventListener('click', () => this.loadCategories());
@@ -491,10 +717,6 @@ function switchTab(tabName) {
     }
 }
 
-// Open category modal
-function openCategoryModal() {
-    // Implementation for opening category modal
-    console.log('Opening category modal...');
-}
+
 </script>
 @endpush

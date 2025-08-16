@@ -43,7 +43,7 @@
         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No categories</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new file category.</p>
         <div class="mt-6">
-            <button type="button" onclick="openCategoryModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+            <button type="button" onclick="FileManagementSystem.openCategoryModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-outline-2 focus:ring-offset-2 focus:ring-primary">
                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>

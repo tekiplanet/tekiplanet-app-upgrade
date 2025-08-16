@@ -167,6 +167,8 @@
 <script>
 // Initialize charts when the overview tab is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure main system is ready
+    setTimeout(() => {
     // Files by Category Chart
     const filesByCategoryCtx = document.getElementById('filesByCategoryChart');
     if (filesByCategoryCtx) {
@@ -261,5 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    }, 100); // 100ms delay
 });
 </script>

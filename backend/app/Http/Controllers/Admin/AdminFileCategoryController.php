@@ -16,7 +16,7 @@ class AdminFileCategoryController extends Controller
      */
     public function index()
     {
-        return view('admin.file-management.categories');
+        return view('admin.file-management.partials.categories');
     }
 
     /**

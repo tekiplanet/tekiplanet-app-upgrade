@@ -219,27 +219,6 @@
 
 <script>
 // Category modal functions
-function openCategoryModal(categoryId = null) {
-    const modal = document.getElementById('categoryModal');
-    const modalLabel = document.getElementById('categoryModalLabel');
-    const form = document.getElementById('categoryForm');
-    
-    if (categoryId) {
-        // Edit mode
-        modalLabel.textContent = 'Edit Category';
-        loadCategoryData(categoryId);
-    } else {
-        // Add mode
-        modalLabel.textContent = 'Add Category';
-        form.reset();
-        document.getElementById('category-id').value = '';
-        // Set default extensions based on resource type
-        document.getElementById('category-resource-type').addEventListener('change', setDefaultExtensions);
-    }
-    
-    modal.classList.remove('hidden');
-}
-
 function closeCategoryModal() {
     const modal = document.getElementById('categoryModal');
     modal.classList.add('hidden');
@@ -275,11 +254,6 @@ function setDefaultExtensions() {
     }
 }
 
-function loadCategoryData(categoryId) {
-    // Implementation for loading category data
-    console.log('Loading category data for ID:', categoryId);
-}
-
 // Form submission
 document.getElementById('categoryForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -305,6 +279,14 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
 document.getElementById('categoryModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeCategoryModal();
+    }
+});
+
+// Add event listener for resource type change
+document.addEventListener('DOMContentLoaded', function() {
+    const resourceTypeSelect = document.getElementById('category-resource-type');
+    if (resourceTypeSelect) {
+        resourceTypeSelect.addEventListener('change', setDefaultExtensions);
     }
 });
 </script>
