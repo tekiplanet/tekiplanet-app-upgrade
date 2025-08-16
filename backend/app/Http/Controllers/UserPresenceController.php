@@ -96,14 +96,14 @@ class UserPresenceController extends Controller
         try {
             $user = Auth::user();
             
-            Log::info("Heartbeat received from user {$user->id}", [
-                'user_id' => $user->id,
-                'timestamp' => now()->toISOString()
-            ]);
+            // Log::info("Heartbeat received from user {$user->id}", [
+            //     'user_id' => $user->id,
+            //     'timestamp' => now()->toISOString()
+            // ]);
             
             $this->presenceService->markUserOnline($user);
             
-            Log::info("Successfully processed heartbeat for user {$user->id}");
+            // Log::info("Successfully processed heartbeat for user {$user->id}");
 
             return response()->json([
                 'success' => true,
