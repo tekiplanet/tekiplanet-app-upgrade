@@ -290,6 +290,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const tbody = document.getElementById('categories-table-body');
             if (!tbody) return;
 
+            // Debug: Log the categories data to see what we're receiving
+            console.log('Categories data received:', categories);
+
             if (!categories || categories.length === 0) {
                 tbody.innerHTML = `
                     <tr>
@@ -307,37 +310,72 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            tbody.innerHTML = categories.map(category => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${category.name || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.description || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.extensions_string || category.extensions || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.formatted_max_size || category.max_file_size ? (category.max_file_size + ' MB') : '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${category.resource_type === 'image' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : category.resource_type === 'video' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}">
-                            ${category.resource_type || 'raw'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" ${category.is_active ? 'checked' : ''} onchange="FileManagementSystem.toggleCategoryStatus('${category.id}', this.checked)">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                        </label>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="FileManagementSystem.editCategory('${category.id}')" class="text-primary hover:text-primary-dark mr-3">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </button>
-                        <button onclick="FileManagementSystem.deleteCategory('${category.id}')" class="text-red-600 hover:text-red-900">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = categories.map(category => {
+                // Debug: Log each category to see the structure
+                console.log('Processing category:', category);
+                
+                // Handle extensions display
+                let extensionsDisplay = '-';
+                if (category.extensions_string) {
+                    extensionsDisplay = category.extensions_string;
+                } else if (category.allowed_extensions && Array.isArray(category.allowed_extensions)) {
+                    extensionsDisplay = category.allowed_extensions.join(', ');
+                } else if (category.extensions && Array.isArray(category.extensions)) {
+                    extensionsDisplay = category.extensions.join(', ');
+                } else if (typeof category.allowed_extensions === 'string') {
+                    // Handle case where it might be a JSON string
+                    try {
+                        const parsed = JSON.parse(category.allowed_extensions);
+                        if (Array.isArray(parsed)) {
+                            extensionsDisplay = parsed.join(', ');
+                        }
+                    } catch (e) {
+                        extensionsDisplay = category.allowed_extensions;
+                    }
+                }
+                
+                // Handle max size display
+                let maxSizeDisplay = '-';
+                if (category.formatted_max_size) {
+                    maxSizeDisplay = category.formatted_max_size;
+                } else if (category.max_file_size) {
+                    // Convert bytes to MB for display
+                    const sizeInMB = (category.max_file_size / (1024 * 1024)).toFixed(1);
+                    maxSizeDisplay = sizeInMB + ' MB';
+                }
+                
+                return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${category.name || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${category.description || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${extensionsDisplay}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${maxSizeDisplay}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${category.resource_type === 'image' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : category.resource_type === 'video' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}">
+                                ${category.resource_type || 'raw'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" ${category.is_active ? 'checked' : ''} onchange="FileManagementSystem.toggleCategoryStatus('${category.id}', this.checked)">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary dark:peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                            </label>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="FileManagementSystem.editCategory('${category.id}')" class="text-primary hover:text-primary-dark mr-3">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button onclick="FileManagementSystem.deleteCategory('${category.id}')" class="text-red-600 hover:text-red-900">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         },
 
         // Render settings
