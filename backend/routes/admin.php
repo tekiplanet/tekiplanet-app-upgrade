@@ -45,6 +45,9 @@ use App\Http\Controllers\Admin\ConversionTaskTypeController;
 use App\Http\Controllers\Admin\ConversionRewardTypeController;
 use App\Http\Controllers\Admin\ConversionTaskController;
 use App\Http\Controllers\Admin\DiscountSlipController;
+use App\Http\Controllers\Admin\AdminFileManagementController;
+use App\Http\Controllers\Admin\AdminFileCategoryController;
+use App\Http\Controllers\Admin\AdminFileSystemSettingController;
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     // Guest routes
@@ -415,6 +418,35 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::resource('discount-slips', DiscountSlipController::class)->names('discount-slips');
             Route::patch('/discount-slips/{discountSlip}/toggle-used', [DiscountSlipController::class, 'toggleUsed'])->name('discount-slips.toggle-used');
             Route::patch('/discount-slips/{discountSlip}/extend-expiration', [DiscountSlipController::class, 'extendExpiration'])->name('discount-slips.extend-expiration');
+        });
+
+        // File Management System - accessible by super admin and admin
+        Route::middleware('admin.roles:super_admin,admin')->group(function () {
+            Route::prefix('file-management')->name('file-management.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\AdminFileManagementController::class, 'index'])->name('index');
+                Route::get('/statistics', [App\Http\Controllers\Admin\AdminFileManagementController::class, 'statistics'])->name('statistics');
+                Route::get('/files', [App\Http\Controllers\Admin\AdminFileManagementController::class, 'files'])->name('files');
+                Route::delete('/files/{file}', [App\Http\Controllers\Admin\AdminFileManagementController::class, 'destroy'])->name('files.destroy');
+            });
+
+            // File Categories Management
+            Route::prefix('file-categories')->name('file-categories.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'index'])->name('index');
+                Route::get('/list', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'list'])->name('list');
+                Route::post('/', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'store'])->name('store');
+                Route::get('/{category}', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'show'])->name('show');
+                Route::put('/{category}', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'update'])->name('update');
+                Route::delete('/{category}', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'destroy'])->name('destroy');
+                Route::post('/{category}/toggle-status', [App\Http\Controllers\Admin\AdminFileCategoryController::class, 'toggleStatus'])->name('toggle-status');
+            });
+
+            // File System Settings
+            Route::prefix('file-settings')->name('file-settings.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\AdminFileSystemSettingController::class, 'index'])->name('index');
+                Route::get('/list', [App\Http\Controllers\Admin\AdminFileSystemSettingController::class, 'list'])->name('list');
+                Route::put('/{setting}', [App\Http\Controllers\Admin\AdminFileSystemSettingController::class, 'update'])->name('update');
+                Route::post('/reset-defaults', [App\Http\Controllers\Admin\AdminFileSystemSettingController::class, 'resetToDefaults'])->name('reset-defaults');
+            });
         });
 
  
